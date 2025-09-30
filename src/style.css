@@ -1,4 +1,9 @@
-:root {
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  min-height: 100vh;
   font-family: Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -12,16 +17,12 @@
   box-sizing: border-box;
 }
 
-body {
-  min-height: 100vh;
+button {
   font-family: Arial, sans-serif;
 }
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+
+button:focus {
+  outline: none;
 }
 
 .card {
@@ -61,7 +62,7 @@ button:focus-visible {
 }
 
 @media (prefers-color-scheme: light) {
-  :root {
+  body {
     color: #213547;
     background-color: #ffffff;
   }
