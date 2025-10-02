@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import LoginForm from "../views/LoginForm.vue";
 import RegisterForm from "../views/RegisterForm.vue";
 import RegisterLanjutan from "../views/RegisterLanjutan.vue";
+import RegisterOtp from "../views/RegisterOtp.vue";
 
 const routes = [
   {
@@ -22,6 +23,11 @@ const routes = [
     path: "/register-lanjutan",
     name: "RegisterLanjutan",
     component: RegisterLanjutan,
+  },
+  {
+    path: "/register-otp",
+    name: "RegisterOtp",
+    component: RegisterOtp,
   },
 ];
 

@@ -1,22 +1,18 @@
 <template>
-  <div
-    class="min-h-screen bg-gray-100 flex items-center justify-center px-4 md:px-0 container mx-auto"
-  >
-    <div
-      class="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl mx-auto md:mx-auto"
-    >
+  <div class="container-center bg-gray-100">
+    <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl">
       <!-- Logo -->
       <div class="flex justify-center mb-8">
-        <img src="../assets/logo.svg" alt="Bimbel Lazuardy" class="h-20" />
+        <img src="../assets/logo.svg" alt="Bimbel Lazuardy"/>
       </div>
 
       <!-- Detail Pribadi Section -->
       <div class="mb-8">
-        <h2 class="text-xl font-bold mb-6">Detail Pribadi</h2>
+        <h2 class="flex justify-center text-xl font-bold mb-6">Detail Pribadi</h2>
 
         <div class="space-y-4">
           <div>
-            <label class="block text-sm mb-2">Nama Lengkap</label>
+            <label class="text-sm mb-2">Nama Lengkap</label>
             <input
               v-model="form.namaLengkap"
               type="text"
@@ -25,7 +21,7 @@
           </div>
 
           <div>
-            <label class="block text-sm mb-2">Email</label>
+            <label class="text-sm mb-2">Email</label>
             <input
               v-model="form.email"
               type="email"
@@ -34,7 +30,7 @@
           </div>
 
           <div>
-            <label class="block text-sm mb-2">Password</label>
+            <label class="text-sm mb-2">Password</label>
             <input
               v-model="form.password"
               type="password"
@@ -43,7 +39,7 @@
           </div>
 
           <div>
-            <label class="block text-sm mb-2">Jenis Kelamin</label>
+            <label class="text-sm mb-2">Jenis Kelamin</label>
             <input
               v-model="form.jenisKelamin"
               type="text"
@@ -52,35 +48,40 @@
           </div>
 
           <div>
-            <label class="block text-sm mb-2">Tanggal Lahir</label>
+            <label class="text-sm mb-2">Tanggal Lahir</label>
             <div class="grid grid-cols-3 gap-2">
               <select
-                v-model="form.tanggalLahir.hari"
+                v-model.number="form.tanggalLahir.hari"
                 class="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
               >
-                <option value="">Hari</option>
-                <option v-for="d in 31" :key="d" :value="d">{{ d }}</option>
+                <option :value="''">Hari</option>
+                <option v-for="d in daysInmonth" :key="d" :value="d">
+                  {{ d }}
+                </option>
               </select>
+
               <select
-                v-model="form.tanggalLahir.bulan"
+                v-model.number="form.tanggalLahir.bulan"
                 class="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
               >
-                <option value="">Bulan</option>
+                <option :value="''">Bulan</option>
                 <option v-for="(m, i) in months" :key="i" :value="i + 1">
                   {{ m }}
                 </option>
               </select>
-              <input
-                v-model="form.tanggalLahir.tahun"
-                type="text"
-                placeholder="Tahun"
+
+              <select
+                v-model.number="form.tanggalLahir.tahun"
                 class="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
-              />
+              >
+                <option :value="''">Tahun</option>
+                <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
+              </select>
             </div>
           </div>
 
           <div>
-            <label class="block text-sm mb-2">Nomor Telepon</label>
+            <label class="text-sm mb-2">Nomor Telepon</label>
             <input
               v-model="form.nomorTelepon"
               type="tel"
@@ -89,7 +90,7 @@
           </div>
 
           <div>
-            <label class="block text-sm mb-2">Agama</label>
+            <label class="text-sm mb-2">Agama</label>
             <input
               v-model="form.agama"
               type="text"
@@ -101,47 +102,12 @@
 
       <!-- Detail Alamat Section -->
       <div class="mb-8">
-        <h2 class="text-xl font-bold mb-6">Detail Alamat</h2>
+        <h2 class="flex justify-center text-xl font-bold mb-6">Detail Alamat</h2>
 
         <div class="space-y-4">
+          <wilayah-dropdown />
           <div>
-            <label class="block text-sm mb-2">Provinsi</label>
-            <input
-              v-model="form.provinsi"
-              type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm mb-2">Kota / Kabupaten</label>
-            <input
-              v-model="form.kota"
-              type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm mb-2">Kecamatan</label>
-            <input
-              v-model="form.kecamatan"
-              type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm mb-2">Desa / Kelurahan</label>
-            <input
-              v-model="form.desa"
-              type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm mb-2">Alamat</label>
+            <label class="text-sm mb-2">Alamat</label>
             <textarea
               v-model="form.alamat"
               rows="4"
@@ -150,12 +116,16 @@
           </div>
 
           <div>
-            <label class="block text-sm mb-2">Pilih Role</label>
-            <input
+            <label class="text-sm mb-2">Pilih Role</label>
+            <select
               v-model="form.role"
-              type="text"
               class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
-            />
+            >
+              <option value=""></option>
+              <option value="admin">Admin</option>
+              <option value="siswa">Student</option>
+              <option value="tutor">Teacher</option>
+            </select>
           </div>
         </div>
       </div>
@@ -174,8 +144,9 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
+import WilayahDropdown from "@/components/WilayahDropdown.vue";
 
 const router = useRouter();
 
@@ -213,6 +184,32 @@ const months = [
   "November",
   "Desember",
 ];
+
+const currentYear = new Date().getFullYear();
+const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
+
+const isLeap = (y) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+
+const daysInmonth = computed(() => {
+  const b = Number(form.value.tanggalLahir?.bulan || 0);
+  const t = Number(form.value.tanggalLahir?.tahun || 0);
+
+  if (!b) return 31;
+  if ([1, 3, 5, 7, 8, 10, 12].includes(b)) return 31;
+  if ([4, 6, 9, 11].includes(b)) return 30;
+  return isLeap(t) ? 29 : 28;
+});
+
+watch(
+  () => [form.value.tanggalLahir?.bulan, form.value.tanggalLahir?.tahun],
+  () => {
+    const max = daysInmonth.value;
+    if (Number(form.value.tanggalLahir.hari) > max) {
+      form.value.tanggalLahir.hari = "";
+    }
+  },
+  { immediate: true }
+);
 
 const handleNext = () => {
   // Validasi form bisa ditambahkan di sini

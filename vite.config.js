@@ -10,4 +10,14 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  server: {
+    proxy: {
+      '/_wilayah': {
+        target: 'https://emsifa.github.io/api-wilayah-indonesia/api',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/_wilayah/, '')
+      }
+    }
+  }
 });

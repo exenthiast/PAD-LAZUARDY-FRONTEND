@@ -1,10 +1,6 @@
 <template>
-  <div
-    class="min-h-screen bg-gray-100 flex items-center justify-center px-4 md:px-0 container mx-auto"
-  >
-    <div
-      class="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl mx-auto md:mx-auto"
-    >
+  <div class="container-center bg-gray-100">
+    <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl">
       <h1 class="text-2xl font-bold text-center mb-8">Data Lanjutan</h1>
 
       <!-- Detail Sekolah Section -->
@@ -65,7 +61,13 @@
       </div>
 
       <!-- Button -->
-      <div class="flex justify-end">
+      <div class="flex justify-between">
+        <button
+          @click="handleBack"
+          class="border border-teal-500 text-teal-500 hover:bg-teal-50 px-8 py-3 rounded-lg font-medium transition-colors"
+        >
+          Kembali
+        </button>
         <button
           @click="handleSubmit"
           class="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 rounded-lg font-medium transition-colors"
@@ -90,12 +92,13 @@ const form = ref({
   nomorTeleponOrangtua: "",
 });
 
+const handleBack = () => {
+  router.push("/register");
+};
+
 const handleSubmit = () => {
   // Validasi dan submit data
   console.log("Data lanjutan:", form.value);
-
-  // Redirect ke halaman sukses atau login
-  alert("Registrasi berhasil!");
-  router.push("/login");
+  router.push("/register-otp");
 };
 </script>
