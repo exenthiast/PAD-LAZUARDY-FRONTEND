@@ -112,7 +112,7 @@ const handleRegister = () => {
 
 /* kartu besar: 2 kolom (form | ilustrasi) */
 .auth-card {
-  width: min(1100px, 92vw);
+  width: min(1100px, 87vw);
   min-height: 520px;
   background: #f6f7f8; /* abu-abu terang seperti contoh */
   border-radius: 28px;
@@ -125,7 +125,7 @@ const handleRegister = () => {
 /* kiri: form (punyamu sebelumnya, sedikit rapih) */
 .login-card {
   background: #fff;
-  padding: 40px 28px;
+  padding: 20px 28px;
   display: flex;
   flex-direction: column;
   justify-content: center;
