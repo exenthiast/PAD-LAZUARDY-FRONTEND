@@ -97,8 +97,14 @@ const handleBack = () => {
 };
 
 const handleSubmit = () => {
-  // Validasi dan submit data
-  console.log("Data lanjutan:", form.value);
-  router.push("/register-otp");
+  if (!verified.value) {
+    err.value = "Harap Diisikan Semua Field!";
+    return;
+  }
+
+    alert("Berhasil Registrasi!");
+
+  // Redirect ke halaman berikutnya
+  router.push(props.nextPath || "/login");
 };
 </script>

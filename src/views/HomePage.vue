@@ -10,13 +10,6 @@
           <span class="sr-only">Bimbel Lazuardy</span>
         </div>
         <div class="flex items-center gap-4">
-          <input
-            type="text"
-            v-model="searchQuery"
-            @keyup.enter="handleSearch"
-            placeholder="Pencarian"
-            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 w-64"
-          />
           <button
             @click="handleNext"
             class="bg-teal-500 hover:bg-teal-600 text-white px-3 py-0 md:px-8 md:py-2 rounded-lg font-medium transition-colors"
@@ -30,9 +23,9 @@
     <!-- MAIN -->
     <main class="flex-1">
       <!-- HERO -->
-      <section class="bg-teal-600 py-16">
+      <section class="py-16" style="background-color: #41a6c2">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="bg-gray-200 rounded-lg p-12 text-center">
+          <div class="bg-white rounded-lg p-12 text-center">
             <h1 class="text-2xl font-semibold text-gray-800">
               Gambar atau iklan mengenai lazuardy
             </h1>
@@ -46,6 +39,7 @@
           <div class="flex justify-between items-center mb-8">
             <h2 class="text-3xl font-bold text-gray-900">Tutor Rekomendasi</h2>
             <button
+              @click="handleNext"
               class="text-teal-600 hover:text-teal-700 flex items-center gap-2"
             >
               Lihat Semua Tutor →
@@ -53,55 +47,119 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <article
+            <div
               v-for="tutor in topTutors"
               :key="tutor.id"
-              class="bg-gray-50 rounded-lg p-6 hover:shadow-lg transition-shadow"
+              class="bg-white rounded-lg overflow-hidden shadow-md hover:bg-teal-500 hover:text-white transition-all duration-300 group"
             >
-              <div class="flex items-start gap-4">
-                <img
-                  :src="tutor.image"
-                  :alt="tutor.name"
-                  class="w-20 h-20 rounded-full bg-gray-300 object-cover"
-                />
-                <div class="flex-1">
-                  <h3 class="font-semibold text-lg text-gray-900">
-                    {{ tutor.name }}
-                  </h3>
-                  <p class="text-gray-600 text-sm mb-2">{{ tutor.subject }}</p>
-                  <div class="flex items-center gap-1">
-                    <!-- Star icon (inline SVG, no JSX) -->
-                    <svg
-                      class="w-4 h-4 text-yellow-400"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
+              <div class="p-6">
+                <div class="flex items-start gap-4 mb-4">
+                  <img
+                    :src="tutor.image"
+                    :alt="tutor.name"
+                    class="w-16 h-16 rounded-full bg-gray-300 object-cover"
+                  />
+                  <div class="flex-1">
+                    <h3
+                      class="font-medium text-gray-900 group-hover:text-white"
                     >
+                      {{ tutor.name }}
+                    </h3>
+                    <p class="text-gray-600 text-sm group-hover:text-white/90">
+                      {{ tutor.subject }}
+                    </p>
+                    <div class="flex items-center mt-1">
+                      <span
+                        class="text-xs text-gray-500 group-hover:text-white/80"
+                        >SMP • SMA</span
+                      >
+                      <span class="mx-2 text-gray-300">•</span>
+                      <div class="flex gap-1">
+                        <span
+                          v-for="mode in tutor.teachingMode"
+                          :key="mode"
+                          class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded group-hover:bg-white group-hover:text-teal-600"
+                        >
+                          {{ mode.charAt(0).toUpperCase() + mode.slice(1) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                  <div
+                    class="text-center p-2 bg-gray-50 rounded group-hover:bg-white/10"
+                  >
+                    <div
+                      class="font-semibold text-gray-900 group-hover:text-white"
+                    >
+                      100+
+                    </div>
+                    <div
+                      class="text-xs text-gray-500 group-hover:text-white/80"
+                    >
+                      Siswa
+                    </div>
+                  </div>
+                  <div
+                    class="text-center p-2 bg-gray-50 rounded group-hover:bg-white/10"
+                  >
+                    <div
+                      class="font-semibold text-gray-900 group-hover:text-white"
+                    >
+                      50+
+                    </div>
+                    <div
+                      class="text-xs text-gray-500 group-hover:text-white/80"
+                    >
+                      Sesi
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="flex items-center">
+                    <svg class="w-4 h-4 text-yellow-400" viewBox="0 0 24 24">
                       <path
                         fill="currentColor"
                         d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.62L12 2 9.19 8.62 2 9.24l5.46 4.73L5.82 21z"
                       />
                     </svg>
-                    <span class="font-semibold text-gray-900">{{
+                    <span class="ml-1 font-medium group-hover:text-white">{{
                       tutor.rating
                     }}</span>
-                    <span class="text-gray-500 text-sm"
-                      >({{ tutor.reviews }})</span
+                  </div>
+                  <span class="text-gray-500 text-sm group-hover:text-white/80"
+                    >({{ tutor.reviews }} ulasan)</span
+                  >
+                </div>
+
+                <p class="text-sm text-gray-600 mb-4 group-hover:text-white/90">
+                  Tutor {{ tutor.subject }} bersertifikasi, ramah, dan
+                  berpengalaman lebih dari 3 tahun mengajar siswa SMP & SMA
+                </p>
+
+                <div
+                  class="border-t border-gray-200 group-hover:border-white/20 -mx-6 px-6 py-4 mt-4"
+                >
+                  <div class="flex justify-center">
+                    <button
+                      class="flex items-center gap-2 px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white text-sm"
                     >
+                      <i class="bi bi-whatsapp text-base"></i>
+                      Hubungi via WhatsApp
+                    </button>
                   </div>
                 </div>
-                <button
-                  class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                >
-                  Pesan
-                </button>
               </div>
-            </article>
+            </div>
           </div>
         </div>
       </section>
 
       <!-- ABOUT -->
-      <section class="py-16 bg-teal-600">
+      <section class="py-16" style="background-color: #41a6c2">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 class="text-3xl font-bold text-white text-center mb-12">
             ABOUT LAZUARDY
@@ -205,16 +263,6 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
-const searchQuery = ref("");
-
-const handleSearch = () => {
-  if (searchQuery.value.trim()) {
-    router.push({
-      path: "/search",
-      query: { q: searchQuery.value },
-    });
-  }
-};
 
 /* Dummy data */
 const topTutors = [
@@ -225,6 +273,7 @@ const topTutors = [
     rating: 4.9,
     reviews: 156,
     image: "https://picsum.photos/seed/t1/80/80",
+    teachingMode: ["online", "offline"],
   },
   {
     id: 2,
@@ -233,6 +282,7 @@ const topTutors = [
     rating: 4.8,
     reviews: 142,
     image: "https://picsum.photos/seed/t2/80/80",
+    teachingMode: ["online"],
   },
   {
     id: 3,
@@ -241,6 +291,7 @@ const topTutors = [
     rating: 4.8,
     reviews: 138,
     image: "https://picsum.photos/seed/t3/80/80",
+    teachingMode: ["online", "offline"],
   },
   {
     id: 4,
@@ -249,6 +300,7 @@ const topTutors = [
     rating: 4.7,
     reviews: 129,
     image: "https://picsum.photos/seed/t4/80/80",
+    teachingMode: ["online"],
   },
   {
     id: 5,
@@ -257,6 +309,7 @@ const topTutors = [
     rating: 4.7,
     reviews: 125,
     image: "https://picsum.photos/seed/t5/80/80",
+    teachingMode: ["offline"],
   },
   {
     id: 6,
@@ -265,6 +318,7 @@ const topTutors = [
     rating: 4.6,
     reviews: 118,
     image: "https://picsum.photos/seed/t6/80/80",
+    teachingMode: ["online", "offline"],
   },
 ];
 const aboutItems = [

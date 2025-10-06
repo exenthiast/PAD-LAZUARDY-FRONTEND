@@ -57,7 +57,13 @@
         </div>
 
         <!-- Next Button -->
-        <div class="mt-8 flex justify-center">
+        <div class="mt-8 flex justify-between">
+          <button
+          @click="handleBack"
+          class="border border-teal-500 text-teal-500 hover:bg-teal-50 px-8 py-3 rounded-lg font-medium transition-colors"
+          >
+          Kembali
+          </button>
           <button
             @click="handleSubmit"
             :disabled="!verified || busy"
@@ -96,7 +102,7 @@ async function verifyOtpDummy(email, code) {
  */
 const props = defineProps({
   email: { type: String, default: "" },
-  nextPath: { type: String, default: "/login" },
+  nextPath: { type: String, default: "/lanjutan-tutor" },
 });
 
 const router = useRouter();
@@ -195,6 +201,10 @@ async function verifyOtp() {
   }
 }
 
+const handleBack = () => {
+  router.push("/register-tutor");
+};
+
 const handleSubmit = () => {
   if (!verified.value) {
     err.value = "Harap verifikasi OTP terlebih dahulu";
@@ -204,7 +214,7 @@ const handleSubmit = () => {
     alert("Berhasil verifikasi OTP!");
 
   // Redirect ke halaman berikutnya
-  router.push(props.nextPath || "/login");
+  router.push(props.nextPath || "/lanjutan-tutor");
 };
 
 onMounted(() => {
