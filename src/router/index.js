@@ -6,6 +6,7 @@ import RegisterForm from "../views/student/RegisterForm.vue";
 import RegisterTutor from "../views/tutor/RegisterTutor.vue";
 import RegisterLanjutan from "../views/student/RegisterLanjutan.vue";
 import RegisterOtp from "../views/student/RegisterOtp.vue";
+import DashboardPage from "../views/student/DashboardPage.vue";
 import TutorOtp from "../views/tutor/TutorOtp.vue";
 import LanjutanTutor from "../views/tutor/LanjutanTutor.vue";
 
@@ -49,6 +50,11 @@ const routes = [
     path: "/register-otp",
     name: "RegisterOtp",
     component: RegisterOtp,
+  },
+  {
+    path: "/dashboard-siswa",
+    name: "DashboardPage",
+    component: DashboardPage,
   },
   {
     path: "/otp-tutor",

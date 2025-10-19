@@ -1,7 +1,14 @@
 <template>
   <div class="min-h-screen flex flex-col bg-gray-100">
     <!-- NAVBAR -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
+    <header
+      :class="[
+        'sticky top-0 z-50 transition-all duration-300',
+        isScrolled
+          ? 'backdrop-blur-md shadow-lg'
+          : 'bg-white shadow-sm',
+      ]"
+    >
       <div
         class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between"
       >
@@ -264,7 +271,14 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-/* Dummy data */
+// Scroll state untuk navbar
+const isScrolled = ref(false);
+
+// Handle scroll event
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 20;
+};
+
 const topTutors = [
   {
     id: 1,
@@ -368,6 +382,10 @@ const faqVisible = ref(false);
 let observer;
 
 onMounted(() => {
+  // Scroll listener untuk navbar
+  window.addEventListener("scroll", handleScroll);
+
+  // Intersection observer untuk FAQ
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((e) => {
@@ -381,7 +399,11 @@ onMounted(() => {
   );
   if (faqBlock.value) observer.observe(faqBlock.value);
 });
-onBeforeUnmount(() => observer?.disconnect());
+
+onBeforeUnmount(() => {
+  window.removeEventListener("scroll", handleScroll);
+  observer?.disconnect();
+});
 
 const handleNext = () => {
   router.push("/login");
