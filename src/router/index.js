@@ -9,6 +9,7 @@ import RegisterOtp from "../views/student/RegisterOtp.vue";
 import DashboardPage from "../views/student/DashboardPage.vue";
 import TutorOtp from "../views/tutor/TutorOtp.vue";
 import LanjutanTutor from "../views/tutor/LanjutanTutor.vue";
+import TutorListPage from "../views/tutors/TutorListPage.vue";
 
 const routes = [
   {
@@ -55,6 +56,11 @@ const routes = [
     path: "/dashboard-siswa",
     name: "DashboardPage",
     component: DashboardPage,
+  },
+  {
+    path: "/tutors",
+    name: "TutorList",
+    component: TutorListPage,
   },
   {
     path: "/otp-tutor",
