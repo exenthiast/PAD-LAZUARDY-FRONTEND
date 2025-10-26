@@ -7,6 +7,7 @@ import RegisterTutor from "../views/tutor/RegisterTutor.vue";
 import RegisterLanjutan from "../views/student/RegisterLanjutan.vue";
 import RegisterOtp from "../views/student/RegisterOtp.vue";
 import DashboardPage from "../views/student/DashboardPage.vue";
+import ProfilePage from "../views/student/ProfilePage.vue";
 import TutorOtp from "../views/tutor/TutorOtp.vue";
 import LanjutanTutor from "../views/tutor/LanjutanTutor.vue";
 import TutorListPage from "../views/tutors/TutorListPage.vue";
@@ -56,6 +57,11 @@ const routes = [
     path: "/dashboard-siswa",
     name: "DashboardPage",
     component: DashboardPage,
+  },
+  {
+    path: "/profile-student",
+    name: "ProfilePage",
+    component: ProfilePage,
   },
   {
     path: "/tutors",

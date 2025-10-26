@@ -1,14 +1,16 @@
 <template>
-  <div>
+  <div :style="{ '--nav-h': navHeight }">
     <!-- NAVBAR -->
     <header
       :class="[
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
         isScrolled ? 'backdrop-blur-md shadow-lg' : 'bg-[#41a6c2] shadow-sm',
       ]"
+      :style="{ height: 'var(--nav-h)' }"
     >
       <div
-        class="max-w-1xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between"
+        class="max-w-1xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between"
+        :style="{ height: 'var(--nav-h)' }"
       >
         <!-- Left: Hamburger + Logo -->
         <div class="flex items-center gap-3">
@@ -17,19 +19,7 @@
             class="p-2 rounded-lg hover:bg-black/10 transition-colors"
             aria-label="Menu"
           >
-            <svg
-              class="w-6 h-6 text-black"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
+            <MenuIcon class="w-6 h-6 text-black" />
           </button>
           <img src="@/assets/logo.svg" alt="Bimbel Lazuardy" class="" />
         </div>
@@ -42,19 +32,7 @@
             class="relative p-2 rounded-lg hover:bg-white/10 transition-colors"
             aria-label="Notifications"
           >
-            <svg
-              class="w-6 h-6 text-black"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-              />
-            </svg>
+            <Bell class="w-6 h-6 text-black" />
             <!-- Notification Badge -->
             <span
               v-if="notificationCount > 0"
@@ -64,101 +42,76 @@
 
           <!-- Profile Button -->
           <button
-            @click="toggleProfileMenu"
-            class="flex items-center gap-2 p-1 rounded-full hover:bg-black/10 transition-colors"
+            @click="handleProfileClick"
+            @mouseenter="showProfileTooltip = true"
+            @mouseleave="showProfileTooltip = false"
+            class="relative flex items-center gap-2 p-1 rounded-full hover:bg-black/10 transition-colors"
             aria-label="Profile"
           >
             <div
-              class="w-8 h-8 bg-white rounded-full flex items-center justify-center"
+              class="w-8 h-8 bg-black rounded-full flex items-center justify-center"
             >
-              <svg
-                class="w-5 h-5 text-teal-600"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                  clip-rule="evenodd"
-                />
-              </svg>
+              <CircleUserRound class="w-6 h-6 " />
             </div>
+
+            <!-- Profile Tooltip on Hover -->
+            <transition name="fade">
+              <div
+                v-if="showProfileTooltip"
+                class="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border p-4 z-50"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center text-white font-semibold"
+                  >
+                    JD
+                  </div>
+                  <div>
+                    <p class="font-semibold text-gray-900">John Doe</p>
+                    <p class="text-sm text-gray-500">john@example.com</p>
+                  </div>
+                </div>
+              </div>
+            </transition>
           </button>
         </div>
       </div>
     </header>
-    <div class="h-16" aria-hidden="true"></div>
+    <div
+      class="h-16"
+      aria-hidden="true"
+      :style="{ height: 'var(--nav-h)' }"
+    ></div>
 
     <!-- LEFT SIDEBAR Component -->
     <SidebarLeft :isOpen="sidebarOpen" @close="closeSidebar" />
 
     <!-- RIGHT SIDEBAR (Notifications) Component -->
     <SidebarRight :isOpen="notificationOpen" @close="closeNotification" />
-
-    <!-- PROFILE DROPDOWN -->
-    <transition name="fade">
-      <div
-        v-if="profileMenuOpen"
-        class="fixed inset-0 z-30"
-        @click="closeProfileMenu"
-      >
-        <div
-          class="absolute top-16 right-4 w-64 bg-white rounded-lg shadow-xl border"
-        >
-          <!-- Profile Info -->
-          <div class="p-4 border-b bg-teal-50">
-            <div class="flex items-center gap-3">
-              <div
-                class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center text-white font-semibold"
-              >
-                JD
-              </div>
-              <div>
-                <p class="font-semibold text-gray-900">John Doe</p>
-                <p class="text-sm text-gray-500">john@example.com</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Logout -->
-          <div class="border-t py-2">
-            <button
-              class="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 text-red-600 transition-colors"
-            >
-              <svg
-                class="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                />
-              </svg>
-              <span class="font-medium">Logout</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </transition>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
+import { useRouter } from "vue-router";
+import { Menu as MenuIcon } from "lucide-vue-next";
+import { Bell } from "lucide-vue-next";
+import { CircleUserRound } from 'lucide-vue-next';
 import SidebarLeft from "./sidebar-left.vue";
 import SidebarRight from "./sidebar-right.vue";
 
+const router = useRouter();
+
 // Scroll state
 const isScrolled = ref(false);
+
+const navHeight = "75px";
 
 // Sidebar states
 const sidebarOpen = ref(false);
 const notificationOpen = ref(false);
 const profileMenuOpen = ref(false);
+const showProfileTooltip = ref(false);
 
 // Notification count
 const notificationCount = ref(7);
@@ -191,6 +144,11 @@ const toggleProfileMenu = () => {
     sidebarOpen.value = false;
     notificationOpen.value = false;
   }
+};
+
+const handleProfileClick = () => {
+  showProfileTooltip.value = false;
+  router.push("/profile-student");
 };
 
 // Close functions
