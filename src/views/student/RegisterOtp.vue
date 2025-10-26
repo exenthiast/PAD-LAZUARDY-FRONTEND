@@ -102,7 +102,7 @@ async function verifyOtpDummy(email, code) {
  */
 const props = defineProps({
   email: { type: String, default: "" },
-  nextPath: { type: String, default: "/register-lanjutan" },
+  nextPath: { type: String, default: "/student/register-lanjutan" },
 });
 
 const router = useRouter();
@@ -202,7 +202,7 @@ async function verifyOtp() {
 }
 
 const handleBack = () => {
-  router.push("/register");
+  router.push("/student/register");
 };
 
 const handleSubmit = () => {
@@ -214,7 +214,7 @@ const handleSubmit = () => {
     alert("Berhasil verifikasi OTP!");
 
   // Redirect ke halaman berikutnya
-  router.push(props.nextPath || "/register-lanjutan");
+  router.push(props.nextPath || "/student/register-lanjutan");
 };
 
 onMounted(() => {

@@ -57,14 +57,16 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed } from 'vue';
 
 /* Dummy data — ganti ke fetch API nanti */
 const tutors = ref([
   { id: 1, name: 'Budi Santoso', subject: 'Matematika', level: 'SMP & SMA', rating: 4.9, reviews: 225, photo: 'https://picsum.photos/seed/tutor1/80/80', whatsapp: '+628123456789', bio: 'Tutor Matematika bersertifikat, pengalaman >6 tahun.' },
   { id: 2, name: 'Siti Nurhaliza', subject: 'Fisika', level: 'SMA', rating: 4.8, reviews: 190, photo: 'https://picsum.photos/seed/tutor2/80/80', whatsapp: '081234567880', bio: 'Pendekatan praktis, fokus konsep dan latihan berjenjang.' },
   { id: 3, name: 'Ahmad Fauzi', subject: 'Kimia', level: 'SMA', rating: 4.8, reviews: 174, photo: 'https://picsum.photos/seed/tutor3/80/80', whatsapp: '628111223344', bio: 'Olimpiade Kimia, banyak siswa lolos PTN favorit.' },
-  { id: 4, name: 'Rina Wijaya', subject: 'Biologi', level: 'SMP', rating: 4.7, reviews: 130, photo: 'https://picsum.photos/seed/tutor4/80/80', whatsapp: '+62 811-7777-999', bio: 'Metode interaktif dengan visual dan eksperimen sederhana.' }
+  { id: 4, name: 'Rina Wijaya', subject: 'Biologi', level: 'SMP', rating: 4.7, reviews: 130, photo: 'https://picsum.photos/seed/tutor4/80/80', whatsapp: '+62 811-7777-999', bio: 'Metode interaktif dengan visual dan eksperimen sederhana.' },
+  { id: 5, name: "Dedi Kurniawan", subject: "Bahasa Inggris", level: "SD, SMP & SMA", rating: 4.6, reviews: 125, photo: "https://picsum.photos/seed/t5/80/80", whatsapp: '+62 812-3456-7890', bio: 'Pengalaman mengajar >5 tahun, fokus pada percakapan.', teachingMode: ["offline"] },
+  { id: 6, name: "Maya Kartika", subject: "Ekonomi", level: "SMA", rating: 4.6, reviews: 118, photo: "https://picsum.photos/seed/t6/80/80", whatsapp: '081298765432', bio: 'Pendekatan praktis dengan studi kasus terkini', teachingMode: ["online", "offline"]}
 ])
 
 const q = ref('')

@@ -279,7 +279,7 @@ const handleNext = () => {
   console.log("Form data:", form.value);
 
   // Navigate ke halaman berikutnya (Data Lanjutan)
-  router.push("/register-otp");
+  router.push("/student/register-otp");
 };
 </script>
 

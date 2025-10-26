@@ -18,8 +18,9 @@
           <ul class="space-y-2">
             <!-- Dahboard -->
             <li>
-              <a
-                href="#"
+              <RouterLink
+                to="/student/dashboard"
+                @click="close"
                 :class="[
                   'flex items-center gap-3 p-3 rounded-lg transition-colors group',
                   props.active === 'dashboard'
@@ -40,7 +41,8 @@
                       props.active === 'dashboard'
                         ? 'w-5 h-5 text-white'
                         : 'w-5 h-5 text-gray-600 group-hover:text-[#41a6c2]'
-                    " />
+                    "
+                  />
                 </div>
                 <span
                   :class="
@@ -50,12 +52,13 @@
                   "
                   >Dashboard</span
                 >
-              </a>
+              </RouterLink>
             </li>
             <!-- Paket Belajar -->
             <li>
-              <a
-                href="#"
+              <RouterLink
+                to="/student/packages"
+                @click="close"
                 :class="[
                   'flex items-center gap-3 p-3 rounded-lg transition-colors group',
                   props.active === 'paket'
@@ -76,7 +79,8 @@
                       props.active === 'paket'
                         ? 'w-5 h-5 text-white'
                         : 'w-5 h-5 text-gray-600 group-hover:text-[#41a6c2]'
-                    " />
+                    "
+                  />
                 </div>
                 <span
                   :class="
@@ -86,13 +90,14 @@
                   "
                   >Paket Belajar</span
                 >
-              </a>
+              </RouterLink>
             </li>
 
             <!-- Hubungi Kami -->
             <li>
-              <a
-                href="#"
+              <RouterLink
+                to="/contact"
+                @click="close"
                 :class="[
                   'flex items-center gap-3 p-3 rounded-lg transition-colors group',
                   props.active === 'hubungi'
@@ -113,7 +118,8 @@
                       props.active === 'hubungi'
                         ? 'w-5 h-5 text-white'
                         : 'w-5 h-5 text-gray-600 group-hover:text-[#41a6c2]'
-                    " />
+                    "
+                  />
                 </div>
                 <span
                   :class="
@@ -123,13 +129,14 @@
                   "
                   >Hubungi Kami</span
                 >
-              </a>
+              </RouterLink>
             </li>
 
             <!-- Tentang Kami -->
             <li>
-              <a
-                href="#"
+              <RouterLink
+                to="/about"
+                @click="close"
                 :class="[
                   'flex items-center gap-3 p-3 rounded-lg transition-colors group',
                   props.active === 'tentang'
@@ -150,7 +157,8 @@
                       props.active === 'tentang'
                         ? 'w-5 h-5 text-white'
                         : 'w-5 h-5 text-gray-600 group-hover:text-[#41a6c2]'
-                    " />
+                    "
+                  />
                 </div>
                 <span
                   :class="
@@ -160,7 +168,7 @@
                   "
                   >Tentang Kami</span
                 >
-              </a>
+              </RouterLink>
             </li>
           </ul>
         </nav>
@@ -188,10 +196,11 @@
 
 <script setup>
 import { defineProps, defineEmits } from "vue";
-import { LayoutDashboard } from 'lucide-vue-next';
-import { BookText } from 'lucide-vue-next';
-import { MessageSquare } from 'lucide-vue-next';
-import { Info } from 'lucide-vue-next';
+import { RouterLink } from "vue-router";
+import { LayoutDashboard } from "lucide-vue-next";
+import { BookText } from "lucide-vue-next";
+import { MessageSquare } from "lucide-vue-next";
+import { Info } from "lucide-vue-next";
 import { LogOut } from "lucide-vue-next";
 
 // Props
@@ -203,7 +212,7 @@ const props = defineProps({
   // active menu: 'dashboard' |'paket' | 'hubungi' | 'tentang'
   active: {
     type: String,
-    default: "dashboard",
+    default: "",
   },
 });
 

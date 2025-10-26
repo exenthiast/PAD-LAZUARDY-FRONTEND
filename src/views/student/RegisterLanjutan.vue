@@ -80,10 +80,18 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+
+// Optional next path after submit (default to /login)
+const props = defineProps({
+  nextPath: { type: String, default: "/login" },
+});
+
+// Simple error holder and verification flag
+const err = ref("");
 
 const form = ref({
   asalSekolah: "",
@@ -92,19 +100,25 @@ const form = ref({
   nomorTeleponOrangtua: "",
 });
 
+// All fields must be non-empty
+const verified = computed(() =>
+  Object.values(form.value).every((v) => String(v ?? "").trim() !== "")
+);
+
 const handleBack = () => {
-  router.push("/register");
+  router.push("/student/register-otp");
 };
 
 const handleSubmit = () => {
   if (!verified.value) {
     err.value = "Harap Diisikan Semua Field!";
+    alert(err.value);
     return;
   }
 
-    alert("Berhasil Registrasi!");
+  alert("Berhasil Registrasi!");
 
   // Redirect ke halaman berikutnya
-  router.push(props.nextPath || "/login");
+  router.push(props.nextPath);
 };
 </script>

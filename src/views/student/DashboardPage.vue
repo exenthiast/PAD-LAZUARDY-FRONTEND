@@ -5,6 +5,16 @@
 
     <!-- MAIN -->
     <main class="flex-1 py-8 px-6">
+      <!-- HERO / Banner -->
+      <section class="max-w-6xl mx-auto mb-6">
+        <div class="bg-[#41a6c2] rounded-2xl p-8 md:p-12 text-center shadow">
+          <h1 class="text-xl md:text-2xl font-semibold text-white">
+            Gambar atau iklan mengenai lazuardy
+          </h1>
+        </div>
+      </section>
+
+      <!-- CONTENT GRID -->
       <div class="max-w-6xl mx-auto flex flex-col lg:flex-row gap-6">
         <!-- ===== KIRI: Paket, Progress, Jadwal ===== -->
         <div class="w-full lg:flex-[2] space-y-6">

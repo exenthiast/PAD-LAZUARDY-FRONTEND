@@ -3,36 +3,38 @@
     <!-- NAVBAR -->
     <header
       :class="[
-        'sticky top-0 z-50 transition-all duration-300',
+        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
         isScrolled
           ? 'backdrop-blur-md shadow-lg'
           : 'bg-white shadow-sm',
       ]"
+      :style="{ '--nav-h': navHeight }"
     >
       <div
-        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between"
+        class="max-w-1xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between"
+        :style="{ height: 'var(--nav-h)' }"
       >
         <div class="flex items-center gap-3">
-          <img src="../assets/logo.svg" alt="Bimbel Lazuardy" class="" />
-          <span class="sr-only">Bimbel Lazuardy</span>
+          <img src="@/assets/logo.svg" alt="Bimbel Lazuardy" class="" />
         </div>
         <div class="flex items-center gap-4">
           <button
             @click="handleNext"
-            class="bg-teal-500 hover:bg-teal-600 text-white px-3 py-0 md:px-8 md:py-2 rounded-lg font-medium transition-colors"
+            class="w-full flex item-center gap-3 rounded-lg bg-teal-500 hover:bg-teal-600 text-white px-3 py-2 md:px-8 md:py-2 rounded-lg font-medium transition-colors"
           >
-            Masuk / Register
+            <LogIn class="w-5 h-5" />
+            <span class="">Register</span>
           </button>
         </div>
       </div>
     </header>
 
     <!-- MAIN -->
-    <main class="flex-1">
+    <main class="flex-1 py-16">
       <!-- HERO -->
       <section class="py-16" style="background-color: #41a6c2">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="bg-white rounded-lg p-12 text-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ">
+          <div class="bg-gray-300 rounded-lg p-12 text-center">
             <h1 class="text-2xl font-semibold text-gray-800">
               Gambar atau iklan mengenai lazuardy
             </h1>
@@ -268,11 +270,14 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
+import { LogIn } from 'lucide-vue-next';
 
 const router = useRouter();
 
 // Scroll state untuk navbar
 const isScrolled = ref(false);
+
+const navHeight = "75px";
 
 // Handle scroll event
 const handleScroll = () => {
@@ -296,15 +301,17 @@ const topTutors = [
     rating: 4.8,
     reviews: 142,
     image: "https://picsum.photos/seed/t2/80/80",
+    whatsapp: "+628123456789",
     teachingMode: ["online"],
   },
   {
     id: 3,
     name: "Budi Santoso",
-    subject: "Kimia",
-    rating: 4.8,
-    reviews: 138,
-    image: "https://picsum.photos/seed/t3/80/80",
+    subject: "Matematika",
+    level: "SMP & SMA",
+    rating: 4.9,
+    reviews: 225,
+    image: "https://picsum.photos/seed/tutor1/80/80",
     teachingMode: ["online", "offline"],
   },
   {

@@ -11,6 +11,8 @@ import ProfilePage from "../views/student/ProfilePage.vue";
 import TutorOtp from "../views/tutor/TutorOtp.vue";
 import LanjutanTutor from "../views/tutor/LanjutanTutor.vue";
 import TutorListPage from "../views/tutors/TutorListPage.vue";
+import ForgotPassword from "../views/ForgotPassword.vue";
+import EditProfile from "../views/student/EditProfile.vue";
 
 const routes = [
   {
@@ -29,39 +31,49 @@ const routes = [
     component: LoginForm,
   },
   {
-    path: "/register-tutor",
+    path: "/tutor/register",
     name: "RegisterTutor",
     component: RegisterTutor,
   },
   {
-    path: "/lanjutan-tutor",
+    path: "/tutor/register-lanjutan",
     name: "LanjutanTutor",
     component: LanjutanTutor,
   },
   {
-    path: "/register",
+    path: "/student/register",
     name: "Register",
     component: RegisterForm,
   },
   {
-    path: "/register-lanjutan",
+    path: "/student/register-lanjutan",
     name: "RegisterLanjutan",
     component: RegisterLanjutan,
   },
   {
-    path: "/register-otp",
+    path: "/student/register-otp",
     name: "RegisterOtp",
     component: RegisterOtp,
   },
   {
-    path: "/dashboard-siswa",
+    path: "/forgot-password",
+    name: "ForgotPassword",
+    component: ForgotPassword,
+  },
+  {
+    path: "/student/dashboard",
     name: "DashboardPage",
     component: DashboardPage,
   },
   {
-    path: "/profile-student",
+    path: "/student/profile-student",
     name: "ProfilePage",
     component: ProfilePage,
+  },
+  {
+    path: "/student/edit-profile",
+    name: "EditProfile",
+    component: EditProfile,
   },
   {
     path: "/tutors",
@@ -69,7 +81,7 @@ const routes = [
     component: TutorListPage,
   },
   {
-    path: "/otp-tutor",
+    path: "/tutor/otp-tutor",
     name: "TutorOtp",
     component: TutorOtp,
   },
