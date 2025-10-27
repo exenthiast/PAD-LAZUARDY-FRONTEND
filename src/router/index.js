@@ -10,6 +10,8 @@ import DashboardPage from "../views/student/DashboardPage.vue";
 import TutorOtp from "../views/tutor/TutorOtp.vue";
 import LanjutanTutor from "../views/tutor/LanjutanTutor.vue";
 import TutorListPage from "../views/tutors/TutorListPage.vue";
+import CheckoutPage from "../views/payment/CheckoutPage.vue";
+import PackageListPage from "../views/packages/PackageListPage.vue";
 
 const routes = [
   {
@@ -67,6 +69,18 @@ const routes = [
     name: "TutorOtp",
     component: TutorOtp,
   },
+  {
+  path: '/student/packages',
+  name: 'PackageListPage',
+  component: PackageListPage,
+},
+{
+  path: '/student/checkout',
+  name: 'CheckoutPage',
+  component: CheckoutPage,
+}
+
+  
 ];
 
 const router = createRouter({
