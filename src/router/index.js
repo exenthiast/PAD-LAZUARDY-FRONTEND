@@ -13,6 +13,7 @@ import LanjutanTutor from "../views/tutor/LanjutanTutor.vue";
 import TutorListPage from "../views/tutors/TutorListPage.vue";
 import ForgotPassword from "../views/ForgotPassword.vue";
 import EditProfile from "../views/student/EditProfile.vue";
+import TestAPI from "../views/TestAPI.vue";
 
 const routes = [
   {
@@ -84,6 +85,11 @@ const routes = [
     path: "/tutor/otp-tutor",
     name: "TutorOtp",
     component: TutorOtp,
+  },
+  {
+    path: "/TestAPI",
+    name: "TestAPI",
+    component: TestAPI,
   },
 ];
 

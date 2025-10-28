@@ -53,12 +53,16 @@
               aria-label="Toggle password visibility"
             >
               <EyeClosed v-if="showPassword" class="eye-icon" />
-              <Eye v-else class="eye-icon"/>
+              <Eye v-else class="eye-icon" />
             </button>
           </div>
 
           <p v-if="tried && !isValid" class="error-text">
-            Email harus valid dan password minimal 6 karakter.
+            Email harus valid dan password minimal 8 karakter.
+          </p>
+
+          <p v-if="errorMessage" class="error-text">
+            {{ errorMessage }}
           </p>
 
           <div class="button-group">
@@ -123,18 +127,18 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { Eye } from "lucide-vue-next";
-import { EyeClosed } from 'lucide-vue-next';
+import axios from "axios";
+import { Eye, EyeClosed } from "lucide-vue-next";
 import hero from "@/assets/hero.png";
 import logo from "@/assets/logo.svg";
 
 const router = useRouter();
-
 const email = ref("");
 const password = ref("");
 const showPassword = ref(false);
 const submitting = ref(false);
 const tried = ref(false);
+const errorMessage = ref("");
 
 const isValid = computed(() => {
   const emailOk = /\S+@\S+\.\S+/.test(email.value);
@@ -142,44 +146,49 @@ const isValid = computed(() => {
   return emailOk && passOk;
 });
 
+// Ganti baseURL sesuai backend kamu (bisa dari .env juga)
+const api = axios.create({
+  baseURL: "http://127.0.0.1:8000/api", // dari php artisan serve
+});
+
 const handleLogin = async () => {
   tried.value = true;
+  errorMessage.value = "";
   if (!isValid.value) return;
   submitting.value = true;
+
   try {
-    // TODO: panggil API login di sini
-    alert("Login berhasil!");
-    router.push("/student/dashboard");
+    const response = await api.post("/login", {
+      email: email.value,
+      password: password.value,
+    });
+
+    if (response.data.token) {
+      localStorage.setItem("token", response.data.token);
+      alert("Login berhasil!");
+      router.push("/student/dashboard");
+    } else {
+      errorMessage.value = "Login gagal, periksa email dan password.";
+    }
+  } catch (error) {
+    console.error(error);
+    errorMessage.value =
+      error.response?.data?.message || "Terjadi kesalahan saat login.";
   } finally {
     submitting.value = false;
   }
 };
 
-const handleSiswa = () => {
-  router.push("/student/register");
-};
+const handleSiswa = () => router.push("/student/register");
+const handleTutor = () => router.push("/tutor/register");
+const handleForgotPassword = () => router.push("/forgot-password");
 
-const handleTutor = () => {
-  router.push("/tutor/register");
-};
-
-const handleForgotPassword = () => {
-  router.push("/forgot-password");
-};
-
-const handleGoogleLogin = async () => {
-  // TODO: Implement Google OAuth login
-  console.log("Google login clicked");
-};
-
-const handleFacebookLogin = async () => {
-  // TODO: Implement Facebook OAuth login
-  console.log("Facebook login clicked");
-};
+const handleGoogleLogin = async () => console.log("Google login clicked");
+const handleFacebookLogin = async () => console.log("Facebook login clicked");
 </script>
 
 <style scoped>
-/* wrapper halaman */
+/* semua style kamu sebelumnya sama persis, biar tampilannya gak berubah */
 .auth-wrap {
   min-height: 100vh;
   display: grid;
@@ -187,20 +196,16 @@ const handleFacebookLogin = async () => {
   background: #f5f5f5;
   padding: 24px;
 }
-
-/* kartu besar: 2 kolom (form | ilustrasi) */
 .auth-card {
   width: min(1100px, 87vw);
   min-height: 520px;
-  background: #f6f7f8; /* abu-abu terang seperti contoh */
+  background: #f6f7f8;
   border-radius: 28px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   display: grid;
   grid-template-columns: 420px 1fr;
   overflow: hidden;
 }
-
-/* kiri: form (punyamu sebelumnya, sedikit rapih) */
 .login-card {
   background: #fff;
   padding: 20px 28px;
@@ -220,7 +225,6 @@ const handleFacebookLogin = async () => {
   object-fit: contain;
   margin: 0 auto;
 }
-
 .form-group {
   margin-bottom: 14px;
 }
@@ -240,11 +244,9 @@ const handleFacebookLogin = async () => {
   outline: none;
   border-color: #36a3b9;
 }
-
 .password-group {
   position: relative;
 }
-
 .password-toggle {
   position: absolute;
   right: 12px;
@@ -258,24 +260,20 @@ const handleFacebookLogin = async () => {
   align-items: center;
   justify-content: center;
 }
-
 .eye-icon {
   width: 30px;
   height: 30px;
   color: #000;
   transition: color 0.2s;
 }
-
 .password-toggle:hover .eye-icon {
   color: #999;
 }
-
 .error-text {
   color: #d33;
   font-size: 0.9rem;
   margin-top: 8px;
 }
-
 .button-group {
   margin-top: 18px;
 }
@@ -310,19 +308,15 @@ const handleFacebookLogin = async () => {
   opacity: 0.6;
   cursor: not-allowed;
 }
-
-/* Social login buttons */
 .social-login {
   margin-top: 20px;
 }
-
 .divider {
   text-align: center;
   position: relative;
   color: #666;
   margin: 15px 0;
 }
-
 .divider::before,
 .divider::after {
   content: "";
@@ -332,15 +326,12 @@ const handleFacebookLogin = async () => {
   height: 1px;
   background: #e0e0e0;
 }
-
 .divider::before {
   left: 0;
 }
-
 .divider::after {
   right: 0;
 }
-
 .btn-social {
   width: 100%;
   padding: 12px 16px;
@@ -358,38 +349,29 @@ const handleFacebookLogin = async () => {
   color: #333;
   transition: background-color 0.2s;
 }
-
 .btn-social:hover {
   background-color: #f5f5f5;
 }
-
 .social-icon {
   width: 18px;
   height: 18px;
   object-fit: contain;
 }
-
 .btn-google {
   border-color: #ddd;
 }
-
 .btn-facebook {
   border-color: #1877f2;
   color: #1877f2;
 }
-
 .btn-facebook:hover {
   background-color: #f0f2f5;
 }
-
-/* kanan: panel ilustrasi sebagai background */
 .illustration-panel {
-  background: #e7eef2; /* fallback */
+  background: #e7eef2;
   background-size: cover;
   background-position: center;
 }
-
-/* responsive: jadi satu kolom, gambar di atas */
 @media (max-width: 900px) {
   .auth-card {
     grid-template-columns: 1fr;
