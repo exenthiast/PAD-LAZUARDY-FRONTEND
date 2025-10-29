@@ -1,19 +1,21 @@
 <template>
-    <location-permission
+  <location-permission
     v-model="showLocationmodal"
     @granted="handleGranted"
     @denied="handleDenied"
-    />
+  />
   <div class="container-center bg-gray-100">
     <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl">
       <!-- Logo -->
       <div class="flex justify-center mb-8">
-        <img src="@/assets/logo.svg" alt="Bimbel Lazuardy"/>
+        <img src="@/assets/logo.svg" alt="Bimbel Lazuardy" />
       </div>
 
       <!-- Detail Pribadi Section -->
       <div class="mb-8">
-        <h2 class="flex justify-center text-xl font-bold mb-6">Detail Pribadi</h2>
+        <h2 class="flex justify-center text-xl font-bold mb-6">
+          Detail Pribadi
+        </h2>
 
         <div class="space-y-4">
           <div>
@@ -35,57 +37,59 @@
           </div>
 
           <div class="relative mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-          <div class="relative">
-            <input
-              v-model="form.password"
-              :type="showPassword ? 'text' : 'password'"
-              class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
-            />
-            <button
-              type="button"
-              @click="showPassword = !showPassword"
-              class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500"
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Password</label
             >
-              <svg
-                v-if="!showPassword"
-                class="h-5 w-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
+            <div class="relative">
+              <input
+                v-model="form.password"
+                :type="showPassword ? 'text' : 'password'"
+                class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                @click="showPassword = !showPassword"
+                aria-label="Toggle password visibility"
               >
-                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                <path
-                  fill-rule="evenodd"
-                  d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <svg
-                v-else
-                class="h-5 w-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z"
-                  clip-rule="evenodd"
-                />
-                <path
-                  d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z"
-                />
-              </svg>
-            </button>
+                <EyeClosed v-if="showPassword" class="eye-icon" />
+                <Eye v-else class="eye-icon" />
+              </button>
+            </div>
           </div>
-        </div>
+
+          <!-- Confirm Password -->
+          <div class="relative mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Konfirmasi Password</label
+            >
+            <div class="relative">
+              <input
+                v-model="form.passwordConfirm"
+                :type="showPassword ? 'text' : 'password'"
+                class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
+              />
+            </div>
+            <p
+              v-if="
+                form.passwordConfirm && form.password !== form.passwordConfirm
+              "
+              class="text-red-600 text-sm mt-1"
+            >
+              Password tidak cocok.
+            </p>
+          </div>
 
           <div>
             <label class="text-sm mb-2">Jenis Kelamin</label>
-            <input
+            <select
               v-model="form.jenisKelamin"
-              type="text"
               class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
-            />
+            >
+              <option value="">Pilih Jenis Kelamin</option>
+              <option value="laki-laki">Laki-laki</option>
+              <option value="perempuan">Perempuan</option>
+            </select>
           </div>
 
           <div>
@@ -133,18 +137,27 @@
 
           <div>
             <label class="text-sm mb-2">Agama</label>
-            <input
+            <select
               v-model="form.agama"
-              type="text"
               class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
-            />
+            >
+              <option value="">Pilih Agama</option>
+              <option value="islam">Islam</option>
+              <option value="kristen">Kristen</option>
+              <option value="katolik">Katolik</option>
+              <option value="hindu">Hindu</option>
+              <option value="buddha">Buddha</option>
+              <option value="konghucu">Konghucu</option>
+            </select>
           </div>
         </div>
       </div>
 
       <!-- Detail Alamat Section -->
       <div class="mb-8">
-        <h2 class="flex justify-center text-xl font-bold mb-6">Detail Alamat</h2>
+        <h2 class="flex justify-center text-xl font-bold mb-6">
+          Detail Alamat
+        </h2>
 
         <div class="space-y-4">
           <wilayah-dropdown />
@@ -155,16 +168,6 @@
               rows="4"
               class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
             ></textarea>
-          </div>
-
-          <div>
-            <label class="text-sm mb-2">Pilih Role</label>
-            <select
-              v-model="form.role"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
-            >
-                <option value="tutor">Tutor</option>
-            </select>
           </div>
         </div>
       </div>
@@ -189,35 +192,28 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { Eye } from "lucide-vue-next";
+import { EyeClosed } from "lucide-vue-next";
 import WilayahDropdown from "@/components/WilayahDropdown.vue";
 import LocationPermission from "@/components/LocationPermission.vue";
+import { useRegisterTutorStore } from "@/stores/registerStoreTutor";
+import { storeToRefs } from "pinia";
 
 const router = useRouter();
 const showPassword = ref(false);
 const showLocationmodal = ref(true);
 const userLocation = ref(null);
 
-const form = ref({
-  namaLengkap: "",
-  email: "",
-  password: "",
-  jenisKelamin: "",
-  tanggalLahir: {
-    hari: "",
-    bulan: "",
-    tahun: "",
-  },
-  nomorTelepon: "",
-  agama: "",
-  provinsi: "",
-  kota: "",
-  kecamatan: "",
-  desa: "",
-  alamat: "",
-  role: "",
+// Use Pinia store so data persists across pages and refresh
+const tutorStore = useRegisterTutorStore();
+const { form } = storeToRefs(tutorStore);
+
+onMounted(() => {
+  tutorStore.loadFromStorage();
 });
+watch(form, () => tutorStore.saveToStorage(), { deep: true });
 
 const months = [
   "Januari",
@@ -261,7 +257,7 @@ watch(
 );
 
 function handleGranted(loc) {
-  userLocation.value = loc
+  userLocation.value = loc;
   // simpan ke store, atau panggil API tutor-terdekat
   // contoh: fetch(`/api/tutors/nearby?lat=${loc.lat}&lng=${loc.lng}`)
 }
@@ -276,11 +272,23 @@ const handleBack = () => {
 };
 
 const handleNext = () => {
-  // Validasi form bisa ditambahkan di sini
+  // Basic validation: password match and length
+  if ((form.value.password || "").length < 8) {
+    alert("Password minimal 8 karakter");
+    return;
+  }
+
+  if (form.value.password !== form.value.passwordConfirm) {
+    alert("Password dan konfirmasi password tidak cocok");
+    return;
+  }
+
+  // Validasi lain bisa ditambahkan di sini
   console.log("Form data:", form.value);
 
   // Navigate ke halaman berikutnya (Data Lanjutan)
-  router.push("/otp-tutor");
+  tutorStore.saveToStorage();
+  router.push("/tutor/otp-tutor");
 };
 </script>
 

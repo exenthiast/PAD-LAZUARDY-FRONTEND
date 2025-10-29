@@ -93,6 +93,45 @@
               </RouterLink>
             </li>
 
+            <!-- Jadwal Belajar -->
+            <li>
+              <RouterLink
+                to="/student/schedule"
+                @click="close"
+                :class="[
+                  'flex items-center gap-3 p-3 rounded-lg transition-colors group',
+                  props.active === 'jadwal'
+                    ? 'bg-[#41a6c2] text-white'
+                    : 'hover:bg-[#41a6c2]/10',
+                ]"
+              >
+                <div
+                  :class="[
+                    'w-10 h-10 flex items-center justify-center rounded-lg transition-colors',
+                    props.active === 'jadwal'
+                      ? 'bg-white/0 border-transparent'
+                      : 'bg-white border-2 border-gray-300 group-hover:border-[#41a6c2]',
+                  ]"
+                >
+                  <CalendarDays
+                    :class="
+                      props.active === 'jadwal'
+                        ? 'w-5 h-5 text-white'
+                        : 'w-5 h-5 text-gray-600 group-hover:text-[#41a6c2]'
+                    "
+                  />
+                </div>
+                <span
+                  :class="
+                    props.active === 'jadwal'
+                      ? 'font-medium'
+                      : 'font-medium text-gray-700'
+                  "
+                  >Jadwal Belajar</span
+                >
+              </RouterLink>
+            </li>
+
             <!-- Hubungi Kami -->
             <li>
               <RouterLink
@@ -131,45 +170,6 @@
                 >
               </RouterLink>
             </li>
-
-            <!-- Tentang Kami -->
-            <li>
-              <RouterLink
-                to="/about"
-                @click="close"
-                :class="[
-                  'flex items-center gap-3 p-3 rounded-lg transition-colors group',
-                  props.active === 'tentang'
-                    ? 'bg-[#41a6c2] text-white'
-                    : 'hover:bg-[#41a6c2]/10',
-                ]"
-              >
-                <div
-                  :class="[
-                    'w-10 h-10 flex items-center justify-center rounded-lg transition-colors',
-                    props.active === 'tentang'
-                      ? 'bg-white/0 border-transparent'
-                      : 'bg-white border-2 border-gray-300 group-hover:border-[#41a6c2]',
-                  ]"
-                >
-                  <Info
-                    :class="
-                      props.active === 'tentang'
-                        ? 'w-5 h-5 text-white'
-                        : 'w-5 h-5 text-gray-600 group-hover:text-[#41a6c2]'
-                    "
-                  />
-                </div>
-                <span
-                  :class="
-                    props.active === 'tentang'
-                      ? 'font-medium'
-                      : 'font-medium text-gray-700'
-                  "
-                  >Tentang Kami</span
-                >
-              </RouterLink>
-            </li>
           </ul>
         </nav>
 
@@ -200,7 +200,7 @@ import { RouterLink } from "vue-router";
 import { LayoutDashboard } from "lucide-vue-next";
 import { BookText } from "lucide-vue-next";
 import { MessageSquare } from "lucide-vue-next";
-import { Info } from "lucide-vue-next";
+import { CalendarDays } from 'lucide-vue-next';
 import { LogOut } from "lucide-vue-next";
 
 // Props

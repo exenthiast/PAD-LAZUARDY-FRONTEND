@@ -16,10 +16,23 @@
         <div class="flex items-center gap-3">
           <button
             @click="toggleSidebar"
-            class="p-2 rounded-lg hover:bg-black/10 transition-colors"
+            class="p-2 rounded-lg hover:bg-black/10 transition-colors flex flex-col justify-center"
             aria-label="Menu"
           >
-            <MenuIcon class="w-6 h-6 text-black" />
+            <span
+              class="hamburger-line block w-7 h-[3px] bg-black rounded"
+              :class="sidebarOpen ? 'translate-y-[8px] rotate-45' : ''"
+            ></span>
+
+            <span
+              class="hamburger-line block w-7 h-[3px] bg-black rounded my-[5px]"
+              :class="sidebarOpen ? 'opacity-0' : 'opacity-100'"
+            ></span>
+
+            <span
+              class="hamburger-line block w-7 h-[3px] bg-black rounded"
+              :class="sidebarOpen ? '-translate-y-[8px] -rotate-45' : ''"
+            ></span>
           </button>
           <img src="@/assets/logo.svg" alt="Bimbel Lazuardy" class="" />
         </div>
@@ -119,7 +132,6 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { Menu as MenuIcon } from "lucide-vue-next";
 import { Bell } from "lucide-vue-next";
 import { CircleUser } from "lucide-vue-next";
 import SidebarLeft from "./sidebar-left.vue";
@@ -270,6 +282,13 @@ onBeforeUnmount(() => {
   transform: translateX(-100%);
   opacity: 0;
 }
+
+.hamburger-line {
+  transition-property: transform, opacity;
+  transition-duration: 0.3s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 
 /* Fade transition for profile dropdown */
 .fade-enter-active,

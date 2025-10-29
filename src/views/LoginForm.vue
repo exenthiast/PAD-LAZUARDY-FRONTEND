@@ -7,7 +7,7 @@
           <img :src="logo" alt="Bimbel Lazuardy" />
         </div>
 
-        <div class="flex justify- mb-4">
+        <div class="flex justify-center mb-4">
           <button
             @click="handleSiswa"
             class="text-teal-600 hover:text-teal-700 flex items-center gap-2"
@@ -58,7 +58,11 @@
           </div>
 
           <p v-if="tried && !isValid" class="error-text">
-            Email harus valid dan password minimal 6 karakter.
+            Email harus valid dan password minimal 8 karakter.
+          </p>
+
+          <p v-if="serverError" class="error-text">
+            {{ serverError }}
           </p>
 
           <div class="button-group">
@@ -127,6 +131,7 @@ import { Eye } from "lucide-vue-next";
 import { EyeClosed } from 'lucide-vue-next';
 import hero from "@/assets/hero.png";
 import logo from "@/assets/logo.svg";
+import { loginRequest, fetchMe } from "@/services/auth.js";
 
 const router = useRouter();
 
@@ -135,6 +140,8 @@ const password = ref("");
 const showPassword = ref(false);
 const submitting = ref(false);
 const tried = ref(false);
+
+const serverErrors = ref();
 
 const isValid = computed(() => {
   const emailOk = /\S+@\S+\.\S+/.test(email.value);
@@ -147,9 +154,27 @@ const handleLogin = async () => {
   if (!isValid.value) return;
   submitting.value = true;
   try {
-    // TODO: panggil API login di sini
+    const result = await loginRequest({
+      email: email.value,
+      password: password.value,
+    });
+    if (result?.token) {
+      localStorage.setItem("auth_token", result.token);
+    }
+    if (result?.user) {
+      localStorage.setItem("auth_user", JSON.stringify(result.user));
+    }
+    try {
+      const me = await fetchMe();
+      localStorage.setItem("auth_user", JSON.stringify(me));
+    } catch (_) {
+
+    }
     alert("Login berhasil!");
     router.push("/student/dashboard");
+  } catch (error) {
+    serverErrors.value = error.message || "Gagal melakukan login.";
+    alert(`Gagal login: ${serverErrors.value}`);
   } finally {
     submitting.value = false;
   }
