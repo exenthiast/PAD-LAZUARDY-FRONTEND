@@ -95,6 +95,17 @@ const routes = [
   name: 'TransactionHistory',
   component: () => import('../views/payment/TransactionHistory.vue'),},
 
+  {
+  path: '/progresbelajar',
+  name: 'MyClassesPage',
+  component: () => import('../views/student/MyClassesPage.vue'),},
+{
+
+    path: '/dashboardprogres',
+  name: 'DashboardProgress',
+  component: () => import('../views/student/DashboardProgres.vue'),
+},
+
 
   
 ];
