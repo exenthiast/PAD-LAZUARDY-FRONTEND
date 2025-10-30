@@ -3,94 +3,52 @@
     <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl">
       <h1 class="text-2xl font-bold text-center mb-8">Data Lanjutan</h1>
 
-      <!-- Detail Sekolah Section -->
-      <div class="border border-gray-300 rounded-lg p-6 mb-6">
-        <h2 class="text-lg font-bold mb-4">Detail Sekolah</h2>
+      <div class="space-y-6">
+        <div>
+          <label class="block text-sm mb-2">Asal Sekolah</label>
+          <input v-model="form.asalSekolah" class="input" />
+        </div>
 
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm mb-2">Asal Sekolah</label>
-            <input
-              v-model="form.asalSekolah"
-              type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
-            />
-          </div>
+        <div>
+          <label class="block text-sm mb-2">Kelas</label>
+          <select v-model="form.kelas" class="input">
+            <option value="">Pilih Kelas</option>
+            <option v-for="k in [7,8,9,10,11,12]" :key="k" :value="k">Kelas {{ k }}</option>
+          </select>
+        </div>
 
-          <div>
-            <label class="block text-sm mb-2">Kelas</label>
-            <select
-              v-model="form.kelas"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
-            >
-              <option value="">Pilih Kelas</option>
-              <option value="7">Kelas 7</option>
-              <option value="8">Kelas 8</option>
-              <option value="9">Kelas 9</option>
-              <option value="10">Kelas 10</option>
-              <option value="11">Kelas 11</option>
-              <option value="12">Kelas 12</option>
-            </select>
-          </div>
+        <div>
+          <label class="block text-sm mb-2">Nama Orang Tua/Wali</label>
+          <input v-model="form.namaOrangtua" class="input" />
+        </div>
+
+        <div>
+          <label class="block text-sm mb-2">Nomor Telepon Orang Tua/Wali</label>
+          <input v-model="form.nomorTeleponOrangtua" class="input" />
         </div>
       </div>
 
-      <!-- Kontak Orangtua/Wali Section -->
-      <div class="border border-gray-300 rounded-lg p-6 mb-6">
-        <h2 class="text-lg font-bold mb-4">Kontak Orangtua/Wali</h2>
-
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm mb-2">Nama Orangtua/Wali</label>
-            <input
-              v-model="form.namaOrangtua"
-              type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm mb-2">Nomo Telepon Orangtua</label>
-            <input
-              v-model="form.nomorTeleponOrangtua"
-              type="tel"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Button -->
-      <div class="flex justify-between">
-        <button
-          @click="handleBack"
-          class="border border-teal-500 text-teal-500 hover:bg-teal-50 px-8 py-3 rounded-lg font-medium transition-colors"
-        >
-          Kembali
-        </button>
-        <button
-          @click="handleSubmit"
-          class="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 rounded-lg font-medium transition-colors"
-        >
-          Selanjutnya
+      <div class="flex justify-between mt-8">
+        <button @click="router.push('/student/register-otp')" class="btn-outline">Kembali</button>
+        <button @click="handleSubmit" :disabled="busy" class="btn-primary">
+          {{ busy ? "Menyimpan..." : "Selesai" }}
         </button>
       </div>
+
+      <p v-if="msg" class="text-green-600 text-center mt-4">{{ msg }}</p>
+      <p v-if="err" class="text-red-500 text-center mt-4">{{ err }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
+import api from "@/services/api";
 
 const router = useRouter();
-
-// Optional next path after submit (default to /login)
-const props = defineProps({
-  nextPath: { type: String, default: "/login" },
-});
-
-// Simple error holder and verification flag
+const busy = ref(false);
+const msg = ref("");
 const err = ref("");
 
 const form = ref({
@@ -100,25 +58,27 @@ const form = ref({
   nomorTeleponOrangtua: "",
 });
 
-// All fields must be non-empty
-const verified = computed(() =>
-  Object.values(form.value).every((v) => String(v ?? "").trim() !== "")
-);
-
-const handleBack = () => {
-  router.push("/student/register-otp");
-};
-
-const handleSubmit = () => {
-  if (!verified.value) {
-    err.value = "Harap Diisikan Semua Field!";
-    alert(err.value);
-    return;
+const handleSubmit = async () => {
+  try {
+    busy.value = true;
+    const token = localStorage.getItem("auth_token"); // dari verify OTP
+    const res = await api.post(
+      "/register/finalize",
+      { ...form.value },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    msg.value = res.data.message || "Data lanjutan berhasil disimpan!";
+    setTimeout(() => router.push("/login"), 1500);
+  } catch (e) {
+    err.value = e.response?.data?.message || "Gagal menyimpan data.";
+  } finally {
+    busy.value = false;
   }
-
-  alert("Berhasil Registrasi!");
-
-  // Redirect ke halaman berikutnya
-  router.push(props.nextPath);
 };
 </script>
+
+<style scoped>
+.input { @apply w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500; }
+.btn-primary { @apply bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 rounded-lg font-medium transition-colors; }
+.btn-outline { @apply border border-teal-500 text-teal-500 hover:bg-teal-50 px-8 py-3 rounded-lg font-medium transition-colors; }
+</style>
