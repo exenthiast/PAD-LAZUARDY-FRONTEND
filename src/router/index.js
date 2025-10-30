@@ -12,6 +12,7 @@ import LanjutanTutor from "../views/tutor/LanjutanTutor.vue";
 import TutorListPage from "../views/tutors/TutorListPage.vue";
 import CheckoutPage from "../views/payment/CheckoutPage.vue";
 import PackageListPage from "../views/packages/PackageListPage.vue";
+import ProfilePage from "../views/student/ProfilePage.vue";
 
 const routes = [
   {
@@ -78,7 +79,22 @@ const routes = [
   path: '/student/checkout',
   name: 'CheckoutPage',
   component: CheckoutPage,
-}
+},
+{
+  path: '/student/ProfilePage',
+  name: 'ProfilePage',
+  component: ProfilePage,
+},
+{
+  path: '/tutors/TutorDetailPage',
+  name: 'TutorDetailPage',
+  component: () => import('../views/tutors/TutorDetailPage.vue'),
+},
+{
+  path: '/transactionhistory',
+  name: 'TransactionHistory',
+  component: () => import('../views/payment/TransactionHistory.vue'),},
+
 
   
 ];

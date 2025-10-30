@@ -1,107 +1,147 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 p-6">
-    <div class="bg-white/90 backdrop-blur-lg shadow-lg rounded-2xl p-8 w-full max-w-lg">
-      <h1 class="text-3xl font-bold text-center text-blue-700 mb-8">
-        Checkout Paket Belajar
-      </h1>
+  <div class="min-h-screen bg-gray-50 py-10">
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <h1 class="text-3xl font-bold text-primary">Pembayaran Paket Belajar</h1>
+      <p class="text-gray-600 text-sm mt-2">Selesaikan pembayaranmu untuk mulai belajar bersama tutor pilihanmu</p>
+    </div>
 
-      <!-- Paket yang dipilih -->
-      <div v-if="selectedPackage" class="mb-6 border border-blue-200 rounded-xl p-5 bg-white shadow-sm">
-        <h2 class="text-xl font-semibold text-gray-800">{{ selectedPackage.name }}</h2>
-        <p class="text-gray-600 mt-1">{{ selectedPackage.description }}</p>
-        <p class="text-gray-900 font-medium mt-2">
-          Total Harga:
-          <span class="text-blue-600 font-semibold">
-            Rp {{ selectedPackage.price.toLocaleString('id-ID') }}
-          </span>
-        </p>
-      </div>
+    <!-- Konten utama -->
+    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-md p-8 space-y-10">
+      <!-- Paket -->
+      <section>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Paket 4x Pertemuan</h2>
+        <p class="text-2xl font-bold text-primary mb-2">Rp 200.000</p>
+        <ul class="text-gray-700 text-sm space-y-2 list-disc pl-5">
+          <li>Laporan perkembangan belajar rutin</li>
+          <li>Pendampingan tugas dan PR sekolah</li>
+          <li>Kuis interaktif untuk mengukur pemahaman</li>
+          <li>Konsultasi via WhatsApp</li>
+          <li>Soal-soal dan pembahasan</li>
+          <li>4 sesi privat @90 menit</li>
+          <li>Modul belajar eksklusif</li>
+        </ul>
+      </section>
 
-      <!-- Form data pembeli -->
-      <form @submit.prevent="submitCheckout" class="space-y-4">
-        <div>
-          <label class="block text-gray-700 mb-1">Nama Lengkap</label>
-          <input
-            v-model="form.name"
-            type="text"
-            placeholder="Masukkan nama kamu"
-            class="w-full border rounded-lg px-4 py-2 focus:ring focus:ring-blue-300 outline-none"
-            required
-          />
-        </div>
-
-        <div>
-          <label class="block text-gray-700 mb-1">Email</label>
-          <input
-            v-model="form.email"
-            type="email"
-            placeholder="contoh@email.com"
-            class="w-full border rounded-lg px-4 py-2 focus:ring focus:ring-blue-300 outline-none"
-            required
-          />
-        </div>
-
-        <div>
-          <label class="block text-gray-700 mb-1">Nomor HP</label>
-          <input
-            v-model="form.phone"
-            type="tel"
-            placeholder="08xxxxxxxxxx"
-            class="w-full border rounded-lg px-4 py-2 focus:ring focus:ring-blue-300 outline-none"
-            required
-          />
-        </div>
-
-        <div>
-          <label class="block text-gray-700 mb-1">Metode Pembayaran</label>
-          <select
-            v-model="form.paymentMethod"
-            class="w-full border rounded-lg px-4 py-2 focus:ring focus:ring-blue-300 outline-none"
-            required
+      <!-- Pilih Bank -->
+      <section>
+        <h2 class="text-lg font-semibold text-gray-800 mb-3">Pilih Bank untuk Pembayaran</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label
+            v-for="bank in banks"
+            :key="bank.name"
+            class="flex items-center gap-3 border rounded-xl p-3 cursor-pointer hover:border-primary transition"
+            :class="selectedBank === bank.name ? 'border-primary bg-primary/5' : 'border-gray-200'"
           >
-            <option disabled value="">Pilih metode</option>
-            <option value="transfer">Transfer Bank</option>
-            <option value="ewallet">E-Wallet (Dana, OVO, Gopay)</option>
-            <option value="cod">Bayar di Tempat</option>
-          </select>
+            <input
+              type="radio"
+              name="bank"
+              :value="bank.name"
+              v-model="selectedBank"
+              class="text-primary focus:ring-primary"
+            />
+            <img :src="bank.logo" alt="bank logo" class="w-10 h-10 object-contain" />
+            <div>
+              <p class="font-semibold text-gray-700">{{ bank.name }}</p>
+              <p class="text-xs text-gray-500">{{ bank.account }}</p>
+            </div>
+          </label>
         </div>
+      </section>
 
-        <button
-          type="submit"
-          class="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition-all duration-200"
+      <!-- Ringkasan -->
+      <section>
+        <h2 class="text-lg font-semibold text-gray-800 mb-3">Ringkasan Transaksi</h2>
+        <div class="bg-gray-50 rounded-xl p-4 border text-sm text-gray-700">
+          <div class="flex justify-between py-1">
+            <span>Harga Paket</span>
+            <span>Rp 200.000</span>
+          </div>
+          <div class="flex justify-between py-1 font-semibold border-t mt-2 pt-2">
+            <span>Total Tagihan</span>
+            <span class="text-primary">Rp 200.000</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Upload Bukti -->
+      <section>
+        <h2 class="text-lg font-semibold text-gray-800 mb-3">Unggah Bukti Transfer</h2>
+        <div
+          class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary transition"
         >
-          Lanjut Bayar
+          <p class="text-gray-600 text-sm mb-3">Drag & drop atau klik untuk upload bukti pembayaran</p>
+          <input type="file" @change="handleUpload" class="hidden" ref="fileInput" accept=".jpg,.png,.pdf" />
+          <button
+            @click="$refs.fileInput.click()"
+            class="bg-primary hover:bg-primary-dark text-white px-5 py-2 rounded-lg text-sm"
+          >
+            Pilih File
+          </button>
+          <p v-if="fileName" class="text-sm text-gray-700 mt-3">
+            <span class="font-medium">File:</span> {{ fileName }}
+          </p>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">
+          Format diterima: JPG, PNG, atau PDF • Maksimal ukuran file 5 MB
+        </p>
+      </section>
+
+      <!-- Tombol Kirim -->
+      <div class="text-center pt-4">
+        <button
+          class="bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-8 rounded-lg transition"
+        >
+          Kirim Bukti Pembayaran
         </button>
-      </form>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref } from "vue";
 
-const route = useRoute()
+const selectedBank = ref("");
+const fileName = ref("");
 
-// Data dummy sementara (nanti bisa diganti ambil dari API)
-const packages = [
-  { id: 1, name: 'Paket Belajar 1 Mata Pelajaran', description: 'Akses 1 mata pelajaran pilihanmu.', price: 100000 },
-  { id: 2, name: 'Paket Belajar 3 Mata Pelajaran', description: 'Pilih hingga 3 mata pelajaran.', price: 250000 },
-  { id: 3, name: 'Paket Belajar 5 Mata Pelajaran', description: 'Dapatkan akses ke 5 mata pelajaran sekaligus.', price: 400000 },
-]
+const banks = [
+  {
+    name: "Bank BCA",
+    account: "1234567890 - a.n Bimbel Lazuardy",
+    logo: "https://seeklogo.com/images/B/bca-bank-central-asia-logo-1C628FAD8A-seeklogo.com.png",
+  },
+  {
+    name: "Bank BRI",
+    account: "9876543210 - a.n Bimbel Lazuardy",
+    logo: "https://seeklogo.com/images/B/bri-bank-rakyat-indonesia-logo-78D6CC05ED-seeklogo.com.png",
+  },
+  {
+    name: "Bank BNI",
+    account: "1239876540 - a.n Bimbel Lazuardy",
+    logo: "https://seeklogo.com/images/B/bni-bank-negara-indonesia-logo-8FC6CF9B11-seeklogo.com.png",
+  },
+  {
+    name: "Bank Mandiri",
+    account: "4321567890 - a.n Bimbel Lazuardy",
+    logo: "https://seeklogo.com/images/B/bank-mandiri-logo-7B60FEA6D3-seeklogo.com.png",
+  },
+];
 
-const selectedPackage = computed(() =>
-  packages.find(p => p.id === Number(route.query.packageId))
-)
-
-const form = ref({
-  name: '',
-  email: '',
-  phone: '',
-  paymentMethod: '',
-})
-
-function submitCheckout() {
-  alert(`Checkout berhasil!\nNama: ${form.value.name}\nPaket: ${selectedPackage.value?.name}\nTotal: Rp ${selectedPackage.value?.price.toLocaleString('id-ID')}`)
-}
+const handleUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) fileName.value = file.name;
+};
 </script>
+
+<style scoped>
+.text-primary {
+  color: #2ba9b2;
+}
+.bg-primary {
+  background-color: #2ba9b2;
+}
+.bg-primary-dark {
+  background-color: #228c92;
+}
+</style>
