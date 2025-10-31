@@ -87,7 +87,7 @@ const router = useRouter();
 
 // Optional next path after submit (default to /login)
 const props = defineProps({
-  nextPath: { type: String, default: "/login" },
+  nextPath: { type: String, default: "/student/dashboard" },
 });
 
 // Simple error holder and verification flag

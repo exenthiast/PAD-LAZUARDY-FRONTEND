@@ -57,7 +57,7 @@
             <!-- Paket Belajar -->
             <li>
               <RouterLink
-                to="/student/packages"
+                to="/packages"
                 @click="close"
                 :class="[
                   'flex items-center gap-3 p-3 rounded-lg transition-colors group',
@@ -200,7 +200,7 @@ import { RouterLink } from "vue-router";
 import { LayoutDashboard } from "lucide-vue-next";
 import { BookText } from "lucide-vue-next";
 import { MessageSquare } from "lucide-vue-next";
-import { CalendarDays } from 'lucide-vue-next';
+import { CalendarDays } from "lucide-vue-next";
 import { LogOut } from "lucide-vue-next";
 
 // Props

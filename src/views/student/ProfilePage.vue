@@ -18,11 +18,11 @@
         <div class="flex justify-between items-center mb-4 border-b pb-2">
           <h3 class="text-xl font-semibold text-[#41a6c2]">Detail Pribadi</h3>
           <button
-            @click="editProfile"
+            @click="handleBack"
             type="button"
-            class="bg-[#41a6c2] hover:bg-[#359299] text-white px-6 py-2 rounded-lg font-medium transition text-sm"
+            class=" border border-[#41a6c2] text-[#41a6c2] hover:bg-[#359299] hover:text-white px-6 py-2 rounded-lg font-medium transition"
           >
-            Edit Profil
+            <chevron-left />
           </button>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -129,11 +129,11 @@
         class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t"
       >
         <button
-          @click="handleBack"
+          @click="editProfile"
           type="button"
           class="w-full sm:w-auto bg-[#41a6c2] hover:bg-[#359299] text-white px-6 py-2 rounded-lg font-medium transition"
         >
-          Kembali
+          Edit Profil
         </button>
         <button
           @click="logout"
@@ -169,6 +169,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { ChevronLeft } from 'lucide-vue-next';
 
 const router = useRouter();
 

@@ -145,8 +145,7 @@ const route = useRoute();
 const activeMenu = computed(() => {
   const path = route.path;
   if (path.includes("/student/dashboard")) return "dashboard";
-  if (path.includes("/student/packages") || path.includes("/packages"))
-    return "paket";
+  if (path.includes("/package") || path.includes("/packages")) return "paket";
   if (path.includes("/contact")) return "hubungi";
   if (path.includes("/about")) return "tentang";
   return "";
@@ -288,7 +287,6 @@ onBeforeUnmount(() => {
   transition-duration: 0.3s;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 
 /* Fade transition for profile dropdown */
 .fade-enter-active,

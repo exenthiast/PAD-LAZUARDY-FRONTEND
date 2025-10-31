@@ -7,12 +7,18 @@ import RegisterTutor from "../views/tutor/RegisterTutor.vue";
 import RegisterLanjutan from "../views/student/RegisterLanjutan.vue";
 import RegisterOtp from "../views/student/RegisterOtp.vue";
 import DashboardPage from "../views/student/DashboardPage.vue";
+// import ProgressPage from "../views/student/ProgressPage.vue";
+// import MyPackagePage from "../views/student/MyPackagePage.vue";
+import CheckoutPage from "../views/payment/CheckoutPage.vue";
+import PaymentHistoryPage from "../views/student/PaymentHistoryPage.vue";
 import ProfilePage from "../views/student/ProfilePage.vue";
 import TutorOtp from "../views/tutor/TutorOtp.vue";
 import LanjutanTutor from "../views/tutor/LanjutanTutor.vue";
 import TutorListPage from "../views/tutors/TutorListPage.vue";
+import TutorDetailPage from "../views/tutors/TutorDetailPage.vue";
 import ForgotPassword from "../views/ForgotPassword.vue";
 import EditProfile from "../views/student/EditProfile.vue";
+import PackageListPage from "../views/packages/PackageListPage.vue";
 
 const routes = [
   {
@@ -65,6 +71,36 @@ const routes = [
     name: "DashboardPage",
     component: DashboardPage,
   },
+  // {
+  //   path: "/student/progress",
+  //   name: "ProgressPage",
+  //   component: ProgressPage,
+  // },
+  // {
+  //   path: "/student/package",
+  //   name: "MyPackagePage",
+  //   component: MyPackagePage,
+  // },
+  {
+    path: "/packages",
+    name: "PackageListPage",
+    component: PackageListPage,
+  },
+  // Redirect old path to new one
+  {
+    path: "/package/package-list",
+    redirect: "/packages",
+  },
+  {
+    path: "/payment/checkout",
+    name: "CheckoutPage",
+    component: CheckoutPage,
+  },
+  {
+    path: "/student/payment-history",
+    name: "PaymentHistoryPage",
+    component: PaymentHistoryPage,
+  },
   {
     path: "/student/profile-student",
     name: "ProfilePage",
@@ -79,6 +115,11 @@ const routes = [
     path: "/tutors",
     name: "TutorList",
     component: TutorListPage,
+  },
+  {
+    path: "/tutors/tutor-detail",
+    name: "TutorDetailPage",
+    component: TutorDetailPage,
   },
   {
     path: "/tutor/otp-tutor",
