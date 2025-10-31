@@ -193,12 +193,12 @@ const handleForgotPassword = () => {
 };
 
 const handleGoogleLogin = async () => {
-  // TODO: Implement Google OAuth login
+  window.location.href = "http://localhost:8000/auth/google";
   console.log("Google login clicked");
 };
 
 const handleFacebookLogin = async () => {
-  // TODO: Implement Facebook OAuth login
+  window.location.href = "http://localhost:8000/auth/facebook";
   console.log("Facebook login clicked");
 };
 </script>
