@@ -106,8 +106,26 @@ const routes = [
   component: () => import('../views/student/DashboardProgres.vue'),
 },
 
+{
 
+    path: '/tutor/dashboard',
+  name: 'DashboardPage',
+  component: () => import('../views/tutor/DashboardPage.vue'),
+},
+
+{
+
+    path: '/tutor/pending',
+  name: 'Pending',
+  component: () => import('../views/tutor/Pending.vue'),
+},
   
+{
+    path: '/tutor/setup',
+  name: 'SetUp',
+  component: () => import('../views/tutor/SetUp.vue'),
+},
+
 ];
 
 const router = createRouter({
