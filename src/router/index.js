@@ -19,6 +19,7 @@ import TutorDetailPage from "../views/tutors/TutorDetailPage.vue";
 import ForgotPassword from "../views/ForgotPassword.vue";
 import EditProfile from "../views/student/EditProfile.vue";
 import PackageListPage from "../views/packages/PackageListPage.vue";
+import ConversationDetail from "../views/messages/ConversationDetail.vue";
 
 const routes = [
   {
@@ -125,6 +126,11 @@ const routes = [
     path: "/tutor/otp-tutor",
     name: "TutorOtp",
     component: TutorOtp,
+  },
+  {
+    path: "/messages/:tutorId",
+    name: "ConversationDetail",
+    component: ConversationDetail,
   },
 ];
 
