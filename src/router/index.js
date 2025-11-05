@@ -126,7 +126,14 @@ const routes = [
   component: () => import('../views/tutor/SetUp.vue'),
 },
 
+{
+    path: '/tutor/progres',
+  name: 'ProgresTutor',
+  component: () => import('../views/tutor/ProgresTutor.vue'),
+},
+
 ];
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
