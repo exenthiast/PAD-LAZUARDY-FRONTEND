@@ -35,7 +35,9 @@
           :key="schedule.id"
           class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition"
         >
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div
+            class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          >
             <div class="flex items-start gap-4">
               <div class="bg-[#41a6c2]/10 p-3 rounded-lg">
                 <Calendar class="w-6 h-6 text-[#41a6c2]" />
@@ -60,7 +62,7 @@
                         : 'bg-orange-100 text-orange-700',
                     ]"
                   >
-                    {{ schedule.mode === 'online' ? 'Online' : 'Offline' }}
+                    {{ schedule.mode === "online" ? "Online" : "Offline" }}
                   </span>
                 </div>
               </div>
@@ -95,7 +97,9 @@
           :key="schedule.id"
           class="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
         >
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div
+            class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          >
             <div class="flex items-start gap-4">
               <div class="bg-gray-100 p-3 rounded-lg">
                 <CheckCircle class="w-6 h-6 text-gray-400" />

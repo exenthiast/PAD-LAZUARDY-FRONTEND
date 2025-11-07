@@ -230,8 +230,8 @@ const progressPercent = computed(() => {
   return (progress.value.sesiSelesai / t) * 100;
 });
 
-function formatDate(dateStr, timeStr) {
-  if (!dateStr && !timeStr) return "-";
+function formatDate(dateStr) {
+  if (!dateStr) return "-";
 
   let tgl = dateStr;
   try {
@@ -243,11 +243,9 @@ function formatDate(dateStr, timeStr) {
         year: "numeric",
       });
     }
-  } catch (_) {
-    // gagal parsing
-  }
+  } catch (_) {}
 
-  return [tgl, timeStr].filter(Boolean).join(", ");
+  return String(dateStr);
 }
 
 // dummy tutors (bisa taruh di services nanti)
@@ -285,17 +283,17 @@ const tutors = ref([
     whatsapp: "628111223344",
     bio: "Berpengalaman olimpiade Kimia, membimbing banyak siswa lolos PTN favorit.",
   },
-  {
-    id: 4,
-    name: "Rina Wijaya",
-    subject: "Biologi",
-    level: "SMP",
-    rating: 4.7,
-    reviews: 130,
-    photo: "https://picsum.photos/seed/tutor4/80/80",
-    whatsapp: "+62 811-7777-999",
-    bio: "Metode belajar interaktif dengan visual dan eksperimen sederhana.",
-  },
+  // {
+  //   id: 4,
+  //   name: "Rina Wijaya",
+  //   subject: "Biologi",
+  //   level: "SMP",
+  //   rating: 4.7,
+  //   reviews: 130,
+  //   photo: "https://picsum.photos/seed/tutor4/80/80",
+  //   whatsapp: "+62 811-7777-999",
+  //   bio: "Metode belajar interaktif dengan visual dan eksperimen sederhana.",
+  // },
 ]);
 
 // ambil 3 terbaik (rating, lalu jumlah ulasan)

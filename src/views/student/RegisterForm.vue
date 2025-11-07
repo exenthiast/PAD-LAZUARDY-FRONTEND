@@ -264,7 +264,11 @@ function handleDenied() {
 }
 
 const handleBack = () => {
-  router.push("/login");
+  if (confirm('Batalkan pendaftaran? Data yang sudah diisi akan di hapus.')) {
+    if (register.reset) register.reset();
+    else localStorage.removeItem('register:form');
+    router.push("/login");
+  }
 };
 
 const handleNext = () => {
