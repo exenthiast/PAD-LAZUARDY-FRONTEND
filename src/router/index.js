@@ -20,6 +20,8 @@ import ForgotPassword from "../views/ForgotPassword.vue";
 import EditProfile from "../views/student/EditProfile.vue";
 import PackageListPage from "../views/packages/PackageListPage.vue";
 import ConversationDetail from "../views/messages/ConversationDetail.vue";
+import AuthCallback from "../views/AuthCallback.vue";
+import SchedulePage from "../views/student/SchedulePage.vue";
 
 const routes = [
   {
@@ -68,6 +70,11 @@ const routes = [
     component: ForgotPassword,
   },
   {
+    path: "/auth/callback",
+    name: "AuthCallback",
+    component: AuthCallback
+  },
+  {
     path: "/student/dashboard",
     name: "DashboardPage",
     component: DashboardPage,
@@ -91,6 +98,11 @@ const routes = [
   {
     path: "/package/package-list",
     redirect: "/packages",
+  },
+  {
+    path: "/student/schedule",
+    name: "SchedulePage",
+    component: SchedulePage,
   },
   {
     path: "/payment/checkout",

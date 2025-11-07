@@ -202,6 +202,7 @@ import { BookText } from "lucide-vue-next";
 import { MessageSquare } from "lucide-vue-next";
 import { CalendarDays } from "lucide-vue-next";
 import { LogOut } from "lucide-vue-next";
+import { logout as apiLogout } from "@/services/authService";
 
 // Props
 const props = defineProps({
@@ -209,7 +210,7 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  // active menu: 'dashboard' |'paket' | 'hubungi' | 'tentang'
+  // active menu: 'dashboard' |'paket' | 'jadwal' | 'tentang'
   active: {
     type: String,
     default: "",
@@ -224,12 +225,14 @@ const close = () => {
   emit("close");
 };
 
-const handleLogout = () => {
-  if (confirm("Apakah Anda yakin ingin keluar?")) {
-    // Clear auth data
+const handleLogout = async () => {
+  try {
+    await apiLogout(); // panggil API logout backend
+  } catch (e) {
+    console.error("Logout error:", e);
+  } finally {
     localStorage.removeItem("auth_token");
-    // Redirect to login
-    window.location.href = "/login";
+    router.push("/login");
   }
 };
 </script>

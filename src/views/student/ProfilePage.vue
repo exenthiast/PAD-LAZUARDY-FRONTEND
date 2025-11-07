@@ -22,7 +22,7 @@
             type="button"
             class=" border border-[#41a6c2] text-[#41a6c2] hover:bg-[#359299] hover:text-white px-6 py-2 rounded-lg font-medium transition"
           >
-            <chevron-left />
+            <ChevronLeft />
           </button>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -167,36 +167,92 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { ChevronLeft } from 'lucide-vue-next';
+import { getMe, logout as apiLogout } from "@/services/authService.js";
 
 const router = useRouter();
 
+const isLoading = ref(false);
+const errorMessage = ref("");
+
 const student = ref({
-  namaLengkap: "Alief Muhammad Latif",
-  email: "alief@example.com",
-  jenisKelamin: "Laki-laki",
-  tanggalLahir: "15 Mei 2005",
-  phone: "081234567890",
-  agama: "Islam",
+  namaLengkap: "",
+  email: "",
+  jenisKelamin: "",
+  tanggalLahir: "",
+  phone: "",
+  agama: "",
   alamat: {
-    provinsi: "Jawa Barat",
-    kota: "Bandung",
-    kecamatan: "Coblong",
-    desa: "Dago",
-    detail: "Jl. Merdeka No. 45, RT 02 RW 05",
+    provinsi: "",
+    kota: "",
+    kecamatan: "",
+    desa: "",
+    detail: "",
   },
   sekolah: {
-    asalSekolah: "SMAN 1 Bandung",
-    kelas: "Kelas 12",
+    asalSekolah: "",
+    kelas: "",
   },
   orangtua: {
-    nama: "Budi Santoso",
-    telepon: "081987654321",
+    nama: "",
+    telepon: "",
   },
-  progress: 75,
+  progress: 0,
 });
+
+// Ambil data profile dari backend
+const loadProfile = async () => {
+  try {
+    isLoading.value = true;
+    errorMessage.value = "";
+
+    const res = await getMe();
+    // tergantung backend, biasanya:
+    // { user: {...} } atau { data: {...} } atau langsung {...}
+    const user = res.user || res.data || res;
+
+    // --- mapping field dari backend ke struktur student ---
+    student.value = {
+      namaLengkap: user.name || "",
+      email: user.email || "",
+      jenisKelamin: user.gender || user.jenis_kelamin || "",
+      tanggalLahir: user.birth_date || user.tanggal_lahir || "",
+      phone: user.phone || user.telepon || "",
+      agama: user.religion || user.agama || "",
+      alamat: {
+        provinsi: user.address_province || user.provinsi || "",
+        kota: user.address_city || user.kota || "",
+        kecamatan: user.address_district || user.kecamatan || "",
+        desa: user.address_village || user.desa || "",
+        detail: user.address_detail || user.alamat || "",
+      },
+      sekolah: {
+        asalSekolah: user.school_name || user.asal_sekolah || "",
+        kelas: user.grade || user.kelas || "",
+      },
+      orangtua: {
+        nama: user.parent_name || user.nama_orangtua || "",
+        telepon: user.parent_phone || user.telepon_orangtua || "",
+      },
+      progress: user.progress || 0,
+    };
+  } catch (err) {
+    console.error("Gagal load profile:", err);
+    errorMessage.value = err.message || "Gagal memuat profil siswa";
+
+    // optional: kalau unauthenticated, balik ke login
+    if (
+      err.message?.toLowerCase().includes("unauthenticated") ||
+      err.message?.includes("401")
+    ) {
+      router.push("/login");
+    }
+  } finally {
+    isLoading.value = false;
+  }
+};
 
 const editProfile = () => {
   console.log("Edit profil diklik");
@@ -207,11 +263,20 @@ const handleBack = () => {
   router.push("/student/dashboard");
 };
 
-const logout = () => {
-  console.log("Logout diklik");
-  localStorage.removeItem("auth_token");
-  router.push("/login");
+const logout = async () => {
+  try {
+    await apiLogout(); // panggil API logout backend
+  } catch (e) {
+    console.error("Logout error:", e);
+  } finally {
+    localStorage.removeItem("auth_token");
+    router.push("/login");
+  }
 };
+
+onMounted(() => {
+  loadProfile();
+});
 </script>
 
 <style scoped>

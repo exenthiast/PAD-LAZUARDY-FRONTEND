@@ -136,7 +136,7 @@ import { Bell } from "lucide-vue-next";
 import { CircleUser } from "lucide-vue-next";
 import SidebarLeft from "./sidebar-left.vue";
 import SidebarRight from "./sidebar-right.vue";
-// import api from "@/services/http"; // sesuaikan dengan path service Anda
+import { getMe } from "@/services/authService";
 
 const router = useRouter();
 const route = useRoute();
@@ -146,6 +146,7 @@ const activeMenu = computed(() => {
   const path = route.path;
   if (path.includes("/student/dashboard")) return "dashboard";
   if (path.includes("/package") || path.includes("/packages")) return "paket";
+  if (path.includes("/student/schedule")) return "jadwal";
   if (path.includes("/contact")) return "hubungi";
   if (path.includes("/about")) return "tentang";
   return "";
@@ -182,32 +183,38 @@ const isLoadingProfile = ref(false);
 const fetchProfileData = async () => {
   try {
     isLoadingProfile.value = true;
-    // Ganti endpoint sesuai API Anda
-    const response = await api.get("/student/profile-student");
 
-    // Update student data dengan response dari API
+    // Ambil data user dari backend
+    const res = await getMe();
+    // tergantung response backend, biasanya:
+    // { user: {...} } atau langsung {...}
+    const user = res.user || res.data || res;
+
     student.value = {
-      name: response.data.name || "User",
-      email: response.data.email || "",
-      photo: response.data.photo || "https://via.placeholder.com/80",
-      address: response.data.address || "",
-      phone: response.data.phone || "",
-      class: response.data.class || "",
-      school: response.data.school || "",
-      progress: response.data.progress || 0,
+      name: user.name || "User",
+      email: user.email || "",
+      photo:
+        user.photo ||
+        user.profile_photo_url ||
+        "https://via.placeholder.com/80",
+      address: user.address || "",
+      phone: user.phone || "",
+      class: user.class || user.class_name || "",
+      school: user.school || user.school_name || "",
+      progress: user.progress || 0,
     };
   } catch (error) {
     console.error("Failed to fetch profile:", error);
-    // Fallback ke data dummy jika API gagal
+    // Kalau mau, boleh tetap pakai fallback dummy
     student.value = {
-      name: "Alief Muhammad Latif",
-      email: "alief@example.com",
+      name: "User",
+      email: "user@example.com",
       photo: "https://via.placeholder.com/80",
-      address: "Jl. Merdeka No. 45, Bandung",
-      phone: "081234567890",
-      class: "SMA Kelas 12",
-      school: "Bimbel Lazuardy",
-      progress: 75,
+      address: "",
+      phone: "",
+      class: "",
+      school: "",
+      progress: 0,
     };
   } finally {
     isLoadingProfile.value = false;

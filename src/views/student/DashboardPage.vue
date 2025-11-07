@@ -48,7 +48,8 @@
             <div v-else class="text-center py-8 text-gray-500">
               <p>Belum ada paket aktif</p>
               <button
-                class="mt-4 bg-sky-600 text-white px-6 py-2 rounded-md hover:bg-sky-700"
+                @click="router.push('/packages')"
+                class="mt-4 bg-[#41a6c2] text-white px-6 py-2 rounded-md hover:bg-[#3592ab]"
               >
                 Pilih Paket
               </button>
@@ -142,11 +143,7 @@
                 rel="noopener"
                 class="mt-3 w-full inline-flex items-center justify-center gap-2 bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition text-sm"
               >
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path
-                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"
-                  />
-                </svg>
+                <i class="bi bi-whatsapp"></i>
                 WhatsApp
               </a>
             </div>
@@ -180,6 +177,13 @@ import Navbar from "@/components/layout/navbar.vue";
 import SidebarLeft from "@/components/layout/sidebar-left.vue";
 import SidebarRight from "@/components/layout/sidebar-right.vue";
 import FooterStudent from "@/components/layout/footer.vue";
+import { getMe } from "@/services/authService.js";
+import {
+  getStudentDashboard,
+  getRecommendedTutors,
+} from "@/services/studentDashboardService";
+
+const user = ref(null);
 
 const showStandaloneSidebars = false;
 
@@ -199,29 +203,20 @@ let observer;
 
 // ==== DUMMY DATA ====
 // Untuk menyembunyikan kartu paket, ubah ke: const paketAktif = ref(null)
-const paketAktif = ref({
-  nama: "Paket Bulanan",
-  totalSesi: 8,
-  sesiTerpakai: 2,
-  berlakuSampai: "2025-09-30",
-});
+const paketAktif = ref(null);
 
 const progress = ref({
-  program: "Matematika · 8 Pertemuan",
-  mapel: "Matematika",
-  tutor: "Budi Santoso",
-  totalSesi: 8,
-  sesiSelesai: 6,
-  jadwalBerikut: "Selasa, 23:00 — 24:00 (Online)",
-  updatedAt: "2025-09-11",
+  program: "",
+  mapel: "",
+  tutor: "",
+  totalSesi: 0,
+  sesiSelesai: 0,
+  jadwalBerikut: "",
+  updatedAt: "",
 });
 
 // Jadwal Belajar dummy
-const jadwalList = ref([
-  { matkul: "Matematika", waktu: "Senin, 08:00 - 09:30" },
-  { matkul: "Fisika", waktu: "Rabu, 10:00 - 11:30" },
-  { matkul: "Kimia", waktu: "Jumat, 14:00 - 15:30" },
-]);
+const jadwalList = ref([]);
 
 // ==== COMPUTED & HELPERS ====
 const totalSesi = computed(() => paketAktif?.value?.totalSesi ?? 0);
@@ -235,13 +230,24 @@ const progressPercent = computed(() => {
   return (progress.value.sesiSelesai / t) * 100;
 });
 
-function formatDate(str) {
-  const d = new Date(str);
-  return d.toLocaleDateString("id-ID", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+function formatDate(dateStr, timeStr) {
+  if (!dateStr && !timeStr) return "-";
+
+  let tgl = dateStr;
+  try {
+    const d = new Date(dateStr);
+    if (!Numbber.isNaN(d.getTime())) {
+      tgl = d.toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
+    }
+  } catch (_) {
+    // gagal parsing
+  }
+
+  return [tgl, timeStr].filter(Boolean).join(", ");
 }
 
 // dummy tutors (bisa taruh di services nanti)
@@ -307,6 +313,130 @@ function waLink(number) {
   return `https://wa.me/${msisdn}`;
 }
 
+async function loadDashboard() {
+  try {
+    // 1. Ambil user yang sedang login -> /api/me
+    const meRes = await getMe();
+    // LoginController@me return: { user: {...} }
+    user.value = meRes.user;
+
+    // 2. Ambil data dashboard student -> /api/dashboard/student
+    const dashRes = await getStudentDashboard();
+    // StudentDashboardController@index return: { status, data: { ... } }
+    const data = dashRes.data || dashRes;
+
+    // ====== PAKET BELAJAR & PROGRESS ======
+    const packages = data.packages || [];
+
+    if (packages.length > 0) {
+      // untuk sementara ambil paket pertama sebagai "paket aktif"
+      const pkg = packages[0];
+
+      // bentuknya sesuai mapping di StudentDashboardController:
+      // 'package_name', 'package_session', 'remaining_session', 'used_session', 'subject_name', 'tutor_name', ...
+
+      paketAktif.value = {
+        nama: pkg.package_name || "Paket Belajar",
+        totalSesi: pkg.package_session ?? 0,
+        sesiTerpakai: pkg.used_session ?? 0,
+        // backend belum kirim tanggal expired, jadi untuk sekarang null
+        berlakuSampai: null,
+      };
+
+      // sesuaikan progress card
+      progress.value.program = `${pkg.package_name || "Paket Belajar"} · ${
+        pkg.package_session ?? 0
+      } Pertemuan`;
+      progress.value.mapel = pkg.subject_name || "Mapel";
+      progress.value.tutor = pkg.tutor_name || "-";
+      progress.value.totalSesi = pkg.package_session ?? 0;
+      progress.value.sesiSelesai = pkg.used_session ?? 0;
+    } else {
+      paketAktif.value = null;
+      progress.value.totalSesi = 0;
+      progress.value.sesiSelesai = 0;
+      progress.value.program = "";
+      progress.value.mapel = "";
+      progress.value.tutor = "";
+      progress.value.jadwalBerikut = "Belum ada jadwal";
+    }
+
+    // ====== JADWAL BELAJAR ======
+    // di backend: $upcomingSchedules -> 'upcoming_schedules' di JSON
+    // mapping: id, date, status, subject_name, tutor_name, schedule_time, ...
+    const upcoming = data.upcoming_schedules || [];
+
+    jadwalList.value = upcoming.map((js) => ({
+      matkul: js.subject_name || "-",
+      waktu: formatJadwal(js.date, js.schedule_time),
+    }));
+
+    if (upcoming.length > 0) {
+      const first = upcoming[0];
+      progress.value.jadwalBerikut = formatJadwal(
+        first.date,
+        first.schedule_time
+      );
+    } else {
+      progress.value.jadwalBerikut = "Belum ada jadwal";
+    }
+
+    // ====== REKOMENDASI TUTOR ======
+    // StudentDashboardController@getRecommendedTutors
+    // return: { status, data: [ { tutor_id, tutor_name, tutor_photo, education, description, subjects: [...] } ], pagination: {...} }
+    const recRes = await getRecommendedTutors(1);
+    const recData = recRes.data || recRes;
+
+    tutors.value = (recData || []).map((t) => ({
+      id: t.tutor_id,
+      name: t.tutor_name,
+      // gabung nama mapel dari array 'subjects'
+      subject: (t.subjects || []).map((s) => s.subject_name).join(", ") || "-",
+      level: t.education || "", // backend punya 'education', bisa dipakai sbg level
+      // backend belum kirim rating & reviews -> set default
+      rating: t.rating ?? 0,
+      reviews: t.reviews ?? 0,
+      photo:
+        t.tutor_photo ||
+        "https://ui-avatars.com/api/?name=" +
+          encodeURIComponent(t.tutor_name || "Tutor"),
+      // backend belum kirim nomor WA, jadi untuk sekarang kosong
+      whatsapp: "",
+      bio: t.description || "",
+    }));
+  } catch (err) {
+    console.error("Gagal load dashboard:", err);
+
+    // kalau belum login / token invalid -> balikin ke login
+    if (
+      err.message?.toLowerCase().includes("unauthenticated") ||
+      err.message?.includes("401")
+    ) {
+      router.push({ name: "login" });
+    }
+  }
+}
+
+function formatJadwal(dateStr, timeStr) {
+  if (!dateStr && !timeStr) return "-";
+
+  let tgl = dateStr;
+  try {
+    const d = new Date(dateStr);
+    if (!Number.isNaN(d.getTime())) {
+      tgl = d.toLocaleDateString("id-ID", {
+        weekday: "long",
+        day: "2-digit",
+        month: "short",
+      });
+    }
+  } catch (_) {
+    // kalau gagal parse, pakai string aslinya saja
+  }
+
+  return [tgl, timeStr].filter(Boolean).join(", ");
+}
+
 onMounted(() => {
   // Scroll listener untuk navbar
   window.addEventListener("scroll", handleScroll);
@@ -324,6 +454,8 @@ onMounted(() => {
     { threshold: 0.2 }
   );
   if (faqBlock.value) observer.observe(faqBlock.value);
+
+  loadDashboard();
 });
 
 onBeforeUnmount(() => {
