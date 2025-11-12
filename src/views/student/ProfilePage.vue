@@ -256,7 +256,7 @@ const loadProfile = async () => {
 
 const editProfile = () => {
   console.log("Edit profil diklik");
-  router.push("/student/profile/edit");
+  router.push("/student/edit-profile");
 };
 
 const handleBack = () => {

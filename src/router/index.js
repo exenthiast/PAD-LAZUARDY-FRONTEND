@@ -22,6 +22,8 @@ import PackageListPage from "../views/packages/PackageListPage.vue";
 import ConversationDetail from "../views/messages/ConversationDetail.vue";
 import AuthCallback from "../views/AuthCallback.vue";
 import SchedulePage from "../views/student/SchedulePage.vue";
+import DashboardTutor from "../views/tutor/DashboardTutor.vue";
+import HomePending from "../views/tutor/HomePending.vue";
 
 const routes = [
   {
@@ -138,6 +140,16 @@ const routes = [
     path: "/tutor/otp-tutor",
     name: "TutorOtp",
     component: TutorOtp,
+  },
+  {
+    path: "/tutor/home-pending",
+    name: "HomePending",
+    component: HomePending,
+  },
+  {
+    path: "/tutor/dashboard",
+    name: "DashboardTutor",
+    component: DashboardTutor,
   },
   {
     path: "/messages/:tutorId",

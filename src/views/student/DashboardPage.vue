@@ -122,7 +122,12 @@
                   class="w-12 h-12 bg-gray-200 rounded-full object-cover"
                 />
                 <div>
-                  <h3 class="font-semibold text-gray-800">{{ tutor.name }}</h3>
+                  <h3
+                    @click="goToTutorDetail(tutor)"
+                    class="font-semibold text-gray-800 cursor-pointer hover:text-[#41a6c2] transition"
+                  >
+                    {{ tutor.name }}
+                  </h3>
                   <p class="text-sm text-gray-500">{{ tutor.subject }}</p>
                 </div>
               </div>
@@ -154,7 +159,7 @@
                 to="/tutors"
                 class="w-full inline-flex justify-center items-center rounded-xl bg-[#41a6c2] text-white font-semibold py-3 hover:bg-[#3592ab] transition-colors"
               >
-                FULL
+                Selengkapnya
               </RouterLink>
             </div>
           </section>
@@ -433,6 +438,23 @@ function formatJadwal(dateStr, timeStr) {
   }
 
   return [tgl, timeStr].filter(Boolean).join(", ");
+}
+
+function goToTutorDetail(tutor) {
+  router.push({
+    path: "/tutors/tutor-detail",
+    query: {
+      id: tutor.id,
+      name: tutor.name,
+      subject: tutor.subject,
+      level: tutor.level,
+      rating: tutor.rating,
+      reviews: tutor.reviews,
+      photo: tutor.photo,
+      whatsapp: tutor.whatsapp,
+      bio: tutor.bio,
+    },
+  });
 }
 
 onMounted(() => {

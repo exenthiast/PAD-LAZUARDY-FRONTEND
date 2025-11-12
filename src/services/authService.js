@@ -27,3 +27,12 @@ export async function logout() {
   await api("/api/logout", { method: "POST" });
   localStorage.removeItem("auth_token");
 }
+
+// Update profile
+export async function updateProfile(payload) {
+  // backend: PUT /api/profile atau POST /api/profile/update
+  return api("/api/profile", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}

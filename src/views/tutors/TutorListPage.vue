@@ -117,12 +117,15 @@
             </p>
 
             <div class="flex gap-3 flex-wrap">
-              <button
-                @click="handleChatTutor(tutor.id, tutor.name)"
-                class="bg-[#2ba9b2] hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-semibold transition md:w-auto"
+              <a
+                :href="waLink(tutor.whatsapp)"
+                target="_blank"
+                rel="noopener"
+                class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition md:w-auto inline-flex items-center gap-2"
               >
-                Chat Tutor
-              </button>
+                <i class="bi bi-whatsapp"></i>
+                WhatsApp
+              </a>
               <button
                 @click="goToDetail(tutor.id)"
                 class="border-2 border-primary text-primary px-6 py-2 rounded-lg hover:bg-[#2ba9b2] hover:text-white transition w-fit"
@@ -292,10 +295,11 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-const handleChatTutor = (tutorId, tutorName) => {
-  router.push({
-    path: `/messages/${tutorId}`,
-  });
+const waLink = (number) => {
+  // ambil hanya angka & plus, lalu format untuk wa.me
+  const n = (number || "").replace(/[^\d+]/g, "");
+  const msisdn = n.startsWith("+") ? n.slice(1) : n;
+  return `https://wa.me/${msisdn}`;
 };
 
 const goToDetail = (tutorId) => {

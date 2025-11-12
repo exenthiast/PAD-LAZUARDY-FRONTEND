@@ -29,7 +29,30 @@
 
     <!-- Form Card -->
     <div class="max-w-3xl mx-auto bg-white shadow-md rounded-xl p-6 sm:p-8">
-      <form @submit.prevent="handleSubmit">
+      <!-- Loading State -->
+      <div v-if="isLoading" class="text-center py-12">
+        <div
+          class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#41a6c2] border-t-transparent"
+        ></div>
+        <p class="mt-4 text-gray-600">Memuat data profil...</p>
+      </div>
+
+      <!-- Error Message -->
+      <div
+        v-else-if="errorMessage"
+        class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+      >
+        <p class="text-red-600">{{ errorMessage }}</p>
+        <button
+          @click="loadProfile"
+          class="mt-2 text-sm text-red-600 hover:text-red-700 underline"
+        >
+          Coba Lagi
+        </button>
+      </div>
+
+      <!-- Form -->
+      <form v-else @submit.prevent="handleSubmit">
         <!-- Detail Pribadi -->
         <div class="mb-8">
           <h3 class="text-xl font-semibold text-[#41a6c2] mb-4 border-b pb-2">
@@ -275,32 +298,35 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { getMe, updateProfile } from "@/services/authService.js";
 
 const router = useRouter();
 const isSubmitting = ref(false);
+const isLoading = ref(false);
+const errorMessage = ref("");
 
 // Form state - initialize with current data (in real app, fetch from API)
 const form = ref({
-  namaLengkap: "Alief Muhammad Latif",
-  email: "alief@example.com",
-  jenisKelamin: "Laki-laki",
-  tanggalLahir: "2005-05-15", // format YYYY-MM-DD for input type="date"
-  phone: "081234567890",
-  agama: "Islam",
+  namaLengkap: "",
+  email: "",
+  jenisKelamin: "",
+  tanggalLahir: "",
+  phone: "",
+  agama: "",
   alamat: {
-    provinsi: "Jawa Barat",
-    kota: "Bandung",
-    kecamatan: "Coblong",
-    desa: "Dago",
-    detail: "Jl. Merdeka No. 45, RT 02 RW 05",
+    provinsi: "",
+    kota: "",
+    kecamatan: "",
+    desa: "",
+    detail: "",
   },
   sekolah: {
-    asalSekolah: "SMAN 1 Bandung",
-    kelas: "Kelas 12",
+    asalSekolah: "",
+    kelas: "",
   },
   orangtua: {
-    nama: "Budi Santoso",
-    telepon: "081987654321",
+    nama: "",
+    telepon: "",
   },
 });
 
@@ -325,11 +351,53 @@ const isFormValid = computed(() => {
   );
 });
 
-// In real app, fetch current profile data from API
-const fetchProfileData = async () => {
-  // TODO: Replace with actual API call
-  // const response = await api.get('/api/student/profile');
-  // form.value = response.data;
+// Load profile data from backend
+const loadProfile = async () => {
+  try {
+    isLoading.value = true;
+    errorMessage.value = "";
+
+    const res = await getMe();
+    const user = res.user || res.data || res;
+
+    // Map backend fields to form structure
+    form.value = {
+      namaLengkap: user.name || "",
+      email: user.email || "",
+      jenisKelamin: user.gender || user.jenis_kelamin || "",
+      tanggalLahir: user.birth_date || user.tanggal_lahir || "",
+      phone: user.phone || user.telepon || "",
+      agama: user.religion || user.agama || "",
+      alamat: {
+        provinsi: user.address_province || user.provinsi || "",
+        kota: user.address_city || user.kota || "",
+        kecamatan: user.address_district || user.kecamatan || "",
+        desa: user.address_village || user.desa || "",
+        detail: user.address_detail || user.alamat || "",
+      },
+      sekolah: {
+        asalSekolah: user.school_name || user.asal_sekolah || "",
+        kelas: user.grade || user.kelas || "",
+      },
+      orangtua: {
+        nama: user.parent_name || user.nama_orangtua || "",
+        telepon: user.parent_phone || user.telepon_orangtua || "",
+      },
+    };
+  } catch (err) {
+    console.error("Gagal load profile:", err);
+    errorMessage.value = err.message || "Gagal memuat profil siswa";
+
+    // If unauthenticated, redirect to login
+    if (
+      err.message?.toLowerCase().includes("unauthenticated") ||
+      err.message?.includes("401")
+    ) {
+      router.push("/login");
+    }
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 const handleSubmit = async () => {
@@ -340,28 +408,43 @@ const handleSubmit = async () => {
 
   isSubmitting.value = true;
   try {
-    // TODO: Replace with actual API call
-    // await api.put('/api/student/profile', form.value);
+    // Prepare payload untuk backend (sesuaikan dengan format yang diharapkan backend)
+    const payload = {
+      name: form.value.namaLengkap,
+      email: form.value.email,
+      gender: form.value.jenisKelamin,
+      birth_date: form.value.tanggalLahir,
+      phone: form.value.phone,
+      religion: form.value.agama,
+      address_province: form.value.alamat.provinsi,
+      address_city: form.value.alamat.kota,
+      address_district: form.value.alamat.kecamatan,
+      address_village: form.value.alamat.desa,
+      address_detail: form.value.alamat.detail,
+      school_name: form.value.sekolah.asalSekolah,
+      grade: form.value.sekolah.kelas,
+      parent_name: form.value.orangtua.nama,
+      parent_phone: form.value.orangtua.telepon,
+    };
 
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await updateProfile(payload);
 
     alert("Profil berhasil diperbarui!");
     router.push("/student/profile");
   } catch (error) {
     console.error("Error updating profile:", error);
-    alert("Gagal memperbarui profil. Silakan coba lagi.");
+    alert(error.message || "Gagal memperbarui profil. Silakan coba lagi.");
   } finally {
     isSubmitting.value = false;
   }
 };
 
 const handleBack = () => {
-  router.push("/student/profile-student");
+  router.push("/student/profile");
 };
 
 onMounted(() => {
-  fetchProfileData();
+  loadProfile();
 });
 </script>
 
