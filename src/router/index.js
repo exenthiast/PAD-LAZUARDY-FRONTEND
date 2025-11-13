@@ -131,6 +131,16 @@ const routes = [
   name: 'ProgresTutor',
   component: () => import('../views/tutor/ProgresTutor.vue'),
 },
+{
+    path: '/admin/dashboard',
+  name: 'dashboard',
+  component: () => import('../views/admin/dashboard.vue'),
+},
+{
+    path: '/admin/diteltutor',
+  name: 'diteltutor',
+  component: () => import('../views/admin/adminTutorDitel.vue'),
+},
 
 ];
 
