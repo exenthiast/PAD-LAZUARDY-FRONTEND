@@ -150,6 +150,10 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import LogoBCA from "@/assets/Bank_Central_Asia.svg";
+import LogoBRI from "@/assets/Bank_BRI_2000.svg";
+import LogoBNI from "@/assets/Bank_Negara_Indonesia_logo_(2004).svg";
+import LogoMandiri from "@/assets/Bank_Mandiri_logo_2016.svg";
 
 const route = useRoute();
 const router = useRouter();
@@ -212,22 +216,22 @@ const banks = [
   {
     name: "Bank BCA",
     account: "1234567890 - a.n Bimbel Lazuardy",
-    logo: "https://seeklogo.com/images/B/bca-bank-central-asia-logo-1C628FAD8A-seeklogo.com.png",
+    logo: LogoBCA,
   },
   {
     name: "Bank BRI",
     account: "9876543210 - a.n Bimbel Lazuardy",
-    logo: "https://seeklogo.com/images/B/bri-bank-rakyat-indonesia-logo-78D6CC05ED-seeklogo.com.png",
+    logo: LogoBRI,
   },
   {
     name: "Bank BNI",
     account: "1239876540 - a.n Bimbel Lazuardy",
-    logo: "https://seeklogo.com/images/B/bni-bank-negara-indonesia-logo-8FC6CF9B11-seeklogo.com.png",
+    logo: LogoBNI,
   },
   {
     name: "Bank Mandiri",
     account: "4321567890 - a.n Bimbel Lazuardy",
-    logo: "https://seeklogo.com/images/B/bank-mandiri-logo-7B60FEA6D3-seeklogo.com.png",
+    logo: LogoMandiri,
   },
 ];
 
