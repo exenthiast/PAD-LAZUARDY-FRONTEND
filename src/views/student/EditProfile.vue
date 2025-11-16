@@ -430,7 +430,7 @@ const handleSubmit = async () => {
     await updateProfile(payload);
 
     alert("Profil berhasil diperbarui!");
-    router.push("/student/profile");
+    router.push("/student/profile-student");
   } catch (error) {
     console.error("Error updating profile:", error);
     alert(error.message || "Gagal memperbarui profil. Silakan coba lagi.");
@@ -440,7 +440,7 @@ const handleSubmit = async () => {
 };
 
 const handleBack = () => {
-  router.push("/student/profile");
+  router.push("/student/profile-student");
 };
 
 onMounted(() => {

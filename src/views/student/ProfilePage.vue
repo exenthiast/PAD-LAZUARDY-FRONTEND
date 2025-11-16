@@ -1,5 +1,17 @@
 <template>
   <div class="min-h-screen bg-gray-50">
+    <!-- Back Button - Pojok Kiri Atas -->
+    <div class="absolute top-6 left-6 z-20">
+      <button
+        @click="handleBack"
+        type="button"
+        class="flex items-center gap-2 bg-white border-2 border-[#41a6c2] text-[#41a6c2] px-4 py-2 rounded-lg font-medium transition shadow-md"
+      >
+        <ArrowLeft class="w-5 h-5" />
+        <span>Kembali</span>
+      </button>
+    </div>
+
     <!-- Header -->
     <div class="bg-[#41a6c2] py-12 px-4 text-center text-white mb-6">
       <img
@@ -18,11 +30,11 @@
         <div class="flex justify-between items-center mb-4 border-b pb-2">
           <h3 class="text-xl font-semibold text-[#41a6c2]">Detail Pribadi</h3>
           <button
-            @click="handleBack"
+            @click="editProfile"
             type="button"
-            class=" border border-[#41a6c2] text-[#41a6c2] hover:bg-[#359299] hover:text-white px-6 py-2 rounded-lg font-medium transition"
+            class="w-full sm:w-auto bg-[#41a6c2] hover:bg-[#41a6c2] text-white px-6 py-2 rounded-lg font-medium transition"
           >
-            <ChevronLeft />
+            Edit Profil
           </button>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -126,15 +138,8 @@
 
       <!-- Action Buttons -->
       <div
-        class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t"
+        class="flex flex-col sm:flex-row justify-end items-center gap-4 pt-4 border-t"
       >
-        <button
-          @click="editProfile"
-          type="button"
-          class="w-full sm:w-auto bg-[#41a6c2] hover:bg-[#359299] text-white px-6 py-2 rounded-lg font-medium transition"
-        >
-          Edit Profil
-        </button>
         <button
           @click="logout"
           type="button"
@@ -144,32 +149,13 @@
         </button>
       </div>
     </div>
-
-    <!-- Card Progress Belajar -->
-    <div
-      class="max-w-3xl mx-auto mt-6 bg-white shadow-md rounded-xl p-6 sm:p-8"
-    >
-      <h3 class="text-xl font-semibold text-[#41a6c2] mb-4 border-b pb-2">
-        Progress Belajar
-      </h3>
-      <div class="flex justify-between text-gray-600 mb-3">
-        <p>Kemajuan Belajar</p>
-        <p class="font-semibold text-[#41a6c2]">{{ student.progress }}%</p>
-      </div>
-      <div class="w-full bg-gray-200 rounded-full h-3">
-        <div
-          class="bg-[#41a6c2] h-3 rounded-full transition-all"
-          :style="{ width: student.progress + '%' }"
-        ></div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { ChevronLeft } from 'lucide-vue-next';
+import { ArrowLeft } from "lucide-vue-next";
 import { getMe, logout as apiLogout } from "@/services/authService.js";
 
 const router = useRouter();

@@ -10,14 +10,14 @@
         <div class="flex justify-center mb-4">
           <button
             @click="handleSiswa"
-            class="text-teal-600 hover:text-teal-700 flex items-center gap-2"
+            class="text-[#41a6c2] hover:text-teal-700 flex items-center gap-2"
           >
             Daftar sebagai Siswa
           </button>
           &nbsp; atau &nbsp;
           <button
             @click="handleTutor"
-            class="text-teal-600 hover:text-teal-700 flex items-center gap-2"
+            class="text-[#41a6c2] hover:text-teal-700 flex items-center gap-2"
           >
             Daftar sebagai Tutor
           </button>
@@ -53,7 +53,7 @@
               aria-label="Toggle password visibility"
             >
               <EyeClosed v-if="showPassword" class="eye-icon" />
-              <Eye v-else class="eye-icon"/>
+              <Eye v-else class="eye-icon" />
             </button>
           </div>
 
@@ -77,7 +77,7 @@
             <div class="forgot-password">
               <button
                 type="button"
-                class="text-sm text-teal-600 hover:text-teal-700"
+                class="text-sm text-[#41a6c2] hover:text-teal-700"
                 @click="handleForgotPassword"
               >
                 Lupa password?
@@ -128,7 +128,7 @@
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { Eye } from "lucide-vue-next";
-import { EyeClosed } from 'lucide-vue-next';
+import { EyeClosed } from "lucide-vue-next";
 import hero from "@/assets/hero.png";
 import logo from "@/assets/logo.svg";
 import { loginRequest, fetchMe } from "@/services/auth.js";
@@ -141,7 +141,16 @@ const showPassword = ref(false);
 const submitting = ref(false);
 const tried = ref(false);
 
-const serverErrors = ref();
+const serverError = ref();
+
+function extractErr(e) {
+  return (
+    e?.response?.data?.message ||
+    e?.response?.data?.error ||
+    e?.message ||
+    "Email atau password salah."
+  );
+}
 
 const isValid = computed(() => {
   const emailOk = /\S+@\S+\.\S+/.test(email.value);
@@ -153,28 +162,35 @@ const handleLogin = async () => {
   tried.value = true;
   if (!isValid.value) return;
   submitting.value = true;
+  serverError.value = "";
   try {
     const result = await loginRequest({
       email: email.value,
       password: password.value,
     });
-    if (result?.token) {
-      localStorage.setItem("auth_token", result.token);
+
+    const token =
+      result?.token ??
+      result?.access_token ??
+      result?.data?.token ??
+      result?.data?.access_token;
+    const user = result?.user ?? result?.data?.user ?? null;
+
+    if (token) {
+      localStorage.setItem("auth_token", token);
     }
-    if (result?.user) {
-      localStorage.setItem("auth_user", JSON.stringify(result.user));
+    if (user) {
+      localStorage.setItem("auth_user", JSON.stringify(user));
     }
     try {
       const me = await fetchMe();
       localStorage.setItem("auth_user", JSON.stringify(me));
-    } catch (_) {
-
-    }
+    } catch (_) {}
     alert("Login berhasil!");
     router.push("/student/dashboard");
   } catch (error) {
-    serverErrors.value = error.message || "Gagal melakukan login.";
-    alert(`Gagal login: ${serverErrors.value}`);
+    serverError.value = extractErr(error);
+    alert(`Gagal login: ${serverError.value}`);
   } finally {
     submitting.value = false;
   }
@@ -263,7 +279,7 @@ const handleFacebookLogin = async () => {
 }
 .form-group input:focus {
   outline: none;
-  border-color: #36a3b9;
+  border-color: #41a6c2;
 }
 
 .password-group {
@@ -317,7 +333,7 @@ const handleFacebookLogin = async () => {
   transition: 0.2s;
 }
 .btn-login {
-  background: #36a3b9;
+  background: #41a6c2;
   color: #fff;
 }
 .btn-login:hover {
@@ -325,8 +341,8 @@ const handleFacebookLogin = async () => {
 }
 .btn-register {
   background: #fff;
-  color: #36a3b9;
-  border: 1px solid #36a3b9;
+  color: #41a6c2;
+  border: 1px solid #41a6c2;
 }
 .btn-register:hover {
   background: #f0f9fb;

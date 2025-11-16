@@ -24,6 +24,7 @@ import AuthCallback from "../views/AuthCallback.vue";
 import SchedulePage from "../views/student/SchedulePage.vue";
 import DashboardTutor from "../views/tutor/DashboardTutor.vue";
 import HomePending from "../views/tutor/HomePending.vue";
+import MyStudentPage from "../views/tutor/MyStudentPage.vue";
 
 const routes = [
   {
@@ -150,6 +151,11 @@ const routes = [
     path: "/tutor/dashboard",
     name: "DashboardTutor",
     component: DashboardTutor,
+  },
+  {
+    path: "/tutor/ajuan-belajar",
+    name: "AjuanBelajar",
+    component: MyStudentPage,
   },
   {
     path: "/messages/:tutorId",

@@ -23,7 +23,7 @@
             <input
               v-model="form.namaLengkap"
               type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
+              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
             />
           </div>
 
@@ -32,7 +32,7 @@
             <input
               v-model="form.email"
               type="email"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
+              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
             />
           </div>
 
@@ -44,7 +44,7 @@
               <input
                 v-model="form.password"
                 :type="showPassword ? 'text' : 'password'"
-                class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
+                class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-[#41a6c2]"
               />
               <button
                 type="button"
@@ -53,7 +53,7 @@
                 aria-label="Toggle password visibility"
               >
                 <EyeClosed v-if="showPassword" class="eye-icon" />
-                <Eye v-else class="eye-icon"/>
+                <Eye v-else class="eye-icon" />
               </button>
             </div>
           </div>
@@ -67,7 +67,7 @@
               <input
                 v-model="form.passwordConfirm"
                 :type="showPassword ? 'text' : 'password'"
-                class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500"
+                class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-[#41a6c2]"
               />
             </div>
             <p
@@ -84,7 +84,7 @@
             <label class="text-sm mb-2">Jenis Kelamin</label>
             <select
               v-model="form.jenisKelamin"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
+              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
             >
               <option value="">Pilih Jenis Kelamin</option>
               <option value="laki-laki">Laki-laki</option>
@@ -97,7 +97,7 @@
             <div class="grid grid-cols-3 gap-2">
               <select
                 v-model.number="form.tanggalLahir.hari"
-                class="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
+                class="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
               >
                 <option :value="''">Hari</option>
                 <option v-for="d in daysInmonth" :key="d" :value="d">
@@ -107,7 +107,7 @@
 
               <select
                 v-model.number="form.tanggalLahir.bulan"
-                class="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
+                class="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
               >
                 <option :value="''">Bulan</option>
                 <option v-for="(m, i) in months" :key="i" :value="i + 1">
@@ -117,7 +117,7 @@
 
               <select
                 v-model.number="form.tanggalLahir.tahun"
-                class="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
+                class="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
               >
                 <option :value="''">Tahun</option>
                 <option v-for="y in years" :key="y" :value="y">{{ y }}</option>
@@ -130,7 +130,7 @@
             <input
               v-model="form.nomorTelepon"
               type="tel"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
+              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
               placeholder="+62..."
             />
           </div>
@@ -139,7 +139,7 @@
             <label class="text-sm mb-2">Agama</label>
             <select
               v-model="form.agama"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
+              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
             >
               <option value="">Pilih Agama</option>
               <option value="islam">Islam</option>
@@ -166,7 +166,7 @@
             <textarea
               v-model="form.alamat"
               rows="4"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
+              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
             ></textarea>
           </div>
         </div>
@@ -176,13 +176,13 @@
       <div class="flex justify-between">
         <button
           @click="handleBack"
-          class="border border-teal-500 text-teal-500 hover:bg-teal-50 px-8 py-3 rounded-lg font-medium transition-colors"
+          class="border border-[#41a6c2] text-[#41a6c2] hover:bg-[#41a6c2]/10 px-8 py-3 rounded-lg font-medium transition-colors"
         >
           Kembali
         </button>
         <button
           @click="handleNext"
-          class="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 rounded-lg font-medium transition-colors"
+          class="bg-[#41a6c2] hover:bg-[#2e8694] text-white px-8 py-3 rounded-lg font-medium transition-colors"
         >
           Selanjutnya
         </button>
@@ -195,18 +195,23 @@
 import { computed, ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { Eye } from "lucide-vue-next";
-import { EyeClosed } from 'lucide-vue-next';
+import { EyeClosed } from "lucide-vue-next";
 import WilayahDropdown from "@/components/WilayahDropdown.vue";
 import LocationPermission from "@/components/LocationPermission.vue";
 import { useRegisterStore } from "@/stores/registerStore";
 import { storeToRefs } from "pinia";
+import { initiateRegister } from "@/services/authRegister";
 
 const router = useRouter();
 const showPassword = ref(false);
+const submitting = ref(false);
+const errorMsg = ref("");
 const showLocationmodal = ref(true);
 const userLocation = ref(null);
 const register = useRegisterStore();
 const { form } = storeToRefs(register);
+const LOC_KEY = "register:location";
+const LOC_PERMISSION_KEY = "register:loc-permission";
 
 onMounted(() => register.loadFromStorage());
 watch(form, () => register.saveToStorage(), { deep: true });
@@ -252,43 +257,100 @@ watch(
   { immediate: true }
 );
 
-function handleGranted(loc) {
+async function handleGranted(loc) {
+  // simpan lokasi
   userLocation.value = loc;
-  // simpan ke store, atau panggil API tutor-terdekat
-  // contoh: fetch(`/api/tutors/nearby?lat=${loc.lat}&lng=${loc.lng}`)
+  form.value.location = loc; // akan ikut tersimpan di store (watch deep)
+  localStorage.setItem(LOC_KEY, JSON.stringify(loc));
+  showLocationmodal.value = false;
+
+  // optional: isi alamat otomatis (reverse geocoding)
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${loc.lat}&lon=${loc.lng}`
+    );
+    const data = await res.json();
+    if (data?.display_name && !form.value.alamat) {
+      form.value.alamat = data.display_name;
+    }
+  } catch {
+    // abaikan jika gagal geocoding
+  }
 }
 
 function handleDenied() {
-  // opsional: simpan preferensi user agar modal tidak muncul lagi
-  // localStorage.setItem('loc-permission', 'denied')
+  localStorage.setItem(LOC_PERMISSION_KEY, "denied");
+  showLocationmodal.value = false;
 }
 
+// muat lokasi tersimpan saat buka halaman
+onMounted(() => {
+  register.loadFromStorage();
+  const raw = localStorage.getItem(LOC_KEY);
+  if (raw) {
+    try {
+      userLocation.value = JSON.parse(raw);
+    } catch {}
+  }
+});
+
 const handleBack = () => {
-  if (confirm('Batalkan pendaftaran? Data yang sudah diisi akan di hapus.')) {
+  if (confirm("Batalkan pendaftaran? Data yang sudah diisi akan di hapus.")) {
     if (register.reset) register.reset();
-    else localStorage.removeItem('register:form');
+    else localStorage.removeItem("register:form");
     router.push("/login");
   }
 };
 
-const handleNext = () => {
-  // Basic validation: password match and length
+const handleNext = async () => {
+  errorMsg.value = "";
+
   if ((form.value.password || "").length < 8) {
-    alert("Password minimal 8 karakter");
+    errorMsg.value = "Password minimal 8 karakter";
+    alert(errorMsg.value);
     return;
   }
-
   if (form.value.password !== form.value.passwordConfirm) {
-    alert("Password dan konfirmasi password tidak cocok");
+    errorMsg.value = "Password dan konfirmasi tidak cocok";
+    alert(errorMsg.value);
     return;
   }
 
-  // Validasi lain bisa ditambahkan di sini
-  console.log("Form data:", form.value);
+  // rakit payload untuk backend
+  const payload = {
+    full_name: form.value.namaLengkap,
+    email: form.value.email,
+    password: form.value.password,
+    password_confirmation: form.value.passwordConfirm,
+    gender: form.value.jenisKelamin,
+    birth_day: form.value.tanggalLahir.hari,
+    birth_month: form.value.tanggalLahir.bulan,
+    birth_year: form.value.tanggalLahir.tahun,
+    phone: form.value.nomorTelepon,
+    religion: form.value.agama,
+    address: form.value.alamat,
+    role: "student",
+  };
 
-  // Navigate ke halaman berikutnya (Data Lanjutan)
-  register.saveToStorage();
-  router.push("/student/register-otp");
+  submitting.value = true;
+  try {
+    const res = await initiateRegister(payload);
+    // Simpan email untuk halaman OTP
+    localStorage.setItem("register:email", res.email);
+    localStorage.setItem("register:temp_token", res.temp_token);
+    register.saveToStorage();
+    // Backend flow: setelah initiate, kirim OTP -> arahkan ke halaman OTP
+    router.push("/student/register-otp");
+  } catch (e) {
+    if (e.errors) {
+      console.log("Detail errors:", e.errors);
+    }
+    alert(e.message || "Gagal melakukan registrasi.");
+    errorMsg.value = e?.response?.data?.message || "Registrasi gagal";
+    alert(errorMsg.value);
+  } finally {
+    submitting.value = false;
+  }
 };
 </script>
 

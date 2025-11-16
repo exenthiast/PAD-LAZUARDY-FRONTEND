@@ -1,17 +1,17 @@
 import { api } from "./http.js";
 
-export function loginRequest({ email, password }) {
+export async function loginRequest(credentials) {
   return api("/api/login", {
     method: "POST",
     body: JSON.stringify({
-      email,
-      password,
+      email: credentials.email,
+      password: credentials.password,
     }),
   });
 }
 
-export function fetchMe() {
-  return api("/api/user", {
+export async function fetchMe() {
+  return api("/api/me", {
     method: "GET",
   });
 }

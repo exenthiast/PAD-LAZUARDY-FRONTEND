@@ -32,7 +32,7 @@ export async function logout() {
 export async function updateProfile(payload) {
   // backend: PUT /api/profile atau POST /api/profile/update
   return api("/api/profile", {
-    method: "PUT",
+    method: "PATCH",
     body: JSON.stringify(payload),
   });
 }

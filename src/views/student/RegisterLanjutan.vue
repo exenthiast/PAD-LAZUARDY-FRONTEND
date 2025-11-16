@@ -1,7 +1,9 @@
 <template>
   <div class="container-center bg-gray-100">
     <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl">
-      <h1 class="text-2xl font-bold text-center mb-8">Data Lanjutan</h1>
+      <h1 class="text-2xl font-bold text-center mb-8 text-[#41a6c2]">
+        Data Lanjutan
+      </h1>
 
       <!-- Detail Sekolah Section -->
       <div class="border border-gray-300 rounded-lg p-6 mb-6">
@@ -13,7 +15,7 @@
             <input
               v-model="form.asalSekolah"
               type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
+              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
             />
           </div>
 
@@ -21,7 +23,7 @@
             <label class="block text-sm mb-2">Kelas</label>
             <select
               v-model="form.kelas"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
+              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
             >
               <option value="">Pilih Kelas</option>
               <option value="7">Kelas 7</option>
@@ -45,34 +47,45 @@
             <input
               v-model="form.namaOrangtua"
               type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
+              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
             />
           </div>
 
           <div>
-            <label class="block text-sm mb-2">Nomo Telepon Orangtua</label>
+            <label class="block text-sm mb-2">Nomor Telepon Orangtua</label>
             <input
               v-model="form.nomorTeleponOrangtua"
               type="tel"
-              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
+              class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
             />
           </div>
         </div>
       </div>
 
-      <!-- Button -->
+      <!-- Error Alert -->
+      <div
+        v-if="err"
+        class="rounded-lg border border-red-300 bg-red-50 text-red-700 px-4 py-3 mb-6"
+        role="alert"
+        aria-live="polite"
+      >
+        {{ err }}
+      </div>
+
+      <!-- Buttons -->
       <div class="flex justify-between">
         <button
           @click="handleBack"
-          class="border border-teal-500 text-teal-500 hover:bg-teal-50 px-8 py-3 rounded-lg font-medium transition-colors"
+          class="border border-[#41a6c2] text-[#41a6c2] hover:bg-[#41a6c2]/10 px-8 py-3 rounded-lg font-medium transition-colors"
         >
           Kembali
         </button>
         <button
           @click="handleSubmit"
-          class="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 rounded-lg font-medium transition-colors"
+          :disabled="loading"
+          class="bg-[#41a6c2] hover:bg-[#2e8694] disabled:opacity-60 disabled:cursor-not-allowed text-white px-8 py-3 rounded-lg font-medium transition-colors"
         >
-          Selanjutnya
+          {{ loading ? "Menyimpan..." : "Kirim" }}
         </button>
       </div>
     </div>
@@ -82,6 +95,9 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
+import { updateStudentRole } from "@/services/authRegister";
+import { useRegisterStore } from "@/stores/registerStore";
+import { storeToRefs } from "pinia";
 
 const router = useRouter();
 
@@ -92,6 +108,7 @@ const props = defineProps({
 
 // Simple error holder and verification flag
 const err = ref("");
+const loading = ref(false);
 
 const form = ref({
   asalSekolah: "",
@@ -99,6 +116,9 @@ const form = ref({
   namaOrangtua: "",
   nomorTeleponOrangtua: "",
 });
+
+const regStore = useRegisterStore();
+const { form: baseForm } = storeToRefs(regStore);
 
 // All fields must be non-empty
 const verified = computed(() =>
@@ -109,16 +129,35 @@ const handleBack = () => {
   router.push("/student/register-otp");
 };
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!verified.value) {
     err.value = "Harap Diisikan Semua Field!";
-    alert(err.value);
     return;
   }
 
-  alert("Berhasil Registrasi!");
-
-  // Redirect ke halaman berikutnya
-  router.push(props.nextPath);
+  const token = localStorage.getItem("auth_token");
+  if (!token) {
+    err.value = "Sesi Berakhir, Silahkan login lalu lanjutkan.";
+    router.push("/login");
+    return;
+  }
+  loading.value = true;
+  err.value = "";
+  try {
+    const payload = {
+      ...baseForm.value,
+      asal_sekolah: form.value.asalSekolah,
+      kelas: form.value.kelas,
+      nama_orangtua: form.value.namaOrangtua,
+      nomor_telepon_orangtua: form.value.nomorTeleponOrangtua,
+    };
+    await updateStudentRole(payload);
+    if (regStore.reset) regStore.reset();
+    router.push(props.nextPath);
+  } catch (e) {
+    err.value = e?.response?.data?.message || "Gagal menyimpan data lanjutan.";
+  } finally {
+    loading.value = false;
+  }
 };
 </script>
