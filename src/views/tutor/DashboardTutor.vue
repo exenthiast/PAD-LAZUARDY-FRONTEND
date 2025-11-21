@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen flex flex-col bg-gray-100">
+    <NavbarTutor />
     <!-- MAIN -->
     <main class="flex-1 py-8 px-6">
       <!-- Header -->
@@ -24,15 +25,66 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="bg-white shadow rounded-2xl p-4">
             <h3 class="text-sm text-gray-500">Total Siswa</h3>
-            <p class="text-2xl font-bold text-green-600">12</p>
+            <p class="text-2xl font-bold text-[#41a6c2]">12</p>
           </div>
           <div class="bg-white shadow rounded-2xl p-4">
             <h3 class="text-sm text-gray-500">Sesi Bulan Ini</h3>
-            <p class="text-2xl font-bold text-green-600">26</p>
+            <p class="text-2xl font-bold text-[#41a6c2]">26</p>
           </div>
           <div class="bg-white shadow rounded-2xl p-4">
             <h3 class="text-sm text-gray-500">Laporan Terkirim</h3>
-            <p class="text-2xl font-bold text-green-600">18</p>
+            <p class="text-2xl font-bold text-[#41a6c2]">18</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daftar Ajuan Belajar -->
+      <div class="max-w-6xl mx-auto mb-8">
+        <div class="bg-white shadow rounded-2xl p-4">
+          <h2 class="text-[#41a6c2] text-lg font-semibold mb-4">
+            Daftar Ajuan Belajar
+          </h2>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="border-b-2 border-gray-200">
+                <tr class="text-left text-gray-600">
+                  <th class="pb-3 px-2">Nomor</th>
+                  <th class="pb-3 px-2">Nama</th>
+                  <th class="pb-3 px-2">Mapel</th>
+                  <th class="pb-3 px-2">Tanggal</th>
+                  <th class="pb-3 px-2">Jam</th>
+                  <th class="pb-3 px-2 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="learningRequests.length === 0">
+                  <td colspan="6" class="py-8 text-center text-gray-400 italic">
+                    Tidak ada ajuan belajar
+                  </td>
+                </tr>
+                <tr
+                  v-for="(request, index) in learningRequests"
+                  :key="request.id"
+                  class="border-b border-gray-100 hover:bg-gray-50"
+                >
+                  <td class="py-3 px-2">{{ index + 1 }}</td>
+                  <td class="py-3 px-2 font-medium text-gray-800">
+                    {{ request.name }}
+                  </td>
+                  <td class="py-3 px-2 text-gray-600">{{ request.subject }}</td>
+                  <td class="py-3 px-2 text-gray-600">{{ request.date }}</td>
+                  <td class="py-3 px-2 text-gray-600">{{ request.time }}</td>
+                  <td class="py-3 px-2 text-center">
+                    <button
+                      @click="viewRequestDetail(request.id)"
+                      class="bg-[#41a6c2] hover:bg-[#358a9f] text-white px-4 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                    >
+                      Lihat Data
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -41,7 +93,9 @@
       <div class="max-w-6xl mx-auto mb-8">
         <div class="bg-white shadow rounded-2xl p-4">
           <div class="flex items-center justify-between mb-3">
-            <h2 class="text-lg font-semibold text-gray-700">Jadwal Hari Ini</h2>
+            <h2 class="text-lg font-semibold text-[#41a6c2]">
+              Jadwal Hari Ini
+            </h2>
 
             <div class="flex items-center space-x-2">
               <button
@@ -122,7 +176,9 @@
       <!-- Daftar Siswa -->
       <div class="max-w-6xl mx-auto">
         <div class="bg-white shadow rounded-2xl p-4">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Daftar Siswa</h3>
+          <h2 class="text-lg font-semibold text-[#41a6c2] mb-4">
+            Daftar Siswa
+          </h2>
           <div class="overflow-y-auto max-h-[300px]">
             <table class="min-w-full text-sm text-left">
               <thead class="text-gray-600 border-b">
@@ -130,6 +186,7 @@
                   <th class="pb-2">Nama</th>
                   <th class="pb-2">Mapel</th>
                   <th class="pb-2">Status</th>
+                  <th class="pb-2 text-center">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -161,6 +218,14 @@
                       {{ student.active ? "Aktif" : "Tidak Aktif" }}
                     </span>
                   </td>
+                  <td class="text-center">
+                    <button
+                      @click="viewAttendance(student.id)"
+                      class="bg-[#41a6c2] hover:bg-[#358a9f] text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                    >
+                      Lihat Absensi
+                    </button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -173,6 +238,10 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+import NavbarTutor from "@/components/layout/navbar-tutor.vue";
+
+const router = useRouter();
 
 const selectedDate = ref(new Date().toISOString().substr(0, 10));
 
@@ -219,22 +288,43 @@ const schedule = ref([
 
 const students = ref([
   {
+    id: 1,
     name: "Alya Rahma",
     subject: "Matematika",
     active: true,
     image: "https://i.pravatar.cc/80?img=32",
   },
   {
+    id: 2,
     name: "Rizky Darma",
     subject: "Fisika",
     active: true,
     image: "https://i.pravatar.cc/80?img=45",
   },
   {
+    id: 3,
     name: "Dinda Putri",
     subject: "Kimia",
     active: false,
     image: "https://i.pravatar.cc/80?img=67",
   },
 ]);
+
+const learningRequests = ref([
+  {
+    id: 1,
+    name: "Alief",
+    subject: "Matematika",
+    date: "Senin, 20 Desember 2025",
+    time: "08:00 WIB",
+  },
+]);
+
+const viewRequestDetail = (id) => {
+  router.push(`/tutor/data-siswa?id=${id}`);
+};
+
+const viewAttendance = (studentId) => {
+  router.push(`/tutor/absensi-student?id=${studentId}`);
+};
 </script>

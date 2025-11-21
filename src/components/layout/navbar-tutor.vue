@@ -11,44 +11,12 @@
         :class="[
           'transition-all duration-300 flex items-center justify-between px-6',
           isScrolled
-            ? 'max-w-6xl mx-auto bg-white/90 backdrop-blur-md shadow-lg rounded-full h-16'
-            : 'max-w-full bg-[#41a6c2] shadow-sm',
+            ? 'max-w-6xl mx-auto backdrop-blur-md shadow-lg rounded-full h-16'
+            : 'max-w-full bg-white shadow-sm h-[75px]',
         ]"
-        :style="isScrolled ? '' : { height: 'var(--nav-h)' }"
       >
-        <!-- Left: Hamburger + Logo -->
+        <!-- Left: Logo -->
         <div class="flex items-center gap-3">
-          <button
-            @click="toggleSidebar"
-            :class="[
-              'p-2 rounded-lg hover:bg-black/10 transition-all duration-300 flex flex-col justify-center',
-            ]"
-            aria-label="Menu"
-          >
-            <span
-              :class="[
-                'hamburger-line block w-7 h-[3px] rounded transition-all duration-300',
-                isScrolled ? 'bg-[#41a6c2]' : 'bg-black',
-                sidebarOpen ? 'translate-y-[8px] rotate-45' : '',
-              ]"
-            ></span>
-
-            <span
-              :class="[
-                'hamburger-line block w-7 h-[3px] rounded my-[5px] transition-all duration-300',
-                isScrolled ? 'bg-[#41a6c2]' : 'bg-black',
-                sidebarOpen ? 'opacity-0' : 'opacity-100',
-              ]"
-            ></span>
-
-            <span
-              :class="[
-                'hamburger-line block w-7 h-[3px] rounded transition-all duration-300',
-                isScrolled ? 'bg-[#41a6c2]' : 'bg-black',
-                sidebarOpen ? '-translate-y-[8px] -rotate-45' : '',
-              ]"
-            ></span>
-          </button>
           <img
             src="@/assets/logo2.svg"
             alt="Bimbel Lazuardy"
@@ -59,27 +27,8 @@
           />
         </div>
 
-        <!-- Right: Notification + Profile -->
+        <!-- Right: Profile -->
         <div class="flex items-center gap-3">
-          <!-- Notification Button -->
-          <button
-            @click.stop="toggleNotification"
-            class="relative p-2 rounded-lg hover:bg-black/10 transition-colors"
-            aria-label="Notifications"
-          >
-            <Bell
-              :class="[
-                'w-6 h-6 transition-colors',
-                isScrolled ? 'text-[#41a6c2]' : 'text-black',
-              ]"
-            />
-            <!-- Notification Badge -->
-            <span
-              v-if="notificationCount > 0"
-              class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"
-            ></span>
-          </button>
-
           <!-- Profile Button -->
           <button
             @click="handleProfileClick"
@@ -93,9 +42,10 @@
             >
               <CircleUser
                 :class="[
-                  'w-6 h-6 transition-colors',
-                  isScrolled ? 'text-[#41a6c2]' : 'text-black',
+                  'transition-colors',
+                  isScrolled ? 'text-[#41a6c2]' : '',
                 ]"
+                class="w-6 h-6"
               />
             </div>
 
@@ -148,54 +98,23 @@
       aria-hidden="true"
       :style="{ height: isScrolled ? '80px' : 'var(--nav-h)' }"
     ></div>
-
-    <!-- LEFT SIDEBAR Component -->
-    <SidebarLeft
-      :isOpen="sidebarOpen"
-      :active="activeMenu"
-      @close="closeSidebar"
-    />
-
-    <!-- RIGHT SIDEBAR (Notifications) Component -->
-    <SidebarRight :isOpen="notificationOpen" @close="closeNotification" />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { Bell } from "lucide-vue-next";
 import { CircleUser } from "lucide-vue-next";
-import SidebarLeft from "./sidebar-left.vue";
-import SidebarRight from "./sidebar-right.vue";
-import { getMe } from "@/services/authService";
+// import { getMe } from "@/services/authService";
 
 const router = useRouter();
 const route = useRoute();
-
-// Detect active menu based on current route
-const activeMenu = computed(() => {
-  const path = route.path;
-  if (path.includes("/student/dashboard")) return "dashboard";
-  if (path.includes("/package") || path.includes("/packages")) return "paket";
-  if (path.includes("/student/schedule")) return "jadwal";
-  if (path.includes("/contact")) return "hubungi";
-  if (path.includes("/about")) return "tentang";
-  return "";
-});
 
 // Scroll state
 const isScrolled = ref(false);
 
 const navHeight = "75px";
-
-// Sidebar states
-const sidebarOpen = ref(false);
-const notificationOpen = ref(false);
 const showProfileTooltip = ref(false);
-
-// Notification count
-const notificationCount = ref(7);
 
 // Student data from API
 const student = ref({
@@ -253,38 +172,9 @@ const fetchProfileData = async () => {
   }
 };
 
-// Toggle functions
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value;
-  if (sidebarOpen.value) {
-    notificationOpen.value = false;
-  }
-};
-
-const toggleNotification = () => {
-  console.log(
-    "Toggle notification clicked, current state:",
-    notificationOpen.value
-  );
-  notificationOpen.value = !notificationOpen.value;
-  console.log("New state:", notificationOpen.value);
-  if (notificationOpen.value) {
-    sidebarOpen.value = false;
-  }
-};
-
 const handleProfileClick = () => {
   showProfileTooltip.value = false;
-  router.push("/student/profile-student");
-};
-
-// Close functions
-const closeSidebar = () => {
-  sidebarOpen.value = false;
-};
-
-const closeNotification = () => {
-  notificationOpen.value = false;
+  router.push("/tutor/profile");
 };
 
 // Scroll handler
@@ -305,28 +195,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Slide transitions for left sidebar */
-.slide-left-enter-active,
-.slide-left-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-left-enter-from {
-  transform: translateX(-100%);
-  opacity: 0;
-}
-
-.slide-left-leave-to {
-  transform: translateX(-100%);
-  opacity: 0;
-}
-
-.hamburger-line {
-  transition-property: transform, opacity;
-  transition-duration: 0.3s;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 /* Fade transition for profile dropdown */
 .fade-enter-active,
 .fade-leave-active {

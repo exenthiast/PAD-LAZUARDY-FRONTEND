@@ -158,6 +158,23 @@ const isValid = computed(() => {
   return emailOk && passOk;
 });
 
+function getRedirectPath(user) {
+  const role = user?.role || user?.data?.roles || [];
+  const roles = user?.roles || user?.data?.roles || [];
+  const r = role || roles[0];
+
+  switch ((r || "").tolowerCase()) {
+    case "admin":
+      return "/admin/dashboard";
+    case "tutor":
+      return "/tutor/dashboard";
+    case "student":
+      return "/student/dashboard";
+    default:
+      return "/login";
+  }
+}
+
 const handleLogin = async () => {
   tried.value = true;
   if (!isValid.value) return;
@@ -174,20 +191,22 @@ const handleLogin = async () => {
       result?.access_token ??
       result?.data?.token ??
       result?.data?.access_token;
-    const user = result?.user ?? result?.data?.user ?? null;
+    const userRaw = result?.user ?? result?.data?.user ?? null;
 
     if (token) {
       localStorage.setItem("auth_token", token);
     }
-    if (user) {
-      localStorage.setItem("auth_user", JSON.stringify(user));
+    if (userRaw) {
+      localStorage.setItem("auth_user", JSON.stringify(userRaw));
     }
+    let me = userRaw;
     try {
-      const me = await fetchMe();
-      localStorage.setItem("auth_user", JSON.stringify(me));
+      me = await fetchMe();
+      if (me) localStorage.setItem("auth_user", JSON.stringify(me));
     } catch (_) {}
+    const target = getRedirectPath(me || userRaw);
     alert("Login berhasil!");
-    router.push("/student/dashboard");
+    router.push(target);
   } catch (error) {
     serverError.value = extractErr(error);
     alert(`Gagal login: ${serverError.value}`);

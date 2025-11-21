@@ -1,28 +1,41 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gray-100">
+  <div :style="{ '--nav-h': navHeight }">
     <!-- NAVBAR -->
     <header
       :class="[
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        isScrolled
-          ? 'backdrop-blur-md shadow-lg'
-          : 'bg-white shadow-sm',
+        isScrolled ? 'pt-4' : '',
       ]"
-      :style="{ '--nav-h': navHeight }"
     >
       <div
-        class="max-w-1xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between"
-        :style="{ height: 'var(--nav-h)' }"
+        :class="[
+          'transition-all duration-300 flex items-center justify-between px-6',
+          isScrolled
+            ? 'max-w-7xl mx-auto backdrop-blur-md shadow-lg rounded-full h-16'
+            : 'max-w-full bg-white shadow-sm h-[75px]',
+        ]"
       >
         <div class="flex items-center gap-3">
-          <img src="@/assets/logo.svg" alt="Bimbel Lazuardy" class="" />
+          <img 
+          src="@/assets/logo2.svg" 
+          alt="Bimbel Lazuardy" 
+          :class="[
+              'transition-all duration-300',
+              isScrolled ? 'h-8' : 'h-10',
+            ]" 
+            />
         </div>
         <div class="flex items-center gap-4">
           <button
             @click="handleNext"
-            class="w-full flex item-center gap-3 rounded-lg bg-teal-500 hover:bg-teal-600 text-white px-3 py-2 md:px-8 md:py-2 rounded-lg font-medium transition-colors"
+            class="w-full flex item-center gap-3 rounded-lg text-black px-3 py-2 md:px-8 md:py-2 rounded-lg font-bold transition-colors"
           >
-            <LogIn class="w-5 h-5" />
+            <span class="">Login</span>
+          </button>
+          <button
+            @click="handleNext"
+            class="w-full flex item-center gap-3 rounded-full bg-[#41a6c2] hover:bg-teal-600 text-white px-3 py-2 md:px-8 md:py-2 rounded-full font-medium transition-colors"
+          >
             <span class="">Register</span>
           </button>
         </div>

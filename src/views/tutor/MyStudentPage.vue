@@ -1,273 +1,252 @@
 <template>
-  <div class="min-h-screen flex flex-col bg-gray-100">
-    <!-- MAIN -->
-    <main class="flex-1 py-8 px-6">
-      <!-- Header with Back Button -->
-      <div class="max-w-6xl mx-auto mb-6">
-        <button
-          @click="goBack"
-          class="flex items-center gap-2 text-[#41a6c2] hover:text-[#359299] font-medium mb-4"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+  <div class="min-h-screen bg-white pb-20">
+    <NavbarTutor/>
+    <!-- Header -->
+    <div class="bg-[#41a6c2] text-white py-12 px-6">
+      <div class="max-w-4xl mx-auto">
+        <div class="flex items-center space-x-4">
+          <button
+            @click="goBack"
+            class="hover:bg-white/20 p-2 rounded-full transition-colors"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Kembali
-        </button>
-
-        <h1 class="text-3xl font-bold text-[#41a6c2]">Ajuan Belajar</h1>
+            <ArrowLeft class="w-6 h-6 text-white" />
+          </button>
+          <h1 class="text-xl font-semibold">Profil Siswa</h1>
+        </div>
       </div>
+    </div>
 
-      <!-- Student Request Cards -->
-      <div class="max-w-6xl mx-auto space-y-6">
-        <div
-          v-for="student in students"
-          :key="student.id"
-          class="bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition"
-        >
-          <div class="flex flex-col md:flex-row gap-6">
-            <!-- Student Photo -->
-            <div class="flex-shrink-0">
-              <img
-                :src="student.photo"
-                :alt="student.name"
-                class="w-24 h-24 rounded-lg object-cover border-2 border-gray-200"
-              />
+    <!-- Profile Photo -->
+    <div class="flex justify-center -mt-12 mb-6">
+      <div
+        class="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-gray-200"
+      >
+        <img
+          v-if="student"
+          :src="student.photo"
+          :alt="student.nama"
+          class="w-full h-full object-cover"
+        />
+      </div>
+    </div>
+
+    <!-- Detail Card -->
+    <div v-if="student" class="max-w-4xl mx-auto px-6">
+      <div class="bg-white rounded-2xl shadow-lg p-6 space-y-6">
+        <!-- Detail Pribadi -->
+        <div>
+          <h2 class="text-[#41a6c2] text-lg font-semibold mb-4">
+            Detail Pribadi
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p class="text-xs text-gray-500 mb-1">Nama Lengkap</p>
+              <p class="text-sm font-medium text-gray-800">
+                {{ student.nama }}
+              </p>
             </div>
-
-            <!-- Student Info -->
-            <div class="flex-1">
-              <h3 class="text-xl font-semibold text-gray-800 mb-2">
-                {{ student.name }}
-              </h3>
-
-              <div class="space-y-2 text-sm text-gray-600">
-                <div class="flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5 text-[#41a6c2]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                  <span class="font-medium">{{ student.subject }}</span>
-                </div>
-
-                <div class="flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5 text-[#41a6c2]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                  <span>{{ student.level }}</span>
-                </div>
-
-                <div class="flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5 text-[#41a6c2]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <span>{{ student.schedule }}</span>
-                </div>
-
-                <div class="flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5 text-[#41a6c2]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                    />
-                  </svg>
-                  <span>{{ student.phone }}</span>
-                </div>
-
-                <div class="flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5 text-[#41a6c2]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  <a
-                    :href="student.mapsLink"
-                    target="_blank"
-                    rel="noopener"
-                    class="text-[#41a6c2] hover:underline"
-                  >
-                    Link GMaps
-                  </a>
-                </div>
-              </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">Jenis Kelamin</p>
+              <p class="text-sm font-medium text-gray-800">
+                {{ student.jenisKelamin }}
+              </p>
             </div>
-
-            <!-- Action Buttons -->
-            <div class="flex md:flex-col gap-3 justify-end items-end">
-              <button
-                @click="handleReject(student.id)"
-                class="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100 transition w-full md:w-auto"
-              >
-                Tolak
-              </button>
-              <button
-                @click="handleAccept(student.id)"
-                class="px-6 py-2 bg-[#41a6c2] text-white rounded-lg font-semibold hover:bg-[#359299] transition w-full md:w-auto"
-              >
-                Terima
-              </button>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">Tanggal Lahir</p>
+              <p class="text-sm font-medium text-gray-800">
+                {{ student.tanggalLahir }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">No. Telepon</p>
+              <p class="text-sm font-medium text-gray-800">
+                {{ student.telepon }}
+              </p>
             </div>
           </div>
         </div>
 
-        <!-- Empty State -->
-        <div
-          v-if="students.length === 0"
-          class="bg-white rounded-2xl shadow-md p-12 text-center"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-16 h-16 mx-auto text-gray-300 mb-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        <!-- Detail Alamat -->
+        <div>
+          <h2 class="text-[#41a6c2] text-lg font-semibold mb-4">
+            Detail Alamat
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+              <p class="text-xs text-gray-500 mb-1">Alamat Lengkap</p>
+              <p class="text-sm font-medium text-gray-800">
+                {{ student.alamat.detail }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Map -->
+          <div class="mt-4 w-full h-64 bg-gray-200 rounded-lg overflow-hidden">
+            <iframe
+              :src="`https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${student.alamat.detail}`"
+              width="100%"
+              height="100%"
+              style="border: 0"
+              allowfullscreen=""
+              loading="lazy"
+              class="w-full h-full"
+            >
+            </iframe>
+            <!-- Fallback jika tidak ada API key -->
+            <div class="flex items-center justify-center h-full bg-gray-100">
+              <div class="text-center text-gray-500">
+                <svg
+                  class="w-12 h-12 mx-auto mb-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                <p class="text-sm">{{ student.alamat.detail }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail Sekolah -->
+        <div>
+          <h2 class="text-[#41a6c2] text-lg font-semibold mb-4">
+            Detail Sekolah
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p class="text-xs text-gray-500 mb-1">Asal Sekolah</p>
+              <p class="text-sm font-medium text-gray-800">
+                {{ student.sekolah.nama }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">Kelas</p>
+              <p class="text-sm font-medium text-gray-800">
+                {{ student.sekolah.kelas }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kontak Orang Tua/Wali -->
+        <div>
+          <h2 class="text-[#41a6c2] text-lg font-semibold mb-4">
+            Kontak Orang tua/Wali
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p class="text-xs text-gray-500 mb-1">Nama Orang tua/Wali</p>
+              <p class="text-sm font-medium text-gray-800">
+                {{ student.namaOrangTua }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 mb-1">Nomor Handphone</p>
+              <p class="text-sm font-medium text-gray-800">
+                {{ student.teleponOrangTua }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-3 pt-4">
+          <button
+            @click="acceptStudent"
+            class="flex-1 bg-[#41a6c2] hover:bg-[#358a9f] text-white py-3 rounded-lg font-semibold transition-colors"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-            />
-          </svg>
-          <p class="text-gray-500 text-lg">Belum ada ajuan belajar</p>
+            Terima
+          </button>
+          <button
+            @click="rejectStudent"
+            class="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold transition-colors"
+          >
+            Tolak
+          </button>
         </div>
       </div>
-    </main>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { ArrowLeft } from "lucide-vue-next";
+import { ref, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import NavbarTutor from "../../components/layout/navbar-tutor.vue";
 
 const router = useRouter();
+const route = useRoute();
 
-// Dummy data siswa yang mengajukan belajar
-const students = ref([
+// All students data - in real app, this would come from API
+const allStudents = [
   {
     id: 1,
-    name: "Alief",
-    photo: "https://i.pravatar.cc/150?img=1",
-    subject: "Matematika",
-    level: "SMA Kelas 11",
-    schedule: "Selasa, 30 September 2025",
-    phone: "(+62) 8955086880",
-    mapsLink: "https://maps.google.com/?q=-6.200000,106.816666",
+    nama: "Muhammad Alief",
+    email: "alief@example.com",
+    jenisKelamin: "Laki-laki",
+    tanggalLahir: "12-5-2006",
+    telepon: "08225552334",
+    agama: "Islam",
+    photo: "https://i.pravatar.cc/300?img=15",
+    alamat: {
+      provinsi: "Jawa Barat",
+      kota: "Bekasi",
+      kecamatan: "Tambun",
+      detail: "Grand Wisata",
+    },
+    sekolah: {
+      nama: "Sman 12",
+      kelas: "12",
+    },
+    namaOrangTua: "Muhammad Alief",
+    teleponOrangTua: "088733325539",
   },
-  {
-    id: 2,
-    name: "Siti Aisyah",
-    photo: "https://i.pravatar.cc/150?img=5",
-    subject: "Matematika",
-    level: "SMA Kelas 11",
-    schedule: "Selasa, 30 September 2025",
-    phone: "(+62) 8955086880",
-    mapsLink: "https://maps.google.com/?q=-6.200000,106.816666",
-  },
-  {
-    id: 3,
-    name: "Budi Santoso",
-    photo: "https://i.pravatar.cc/150?img=12",
-    subject: "Matematika",
-    level: "SMA Kelas 11",
-    schedule: "Selasa, 30 September 2025",
-    phone: "(+62) 8955086880",
-    mapsLink: "https://maps.google.com/?q=-6.200000,106.816666",
-  },
-]);
+  // Add more students as needed
+];
+
+const student = ref(null);
+
+onMounted(() => {
+  const studentId = parseInt(route.query.id);
+  const foundStudent = allStudents.find((s) => s.id === studentId);
+
+  if (foundStudent) {
+    student.value = foundStudent;
+  } else {
+    // Default to first student if ID not found
+    student.value = allStudents[0];
+  }
+});
 
 const goBack = () => {
   router.push("/tutor/dashboard");
 };
 
-const handleAccept = (studentId) => {
-  if (confirm("Apakah Anda yakin ingin menerima ajuan belajar ini?")) {
-    // TODO: Implement API call to accept request
-    const student = students.value.find((s) => s.id === studentId);
-    alert(`Ajuan dari ${student.name} telah diterima!`);
-
-    // Remove from list after accepting
-    students.value = students.value.filter((s) => s.id !== studentId);
+const acceptStudent = () => {
+  if (confirm(`Terima siswa ${student.value.nama}?`)) {
+    alert("Siswa berhasil diterima!");
+    router.push("/tutor/dashboard");
   }
 };
 
-const handleReject = (studentId) => {
-  if (confirm("Apakah Anda yakin ingin menolak ajuan belajar ini?")) {
-    // TODO: Implement API call to reject request
-    const student = students.value.find((s) => s.id === studentId);
-    alert(`Ajuan dari ${student.name} telah ditolak.`);
-
-    // Remove from list after rejecting
-    students.value = students.value.filter((s) => s.id !== studentId);
+const rejectStudent = () => {
+  if (confirm(`Tolak siswa ${student.value.nama}?`)) {
+    alert("Siswa ditolak!");
+    router.push("/tutor/dashboard");
   }
 };
 </script>
-
-<style scoped>
-/* Additional styles if needed */
-</style>

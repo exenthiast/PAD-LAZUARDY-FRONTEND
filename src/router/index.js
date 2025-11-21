@@ -25,6 +25,12 @@ import SchedulePage from "../views/student/SchedulePage.vue";
 import DashboardTutor from "../views/tutor/DashboardTutor.vue";
 import HomePending from "../views/tutor/HomePending.vue";
 import MyStudentPage from "../views/tutor/MyStudentPage.vue";
+import DashboardAdmin from "../views/admin/DashboardAdmin.vue";
+import DetailDataTutor from "../views/admin/DetailDataTutor.vue";
+import DetailDataSiswa from "../views/admin/DetailDataSiswa.vue";
+import AjuanBelajar from "../views/tutor/AjuanBelajar.vue";
+import AbsensiStudent from "../views/tutor/AbsensiStudent.vue";
+import ProfileTutor from "../views/tutor/ProfilePage.vue";
 
 const routes = [
   {
@@ -75,7 +81,7 @@ const routes = [
   {
     path: "/auth/callback",
     name: "AuthCallback",
-    component: AuthCallback
+    component: AuthCallback,
   },
   {
     path: "/student/dashboard",
@@ -119,7 +125,7 @@ const routes = [
   },
   {
     path: "/student/profile-student",
-    name: "ProfilePage",
+    name: "ProfileStudent",
     component: ProfilePage,
   },
   {
@@ -153,14 +159,44 @@ const routes = [
     component: DashboardTutor,
   },
   {
+    path: "/tutor/profile-tutor",
+    name: "ProfileTutor",
+    component: ProfileTutor,
+  },
+  {
     path: "/tutor/ajuan-belajar",
     name: "AjuanBelajar",
+    component: AjuanBelajar,
+  },
+  {
+    path: "/tutor/data-siswa",
+    name: "MyStudentPage",
     component: MyStudentPage,
+  },
+  {
+    path: "/tutor/absensi-student",
+    name: "AbsensiStudent",
+    component: AbsensiStudent,
   },
   {
     path: "/messages/:tutorId",
     name: "ConversationDetail",
     component: ConversationDetail,
+  },
+  {
+    path: "/admin/dashboard",
+    name: "AdminDashboard",
+    component: DashboardAdmin,
+  },
+  {
+    path: "/admin/data-tutor",
+    name: "DetailDataTutor",
+    component: DetailDataTutor,
+  },
+  {
+    path: "/admin/data-siswa",
+    name: "DetailDataSiswa",
+    component: DetailDataSiswa,
   },
 ];
 
