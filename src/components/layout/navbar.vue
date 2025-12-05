@@ -12,7 +12,7 @@
           'transition-all duration-300 flex items-center justify-between px-6',
           isScrolled
             ? 'max-w-6xl mx-auto bg-white/90 backdrop-blur-md shadow-lg rounded-full h-16'
-            : 'max-w-full bg-[#41a6c2] shadow-sm',
+            : 'max-w-full bg-white shadow-sm',
         ]"
         :style="isScrolled ? '' : { height: 'var(--nav-h)' }"
       >
@@ -56,6 +56,7 @@
               'transition-all duration-300',
               isScrolled ? 'h-8' : 'h-10',
             ]"
+            @error="handleLogoError"
           />
         </div>
 
@@ -85,19 +86,16 @@
             @click="handleProfileClick"
             @mouseenter="showProfileTooltip = true"
             @mouseleave="showProfileTooltip = false"
-            class="relative flex items-center gap-2 p-1 rounded-full hover:bg-black/10 transition-colors"
+            class="relative p-2 rounded-lg hover:bg-black/10 transition-colors"
             aria-label="Profile"
           >
-            <div
-              class="w-8 h-8 bg-gray rounded-full flex items-center justify-center"
-            >
-              <CircleUser
-                :class="[
-                  'w-6 h-6 transition-colors',
-                  isScrolled ? 'text-[#41a6c2]' : 'text-black',
-                ]"
-              />
-            </div>
+            <!-- Always show CircleUser icon -->
+            <CircleUser
+              :class="[
+                'w-6 h-6 transition-colors',
+                isScrolled ? 'text-[#41a6c2]' : 'text-black',
+              ]"
+            />
 
             <!-- Profile Tooltip on Hover -->
             <transition name="fade">
@@ -115,19 +113,22 @@
                 </div>
                 <div v-else class="flex items-center gap-3">
                   <div
-                    class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden"
+                    class="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden"
+                    :class="
+                      student.photo && student.photo !== 'default'
+                        ? ''
+                        : 'bg-teal-500'
+                    "
                   >
                     <img
-                      v-if="student.photo"
+                      v-if="student.photo && student.photo !== 'default'"
                       :src="student.photo"
                       :alt="student.name"
                       class="w-full h-full object-cover"
-                      @error="
-                        (e) => (e.target.src = 'https://via.placeholder.com/80')
-                      "
+                      @error="handlePhotoError"
                     />
                     <span v-else class="text-lg">{{
-                      student.name.charAt(0)
+                      student.name.charAt(0).toUpperCase()
                     }}</span>
                   </div>
                   <div>
@@ -157,7 +158,11 @@
     />
 
     <!-- RIGHT SIDEBAR (Notifications) Component -->
-    <SidebarRight :isOpen="notificationOpen" @close="closeNotification" />
+    <SidebarRight
+      :isOpen="notificationOpen"
+      @close="closeNotification"
+      @update-count="fetchNotificationCount"
+    />
   </div>
 </template>
 
@@ -169,6 +174,7 @@ import { CircleUser } from "lucide-vue-next";
 import SidebarLeft from "./sidebar-left.vue";
 import SidebarRight from "./sidebar-right.vue";
 import { getMe } from "@/services/authService";
+import { getUnreadCount } from "@/services/notificationService";
 
 const router = useRouter();
 const route = useRoute();
@@ -194,14 +200,15 @@ const sidebarOpen = ref(false);
 const notificationOpen = ref(false);
 const showProfileTooltip = ref(false);
 
-// Notification count
-const notificationCount = ref(7);
+// Notification count dari backend
+const notificationCount = ref(0);
+const isLoadingNotifications = ref(false);
 
 // Student data from API
 const student = ref({
-  name: "Loading...",
-  email: "Loading...",
-  photo: "https://via.placeholder.com/80",
+  name: "User", // Changed from "Loading..." to avoid initial fetch
+  email: "",
+  photo: "default",
   address: "",
   phone: "",
   class: "",
@@ -210,46 +217,131 @@ const student = ref({
 });
 
 const isLoadingProfile = ref(false);
+const profileFetched = ref(false); // Track jika sudah pernah fetch
 
 // Fetch profile data from API
 const fetchProfileData = async () => {
+  // Jangan fetch jika sudah pernah fetch atau sedang loading
+  if (profileFetched.value || isLoadingProfile.value) {
+    return;
+  }
+
   try {
     isLoadingProfile.value = true;
 
-    // Ambil data user dari backend
+    // Cek token dulu
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      console.warn("No auth token found, skipping profile fetch");
+      profileFetched.value = true; // Mark sebagai sudah fetch agar tidak coba lagi
+      return;
+    }
+
+    // Coba ambil dari localStorage dulu
+    const cachedUser = localStorage.getItem("auth_user");
+    if (cachedUser) {
+      try {
+        const user = JSON.parse(cachedUser);
+        console.log("Cached user data:", user);
+        console.log("Photo URL:", user.photo || user.profile_photo_url);
+
+        // Build full photo URL
+        let photoUrl = "default";
+        if (user.profile_photo_url) {
+          photoUrl = `http://localhost:8000/storage/${user.profile_photo_url}`;
+        } else if (user.photo && user.photo !== "default") {
+          photoUrl = user.photo.startsWith("http")
+            ? user.photo
+            : `http://localhost:8000/storage/${user.photo}`;
+        }
+
+        student.value = {
+          name: user.name || "User",
+          email: user.email || "",
+          photo: photoUrl,
+          address: user.address || "",
+          phone: user.phone || "",
+          class: user.class || user.class_name || "",
+          school: user.school || user.school_name || "",
+          progress: user.progress || 0,
+        };
+        profileFetched.value = true;
+        isLoadingProfile.value = false;
+        return; // Jika ada di localStorage, tidak perlu fetch API
+      } catch (e) {
+        console.error("Failed to parse cached user:", e);
+      }
+    }
+
+    // Ambil data user dari backend jika tidak ada di localStorage
     const res = await getMe();
-    // tergantung response backend, biasanya:
-    // { user: {...} } atau langsung {...}
     const user = res.user || res.data || res;
+
+    console.log("API response:", res);
+    console.log("User data from API:", user);
+    console.log("Photo from API:", user.photo || user.profile_photo_url);
+
+    // Build full photo URL
+    let photoUrl = "default";
+    if (user.profile_photo_url) {
+      photoUrl = `http://localhost:8000/storage/${user.profile_photo_url}`;
+    } else if (user.photo && user.photo !== "default") {
+      photoUrl = user.photo.startsWith("http")
+        ? user.photo
+        : `http://localhost:8000/storage/${user.photo}`;
+    }
 
     student.value = {
       name: user.name || "User",
       email: user.email || "",
-      photo:
-        user.photo ||
-        user.profile_photo_url ||
-        "https://via.placeholder.com/80",
+      photo: photoUrl,
       address: user.address || "",
       phone: user.phone || "",
       class: user.class || user.class_name || "",
       school: user.school || user.school_name || "",
       progress: user.progress || 0,
     };
+
+    profileFetched.value = true;
   } catch (error) {
     console.error("Failed to fetch profile:", error);
-    // Kalau mau, boleh tetap pakai fallback dummy
+    // Set data default dan mark sebagai sudah fetch
     student.value = {
       name: "User",
-      email: "user@example.com",
-      photo: "https://via.placeholder.com/80",
+      email: "",
+      photo: "default",
       address: "",
       phone: "",
       class: "",
       school: "",
       progress: 0,
     };
+    profileFetched.value = true;
   } finally {
     isLoadingProfile.value = false;
+  }
+};
+
+// Fetch unread notification count
+const fetchNotificationCount = async () => {
+  if (isLoadingNotifications.value) return;
+
+  try {
+    isLoadingNotifications.value = true;
+    const token = localStorage.getItem("auth_token");
+
+    if (!token) {
+      console.warn("No auth token found, skipping notification fetch");
+      return;
+    }
+
+    const res = await getUnreadCount();
+    notificationCount.value = res.unread_count || res.count || 0;
+  } catch (error) {
+    console.error("Failed to fetch notification count:", error);
+    notificationCount.value = 0;
+  } finally {
+    isLoadingNotifications.value = false;
   }
 };
 
@@ -287,20 +379,43 @@ const closeNotification = () => {
   notificationOpen.value = false;
 };
 
-// Scroll handler
+// Handle logo error
+const handleLogoError = (event) => {
+  console.error("Logo failed to load");
+  event.target.style.display = "none";
+};
+
+// Handle photo error - fallback to icon
+const handlePhotoError = (event) => {
+  console.warn("Profile photo failed to load");
+  event.target.style.display = "none";
+  student.value.photo = "default";
+};
+
+// Scroll handler dengan throttle dengan throttle
+let scrollTimeout;
 const handleScroll = () => {
-  isScrolled.value = window.scrollY > 20;
+  if (scrollTimeout) return;
+  scrollTimeout = setTimeout(() => {
+    isScrolled.value = window.scrollY > 20;
+    scrollTimeout = null;
+  }, 100);
 };
 
 // Lifecycle
 onMounted(() => {
-  window.addEventListener("scroll", handleScroll);
-  // Fetch profile data saat component mounted
+  window.addEventListener("scroll", handleScroll, { passive: true });
+  // Fetch profile data saat component mounted (hanya sekali)
   fetchProfileData();
+  // Fetch notification count
+  fetchNotificationCount();
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", handleScroll);
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout);
+  }
 });
 </script>
 

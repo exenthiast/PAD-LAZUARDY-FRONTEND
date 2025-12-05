@@ -34,194 +34,275 @@
 
     <!-- Main Content -->
     <div class="max-w-6xl mx-auto px-6 py-8">
-      <!-- Progress Section -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold text-gray-800">
-            {{ student.subject }} - {{ student.sessions }} Pertemuan
-          </h2>
-          <p class="text-sm text-gray-500">
-            Sesi selesai: {{ student.completedSessions }} dari
-            {{ student.sessions }}
-          </p>
-        </div>
-
-        <!-- Progress Bar -->
+      <!-- Loading State -->
+      <div v-if="isLoading" class="text-center py-12">
         <div
-          class="relative w-full bg-gray-200 rounded-full h-6 overflow-hidden"
-        >
-          <div
-            class="absolute top-0 left-0 h-full bg-[#41a6c2] transition-all duration-300"
-            :style="{ width: `${student.progress}%` }"
-          ></div>
-          <div
-            class="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-700"
-          >
-            {{ student.progress }}%
-          </div>
-        </div>
+          class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#41a6c2] border-t-transparent"
+        ></div>
+        <p class="mt-4 text-gray-600">Memuat data absensi...</p>
       </div>
 
-      <!-- Schedule Calendar -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-        <h2 class="text-lg font-semibold text-[#41a6c2] mb-4">Jadwal Tutor</h2>
-
-        <!-- Date Navigation -->
-        <div class="flex items-center justify-center space-x-4 mb-6">
-          <button
-            @click="previousWeek"
-            class="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <ChevronLeft class="w-5 h-5 text-gray-600" />
-          </button>
-
-          <div class="flex items-center space-x-2">
-            <Calendar class="w-5 h-5 text-[#41a6c2]" />
-            <span class="text-sm font-medium text-gray-700">{{
-              currentWeekRange
-            }}</span>
+      <!-- Content -->
+      <template v-else>
+        <!-- Progress Section -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-800">
+              {{ student.subject }} - {{ student.sessions }} Pertemuan
+            </h2>
+            <p class="text-sm text-gray-500">
+              Sesi selesai: {{ student.completedSessions }} dari
+              {{ student.sessions }}
+            </p>
           </div>
 
-          <button
-            @click="nextWeek"
-            class="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          <!-- Progress Bar -->
+          <div
+            class="relative w-full bg-gray-200 rounded-full h-6 overflow-hidden"
           >
-            <ChevronRight class="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
-
-        <!-- Days Grid -->
-        <div class="grid grid-cols-7 gap-2 mb-6">
-          <div v-for="day in weekDays" :key="day.date" class="text-center">
-            <div class="text-xs text-gray-500 mb-2">{{ day.name }}</div>
             <div
-              :class="[
-                'p-2 rounded-lg text-sm font-medium transition-colors',
-                day.hasSession
-                  ? 'bg-[#41a6c2] text-white'
-                  : 'bg-gray-100 text-gray-600',
-              ]"
+              class="absolute top-0 left-0 h-full bg-[#41a6c2] transition-all duration-300"
+              :style="{ width: `${student.progress}%` }"
+            ></div>
+            <div
+              class="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-700"
             >
-              {{ day.date }}
+              {{ student.progress }}%
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Review Pembelajaran -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-        <h2 class="text-lg font-semibold text-[#41a6c2] mb-4">
-          Review Pembelajaran
-        </h2>
+        <!-- Schedule Calendar -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <h2 class="text-lg font-semibold text-[#41a6c2] mb-4">
+            Jadwal Tutor
+          </h2>
 
-        <div class="flex space-x-2 mb-4">
-          <button
-            v-for="n in 4"
-            :key="n"
-            @click="selectedSession = n"
-            :class="[
-              'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-              selectedSession === n
-                ? 'bg-[#41a6c2] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
-            ]"
-          >
-            Pertemuan {{ n }}
-          </button>
-        </div>
-
-        <!-- Session Content -->
-        <div v-if="currentSessionData" class="space-y-4">
-          <!-- Materi yang di pelajari -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Materi yang di pelajari</label
+          <!-- Date Navigation -->
+          <div class="flex items-center justify-center space-x-4 mb-6">
+            <button
+              @click="previousWeek"
+              class="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-            <input
-              v-model="currentSessionData.material"
-              type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#41a6c2]"
-              placeholder="Masukkan materi yang dipelajari"
-            />
+              <ChevronLeft class="w-5 h-5 text-gray-600" />
+            </button>
+
+            <div class="flex items-center space-x-2">
+              <Calendar class="w-5 h-5 text-[#41a6c2]" />
+              <span class="text-sm font-medium text-gray-700">{{
+                currentWeekRange
+              }}</span>
+            </div>
+
+            <button
+              @click="nextWeek"
+              class="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <ChevronRight class="w-5 h-5 text-gray-600" />
+            </button>
           </div>
 
-          <!-- Nilai tugas -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Nilai tugas</label
-            >
-            <input
-              v-model="currentSessionData.score"
-              type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#41a6c2]"
-              placeholder="Masukkan nilai tugas"
-            />
-          </div>
-
-          <!-- Review dari tutor -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Review dari tutor</label
-            >
-            <textarea
-              v-model="currentSessionData.review"
-              rows="4"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#41a6c2]"
-              placeholder="Masukkan review pembelajaran"
-            ></textarea>
-          </div>
-
-          <!-- Dokumen tasi pertemuan -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Dokumen tasi pertemuan</label
-            >
-            <div
-              class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#41a6c2] transition-colors cursor-pointer"
-              @click="$refs.fileInput.click()"
-            >
-              <input
-                ref="fileInput"
-                type="file"
-                class="hidden"
-                @change="handleFileUpload"
-                accept="image/*,.pdf"
-              />
-              <Upload class="w-12 h-12 mx-auto mb-2 text-gray-400" />
-              <p class="text-sm text-gray-500">
-                Drag & Drop atau klik<br />Upload foto pertemuan
-              </p>
-              <button
-                class="mt-4 px-6 py-2 bg-[#41a6c2] text-white rounded-lg text-sm font-medium hover:bg-[#358a9f] transition-colors"
+          <!-- Days Grid -->
+          <div class="grid grid-cols-7 gap-2 mb-6">
+            <div v-for="day in weekDays" :key="day.date" class="text-center">
+              <div class="text-xs text-gray-500 mb-2">{{ day.name }}</div>
+              <div
+                :class="[
+                  'p-2 rounded-lg text-sm font-medium transition-colors',
+                  day.hasSession
+                    ? 'bg-[#41a6c2] text-white'
+                    : 'bg-gray-100 text-gray-600',
+                ]"
               >
-                Pilih File
-              </button>
+                {{ day.date }}
+              </div>
             </div>
-            <p
-              v-if="currentSessionData.fileName"
-              class="mt-2 text-sm text-gray-600"
-            >
-              File: {{ currentSessionData.fileName }}
+          </div>
+        </div>
+
+        <!-- Meeting Link Section (Online Mode Only) -->
+        <div
+          v-if="meetingLinkData.courseMode === 'online'"
+          class="bg-white rounded-2xl shadow-lg p-6 mb-6"
+        >
+          <h2 class="text-lg font-semibold text-[#41a6c2] mb-4">
+            Link Kelas Online
+          </h2>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Link Meeting (Zoom / Google Meet)
+              </label>
+              <input
+                v-model="meetingLinkData.link"
+                type="url"
+                :disabled="meetingLinkData.isSent"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#41a6c2] disabled:bg-gray-100 disabled:cursor-not-allowed"
+                placeholder="https://meet.google.com/abc-defg-hij atau https://zoom.us/j/123456789"
+              />
+            </div>
+
+            <div class="flex items-center gap-3">
+              <button
+                v-if="!meetingLinkData.isSent"
+                @click="sendMeetingLinkToStudent"
+                :disabled="isSendingLink || !meetingLinkData.link"
+                class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span v-if="isSendingLink">Mengirim...</span>
+                <span v-else>Kirim Link ke Student</span>
+              </button>
+
+              <span
+                v-else
+                class="px-6 py-3 bg-green-100 text-green-700 rounded-lg font-semibold flex items-center gap-2"
+              >
+                <CheckCircle class="w-5 h-5" />
+                Link Sudah Dikirim
+              </span>
+            </div>
+
+            <p class="text-sm text-gray-500">
+              💡 Link akan otomatis muncul di jadwal student dan notifikasi akan
+              dikirim.
             </p>
           </div>
         </div>
-      </div>
 
-      <!-- Submit Button -->
-      <div class="flex justify-end">
-        <button
-          @click="saveAttendance"
-          class="px-8 py-3 bg-[#41a6c2] hover:bg-[#358a9f] text-white rounded-lg font-semibold transition-colors"
-        >
-          Simpan Absensi
-        </button>
-      </div>
+        <!-- Review Pembelajaran -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <h2 class="text-lg font-semibold text-[#41a6c2] mb-4">
+            Review Pembelajaran
+          </h2>
+
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button
+              v-for="session in sessionData"
+              :key="session.id"
+              @click="selectedSession = session.id"
+              :class="[
+                'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                selectedSession === session.id
+                  ? 'bg-[#41a6c2] text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+              ]"
+            >
+              Pertemuan {{ session.id }}
+            </button>
+          </div>
+
+          <!-- Session Content -->
+          <div v-if="currentSessionData" class="space-y-4">
+            <!-- Materi yang di pelajari -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Materi yang di pelajari</label
+              >
+              <input
+                v-model="currentSessionData.material"
+                type="text"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#41a6c2]"
+                placeholder="Masukkan materi yang dipelajari"
+              />
+            </div>
+
+            <!-- Nilai tugas -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Nilai tugas</label
+              >
+              <input
+                v-model="currentSessionData.score"
+                type="text"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#41a6c2]"
+                placeholder="Masukkan nilai tugas"
+              />
+            </div>
+
+            <!-- Review dari tutor -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Review dari tutor</label
+              >
+              <textarea
+                v-model="currentSessionData.review"
+                rows="4"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#41a6c2]"
+                placeholder="Masukkan review pembelajaran"
+              ></textarea>
+            </div>
+
+            <!-- Dokumen tasi pertemuan -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Dokumen tasi pertemuan</label
+              >
+
+              <!-- Show existing document if available -->
+              <div
+                v-if="currentSessionData.documentUrl && !uploadedFile"
+                class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
+              >
+                <p class="text-sm text-blue-800 mb-2">
+                  Dokumen sudah diupload: {{ currentSessionData.fileName }}
+                </p>
+                <a
+                  :href="currentSessionData.documentUrl"
+                  target="_blank"
+                  class="text-sm text-[#41a6c2] hover:underline"
+                >
+                  Lihat Dokumen →
+                </a>
+              </div>
+
+              <div
+                class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#41a6c2] transition-colors cursor-pointer"
+                @click="$refs.fileInput.click()"
+              >
+                <input
+                  ref="fileInput"
+                  type="file"
+                  class="hidden"
+                  @change="handleFileUpload"
+                  accept="image/*,.pdf"
+                />
+                <Upload class="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                <p class="text-sm text-gray-500">
+                  Drag & Drop atau klik<br />Upload foto pertemuan
+                </p>
+                <button
+                  class="mt-4 px-6 py-2 bg-[#41a6c2] text-white rounded-lg text-sm font-medium hover:bg-[#358a9f] transition-colors"
+                >
+                  Pilih File
+                </button>
+              </div>
+              <p
+                v-if="uploadedFile || currentSessionData.fileName"
+                class="mt-2 text-sm text-gray-600"
+              >
+                File: {{ uploadedFile?.name || currentSessionData.fileName }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-end">
+          <button
+            @click="saveAttendance"
+            class="px-8 py-3 bg-[#41a6c2] hover:bg-[#358a9f] text-white rounded-lg font-semibold transition-colors"
+          >
+            Simpan Absensi
+          </button>
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import {
   ArrowLeft,
@@ -229,32 +310,51 @@ import {
   ChevronLeft,
   ChevronRight,
   Upload,
+  CheckCircle,
 } from "lucide-vue-next";
 import NavbarTutor from "@/components/layout/navbar-tutor.vue";
+import {
+  getStudentAttendance,
+  saveSessionReport,
+  sendMeetingLink,
+} from "@/services/tutorDashboardService";
 
 const router = useRouter();
 const route = useRoute();
 const fileInput = ref(null);
 
+// Loading state
+const isLoading = ref(true);
+const isSendingLink = ref(false);
+
 // Student data
 const student = ref({
-  id: 1,
-  name: "Muhammad Alief",
-  subject: "Matematika",
-  sessions: 8,
-  completedSessions: 7,
-  progress: 75,
-  photo: "https://i.pravatar.cc/150?img=15",
+  id: null,
+  name: "",
+  subject: "",
+  sessions: 0,
+  completedSessions: 0,
+  progress: 0,
+  photo: "",
 });
 
-// Session data
+// Student package ID (needed for saving)
+const studentPackageId = ref(null);
+
+// Meeting link data
+const meetingLinkData = ref({
+  scheduleId: null,
+  link: "",
+  isSent: false,
+  courseMode: "online",
+});
+
+// Session data - initialize with empty sessions
 const selectedSession = ref(1);
-const sessionData = ref([
-  { id: 1, material: "", score: "", review: "", fileName: "" },
-  { id: 2, material: "", score: "", review: "", fileName: "" },
-  { id: 3, material: "", score: "", review: "", fileName: "" },
-  { id: 4, material: "", score: "", review: "", fileName: "" },
-]);
+const sessionData = ref([]);
+
+// Uploaded file
+const uploadedFile = ref(null);
 
 const currentSessionData = computed(() => {
   return sessionData.value.find((s) => s.id === selectedSession.value);
@@ -262,6 +362,7 @@ const currentSessionData = computed(() => {
 
 // Calendar data
 const currentWeekStart = ref(new Date());
+const scheduleDates = ref([]);
 
 const currentWeekRange = computed(() => {
   const start = new Date(currentWeekStart.value);
@@ -283,10 +384,17 @@ const weekDays = computed(() => {
     const date = new Date(currentWeekStart.value);
     date.setDate(date.getDate() + i);
 
+    // Check if this date has a scheduled session
+    const dateStr = date.toISOString().split("T")[0];
+    const hasSession = scheduleDates.value.some((sd) => {
+      const scheduleDate = new Date(sd.date).toISOString().split("T")[0];
+      return scheduleDate === dateStr;
+    });
+
     result.push({
       name: days[i],
       date: date.getDate(),
-      hasSession: i === 1 || i === 3, // Selasa dan Kamis punya sesi (contoh)
+      hasSession: hasSession,
     });
   }
 
@@ -308,22 +416,180 @@ const nextWeek = () => {
 const handleFileUpload = (event) => {
   const file = event.target.files[0];
   if (file && currentSessionData.value) {
+    uploadedFile.value = file;
     currentSessionData.value.fileName = file.name;
   }
 };
 
-const saveAttendance = () => {
-  // TODO: Save to API
-  alert("Data absensi berhasil disimpan!");
+// Watch selectedSession to reset uploaded file when switching sessions
+watch(selectedSession, () => {
+  uploadedFile.value = null;
+});
+
+const saveAttendance = async () => {
+  if (!currentSessionData.value) {
+    alert("Pilih pertemuan terlebih dahulu");
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("student_package_id", studentPackageId.value);
+    formData.append("session_number", selectedSession.value);
+    formData.append("material", currentSessionData.value.material || "");
+    formData.append("score", currentSessionData.value.score || "");
+    formData.append("review", currentSessionData.value.review || "");
+    formData.append("session_date", new Date().toISOString().split("T")[0]);
+
+    if (uploadedFile.value) {
+      formData.append("document", uploadedFile.value);
+    }
+
+    await saveSessionReport(formData);
+    alert("Data absensi berhasil disimpan!");
+
+    // Reload data
+    await loadAttendanceData();
+    uploadedFile.value = null;
+  } catch (error) {
+    console.error("Error saving attendance:", error);
+    alert("Gagal menyimpan data absensi");
+  }
+};
+
+const loadAttendanceData = async () => {
+  const studentId = parseInt(route.query.id);
+  if (!studentId) {
+    alert("Student ID tidak valid");
+    router.push("/tutor/dashboard");
+    return;
+  }
+
+  try {
+    isLoading.value = true;
+    const response = await getStudentAttendance(studentId);
+
+    console.log("Attendance data:", response);
+
+    // Set student info
+    student.value = {
+      id: response.student.id,
+      name: response.student.name,
+      subject: response.student.subject,
+      sessions: response.sessions.total,
+      completedSessions: response.sessions.completed,
+      progress: response.sessions.progress,
+      photo: response.student.photo,
+    };
+
+    studentPackageId.value = response.student_package_id;
+    scheduleDates.value = response.schedule_dates || [];
+
+    // Set meeting link data from first schedule (if available)
+    if (scheduleDates.value.length > 0) {
+      const firstSchedule = scheduleDates.value[0];
+      meetingLinkData.value = {
+        scheduleId: firstSchedule.schedule_id,
+        link: firstSchedule.meeting_link || "",
+        isSent: firstSchedule.meeting_link_sent || false,
+        courseMode: firstSchedule.course_mode || "online",
+      };
+    }
+
+    // Initialize session data based on total sessions
+    const totalSessions = response.sessions.total;
+    sessionData.value = [];
+
+    for (let i = 1; i <= totalSessions; i++) {
+      // Find existing report for this session
+      const existingReport = response.session_reports?.find(
+        (r) => r.session_number === i
+      );
+
+      sessionData.value.push({
+        id: i,
+        material: existingReport?.material || "",
+        score: existingReport?.score || "",
+        review: existingReport?.review || "",
+        fileName: existingReport?.document_url
+          ? existingReport.document_url.split("/").pop()
+          : "",
+        documentUrl: existingReport?.document_url || null,
+      });
+    }
+  } catch (error) {
+    console.error("Error loading attendance:", error);
+    alert("Gagal memuat data absensi");
+    router.push("/tutor/dashboard");
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 const goBack = () => {
   router.push("/tutor/dashboard");
 };
 
+const sendMeetingLinkToStudent = async () => {
+  if (!meetingLinkData.value.link) {
+    alert("Masukkan link meeting terlebih dahulu");
+    return;
+  }
+
+  // Validate URL
+  try {
+    new URL(meetingLinkData.value.link);
+  } catch {
+    alert(
+      "Link tidak valid. Masukkan URL yang benar (contoh: https://meet.google.com/xxx)"
+    );
+    return;
+  }
+
+  // Validate schedule ID
+  if (!meetingLinkData.value.scheduleId) {
+    alert(
+      "Schedule ID tidak ditemukan. Pastikan student memiliki jadwal aktif."
+    );
+    console.error("Meeting link data:", meetingLinkData.value);
+    return;
+  }
+
+  console.log("Sending meeting link:", {
+    studentId: student.value.id,
+    scheduleId: meetingLinkData.value.scheduleId,
+    link: meetingLinkData.value.link,
+  });
+
+  try {
+    isSendingLink.value = true;
+    const response = await sendMeetingLink(
+      student.value.id,
+      meetingLinkData.value.scheduleId,
+      meetingLinkData.value.link
+    );
+
+    console.log("Meeting link sent successfully:", response);
+    meetingLinkData.value.isSent = true;
+    alert("Link meeting berhasil dikirim ke student!");
+  } catch (error) {
+    console.error("Error sending meeting link:", error);
+
+    let errorMessage = "Gagal mengirim link meeting";
+
+    if (error && error.response && error.response.data) {
+      errorMessage = error.response.data.message || errorMessage;
+    } else if (error && error.message) {
+      errorMessage = error.message;
+    }
+
+    alert(`Gagal mengirim link meeting: ${errorMessage}`);
+  } finally {
+    isSendingLink.value = false;
+  }
+};
+
 onMounted(() => {
-  const studentId = parseInt(route.query.id);
-  // TODO: Fetch student data by ID from API
-  console.log("Loading attendance for student:", studentId);
+  loadAttendanceData();
 });
 </script>

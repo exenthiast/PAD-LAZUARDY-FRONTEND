@@ -15,7 +15,7 @@
           </svg>
         </div>
 
-        <h2 class="text-lg md:text-xl font-semibold text-teal-700">
+        <h2 class="text-lg md:text-xl font-semibold text-[#41a6c2]">
           Bimbel Lazuardi Membutuhkan Akses Lokasi Anda
         </h2>
 
@@ -29,14 +29,14 @@
         <!-- actions -->
         <div class="mt-8 grid grid-cols-2 gap-4">
           <button
-            class="rounded-xl border-2 border-teal-400 px-4 py-3 text-teal-600 font-semibold hover:bg-teal-50"
+            class="rounded-xl border-2 border-[#41a6c2] px-4 py-3 text-[#41a6c2] font-semibold hover:bg-teal-50"
             @click="onClose(false)"
           >
             Tolak
           </button>
 
           <button
-            class="rounded-xl bg-teal-600 px-4 py-3 text-white font-semibold hover:bg-teal-700 disabled:opacity-60"
+            class="rounded-xl bg-[#41a6c2] px-4 py-3 text-white font-semibold hover:bg-teal-700 disabled:opacity-60"
             :disabled="loading"
             @click="requestLocation"
           >

@@ -28,8 +28,16 @@
         </button>
       </div>
 
+      <!-- Loading State -->
+      <div v-if="isLoading" class="text-center py-12">
+        <div
+          class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#41a6c2] border-t-transparent"
+        ></div>
+        <p class="mt-4 text-gray-600">Memuat jadwal...</p>
+      </div>
+
       <!-- Calendar View (Mendatang) -->
-      <div v-if="activeTab === 'upcoming'" class="space-y-4">
+      <div v-else-if="activeTab === 'upcoming'" class="space-y-4">
         <div
           v-for="schedule in upcomingSchedules"
           :key="schedule.id"
@@ -71,15 +79,30 @@
               <button
                 @click="handleJoinClass(schedule)"
                 v-if="schedule.mode === 'online'"
-                class="bg-[#41a6c2] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2e8694] transition"
+                :disabled="!schedule.meetingLink"
+                :class="[
+                  'px-4 py-2 rounded-lg text-sm font-medium transition',
+                  schedule.meetingLink
+                    ? 'bg-[#41a6c2] text-white hover:bg-[#2e8694]'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed',
+                ]"
               >
-                Gabung Kelas
+                {{ schedule.meetingLink ? "Gabung Kelas" : "Menunggu Link" }}
               </button>
               <button
-                class="border-2 border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+                v-if="!schedule.hasAttendance"
+                @click="handleSubmitAttendance(schedule.id)"
+                class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition"
               >
-                Detail
+                Kirim Absensi
               </button>
+              <span
+                v-else
+                class="px-4 py-2 rounded-lg text-sm font-medium bg-green-100 text-green-700 flex items-center gap-1"
+              >
+                <CheckCircle class="w-4 h-4" />
+                Absensi Terkirim
+              </span>
             </div>
           </div>
         </div>
@@ -125,9 +148,10 @@
               </div>
             </div>
             <button
+              @click="handleSubmitReview(schedule)"
               class="border-2 border-[#41a6c2] text-[#41a6c2] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#41a6c2] hover:text-white transition"
             >
-              Lihat Rekaman
+              Beri Review
             </button>
           </div>
         </div>
@@ -142,93 +166,207 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import Navbar from "@/components/layout/navbar.vue";
 import { Calendar, Clock, CheckCircle } from "lucide-vue-next";
+import { getMySchedules } from "@/services/studentService";
 
+const router = useRouter();
 const activeTab = ref("upcoming");
+const isLoading = ref(true);
+const allSchedules = ref([]);
 
 const tabs = [
   { label: "Mendatang", value: "upcoming" },
   { label: "Riwayat", value: "history" },
 ];
 
-// Dummy data jadwal mendatang
-const upcomingSchedules = ref([
-  {
-    id: 1,
-    subject: "Matematika - Aljabar",
-    tutor: "Budi Santoso",
-    date: "Senin, 11 Nov 2025",
-    time: "14:00 - 15:30",
-    mode: "online",
-    meetLink: "https://meet.google.com/abc-defg-hij",
-  },
-  {
-    id: 2,
-    subject: "Fisika - Gerak Lurus",
-    tutor: "Siti Nurhaliza",
-    date: "Rabu, 13 Nov 2025",
-    time: "10:00 - 11:30",
-    mode: "online",
-    meetLink: "https://meet.google.com/xyz-abcd-efg",
-  },
-  {
-    id: 3,
-    subject: "Kimia - Reaksi Kimia",
-    tutor: "Ahmad Fauzi",
-    date: "Jumat, 15 Nov 2025",
-    time: "16:00 - 17:30",
-    mode: "offline",
-    location: "Ruang 202, Gedung A",
-  },
-  {
-    id: 4,
-    subject: "Bahasa Inggris - Grammar",
-    tutor: "Dedi Kurniawan",
-    date: "Sabtu, 16 Nov 2025",
-    time: "09:00 - 10:30",
-    mode: "online",
-    meetLink: "https://meet.google.com/aaa-bbbb-ccc",
-  },
-]);
-
-// Dummy data riwayat jadwal
-const historySchedules = ref([
-  {
-    id: 101,
-    subject: "Matematika - Trigonometri",
-    tutor: "Budi Santoso",
-    date: "Senin, 4 Nov 2025",
-    time: "14:00 - 15:30",
-    mode: "online",
-    recordingLink: "https://drive.google.com/recording-1",
-  },
-  {
-    id: 102,
-    subject: "Fisika - Hukum Newton",
-    tutor: "Siti Nurhaliza",
-    date: "Rabu, 6 Nov 2025",
-    time: "10:00 - 11:30",
-    mode: "online",
-    recordingLink: "https://drive.google.com/recording-2",
-  },
-  {
-    id: 103,
-    subject: "Kimia - Tabel Periodik",
-    tutor: "Ahmad Fauzi",
-    date: "Kamis, 7 Nov 2025",
-    time: "15:00 - 16:30",
-    mode: "offline",
-    location: "Ruang 201, Gedung A",
-  },
-]);
-
-const handleJoinClass = (schedule) => {
-  if (schedule.mode === "online" && schedule.meetLink) {
-    window.open(schedule.meetLink, "_blank");
+// Load schedules from backend
+const loadSchedules = async () => {
+  try {
+    isLoading.value = true;
+    const response = await getMySchedules("all");
+    allSchedules.value = response;
+    console.log("Loaded schedules:", response);
+  } catch (error) {
+    console.error("Error loading schedules:", error);
+    alert("Gagal memuat jadwal");
+  } finally {
+    isLoading.value = false;
   }
 };
+
+// Filter schedules based on active tab
+const upcomingSchedules = computed(() => {
+  console.log("[UPCOMING] Raw schedules from backend:", {
+    total: allSchedules.value.length,
+    schedules: allSchedules.value.map((s) => ({
+      id: s.id,
+      subject: s.subject,
+      date: s.date,
+      status: s.status,
+      tutor: s.tutor_name,
+    })),
+  });
+
+  // Status yang dianggap "upcoming" - backend already filters by date
+  // Kita hanya perlu filter berdasarkan status
+  const upcomingStatuses = [
+    "paid",
+    "approved",
+    "unpaid",
+    "active",
+    "scheduled",
+    "pending",
+  ];
+
+  const filtered = allSchedules.value
+    .filter((schedule) => {
+      // Safe status check with fallback
+      const normalizedStatus = (schedule.status || "").toString().toLowerCase();
+      const isUpcoming = upcomingStatuses.includes(normalizedStatus);
+
+      console.log("[UPCOMING FILTER]", {
+        id: schedule.id,
+        subject: schedule.subject,
+        date: schedule.date,
+        originalStatus: schedule.status,
+        normalizedStatus: normalizedStatus,
+        isUpcoming: isUpcoming,
+      });
+
+      return isUpcoming;
+    })
+    .map((schedule) => ({
+      id: schedule.id,
+      subject: schedule.subject,
+      tutor: schedule.tutor_name,
+      tutorId: schedule.tutor_id,
+      date: formatDate(schedule.date),
+      time: schedule.time,
+      mode: schedule.course_mode || "online",
+      status: schedule.status,
+      hasAttendance: schedule.has_attendance,
+      meetingLink: schedule.meeting_link,
+      meetingLinkSent: schedule.meeting_link_sent,
+    }));
+
+  console.log("[UPCOMING] Filtered result:", {
+    count: filtered.length,
+    schedules: filtered,
+  });
+  return filtered;
+});
+
+const historySchedules = computed(() => {
+  console.log("[HISTORY] Raw schedules from backend:", {
+    total: allSchedules.value.length,
+    schedules: allSchedules.value.map((s) => ({
+      id: s.id,
+      subject: s.subject,
+      date: s.date,
+      status: s.status,
+    })),
+  });
+
+  // Status yang dianggap "completed/history" (case-insensitive)
+  const historyStatuses = ["completed", "cancelled", "finished", "done"];
+
+  const filtered = allSchedules.value
+    .filter((schedule) => {
+      // Safe status check with fallback
+      const normalizedStatus = (schedule.status || "").toString().toLowerCase();
+      const isHistory = historyStatuses.includes(normalizedStatus);
+
+      console.log("[HISTORY FILTER]", {
+        id: schedule.id,
+        subject: schedule.subject,
+        originalStatus: schedule.status,
+        normalizedStatus: normalizedStatus,
+        isHistory: isHistory,
+      });
+
+      return isHistory;
+    })
+    .map((schedule) => ({
+      id: schedule.id,
+      subject: schedule.subject,
+      tutor: schedule.tutor_name,
+      tutorId: schedule.tutor_id,
+      date: formatDate(schedule.date),
+      time: schedule.time,
+      mode: schedule.course_mode || "online",
+      status: schedule.status,
+      hasAttendance: schedule.has_attendance,
+    }));
+
+  console.log("[HISTORY] Filtered result:", {
+    count: filtered.length,
+    schedules: filtered,
+  });
+  return filtered;
+});
+
+// Format date helper
+const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
+
+  const date = new Date(dateString);
+  const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  const months = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+
+  const dayName = days[date.getDay()];
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+
+  return `${dayName}, ${day} ${month} ${year}`;
+};
+
+const handleJoinClass = (schedule) => {
+  if (schedule.mode === "online") {
+    if (schedule.meetingLink) {
+      // Open meeting link in new tab
+      window.open(schedule.meetingLink, "_blank");
+    } else {
+      alert(
+        "Link meeting belum dikirim oleh tutor. Silakan tunggu tutor mengirim link."
+      );
+    }
+  }
+};
+
+const handleSubmitAttendance = (scheduleId) => {
+  router.push(`/student/attendance/${scheduleId}`);
+};
+
+const handleSubmitReview = (schedule) => {
+  router.push({
+    path: `/student/review/${schedule.tutorId}`,
+    query: {
+      name: schedule.tutor,
+      subject: schedule.subject,
+    },
+  });
+};
+
+onMounted(() => {
+  loadSchedules();
+});
 </script>
 
 <style scoped>

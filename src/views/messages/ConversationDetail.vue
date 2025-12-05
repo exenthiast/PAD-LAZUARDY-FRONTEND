@@ -155,7 +155,7 @@ const tutorData = computed(() => {
       name: "Tutor Tidak Diketahui",
       subject: "Mata pelajaran",
       level: "Level",
-      photo: "https://via.placeholder.com/80",
+      photo: "default",
     }
   );
 });

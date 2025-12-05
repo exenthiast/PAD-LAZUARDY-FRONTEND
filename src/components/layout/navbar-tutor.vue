@@ -68,23 +68,23 @@
                     class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden"
                   >
                     <img
-                      v-if="student.photo"
+                      v-if="student?.photo && student.photo !== 'default'"
                       :src="student.photo"
-                      :alt="student.name"
+                      :alt="student?.name || 'User'"
                       class="w-full h-full object-cover"
-                      @error="
-                        (e) => (e.target.src = 'https://via.placeholder.com/80')
-                      "
+                      @error="handlePhotoError"
                     />
                     <span v-else class="text-lg">{{
-                      student.name.charAt(0)
+                      (student?.name || "U").charAt(0).toUpperCase()
                     }}</span>
                   </div>
                   <div>
                     <p class="font-semibold text-gray-900">
-                      {{ student.name }}
+                      {{ student?.name || "Loading..." }}
                     </p>
-                    <p class="text-sm text-gray-500">{{ student.email }}</p>
+                    <p class="text-sm text-gray-500">
+                      {{ student?.email || "" }}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -105,7 +105,7 @@
 import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { CircleUser } from "lucide-vue-next";
-// import { getMe } from "@/services/authService";
+import { getTutorProfile } from "@/services/tutorProfileService";
 
 const router = useRouter();
 const route = useRoute();
@@ -120,7 +120,7 @@ const showProfileTooltip = ref(false);
 const student = ref({
   name: "Loading...",
   email: "Loading...",
-  photo: "https://via.placeholder.com/80",
+  photo: "default",
   address: "",
   phone: "",
   class: "",
@@ -136,23 +136,17 @@ const fetchProfileData = async () => {
     isLoadingProfile.value = true;
 
     // Ambil data user dari backend
-    const res = await getMe();
-    // tergantung response backend, biasanya:
-    // { user: {...} } atau langsung {...}
-    const user = res.user || res.data || res;
+    const user = await getTutorProfile();
 
     student.value = {
-      name: user.name || "User",
+      name: user.namaLengkap || "User",
       email: user.email || "",
-      photo:
-        user.photo ||
-        user.profile_photo_url ||
-        "https://via.placeholder.com/80",
-      address: user.address || "",
-      phone: user.phone || "",
-      class: user.class || user.class_name || "",
-      school: user.school || user.school_name || "",
-      progress: user.progress || 0,
+      photo: user.photo || "default",
+      address: user.alamatLengkap || "",
+      phone: user.noTelepon || "",
+      class: user.marketSiswa || "",
+      school: "",
+      progress: 0,
     };
   } catch (error) {
     console.error("Failed to fetch profile:", error);
@@ -160,7 +154,7 @@ const fetchProfileData = async () => {
     student.value = {
       name: "User",
       email: "user@example.com",
-      photo: "https://via.placeholder.com/80",
+      photo: "default",
       address: "",
       phone: "",
       class: "",
@@ -174,7 +168,13 @@ const fetchProfileData = async () => {
 
 const handleProfileClick = () => {
   showProfileTooltip.value = false;
-  router.push("/tutor/profile");
+  router.push("/tutor/profile-tutor");
+};
+
+// Handle photo error
+const handlePhotoError = (event) => {
+  console.log("Photo failed to load, using fallback");
+  event.target.style.display = "none";
 };
 
 // Scroll handler

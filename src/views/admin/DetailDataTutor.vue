@@ -19,8 +19,25 @@
         <h2 class="text-3xl font-bold text-[#41a6c2] mb-2">Detail Tutor</h2>
       </div>
 
+      <!-- Photo Profile -->
+      <div v-if="!loading && tutor.photo" class="flex justify-center mb-6">
+        <img
+          :src="tutor.photo"
+          alt="Foto Profil"
+          class="w-32 h-32 rounded-full object-cover shadow-lg border-4 border-[#41a6c2]"
+        />
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="loading" class="text-center py-12">
+        <div
+          class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#41a6c2]"
+        ></div>
+        <p class="mt-4 text-gray-600">Memuat data tutor...</p>
+      </div>
+
       <!-- Detail Tutor -->
-      <section class="bg-white rounded-xl shadow-lg p-6 sm:p-8 mb-6">
+      <section v-else class="bg-white rounded-xl shadow-lg p-6 sm:p-8 mb-6">
         <h3
           class="text-xl font-bold text-[#41a6c2] mb-6 pb-3 border-b-2 border-[#41a6c2]/20"
         >
@@ -66,6 +83,18 @@
         </div>
       </section>
 
+      <!-- Tentang Saya -->
+      <section class="bg-white rounded-xl shadow-lg p-6 sm:p-8 mb-6">
+        <h3
+          class="text-xl font-bold text-[#41a6c2] mb-6 pb-3 border-b-2 border-[#41a6c2]/20"
+        >
+          Tentang Saya
+        </h3>
+        <p class="text-base text-gray-700 leading-relaxed whitespace-pre-wrap">
+          {{ tutor.tentangSaya || "Belum ada deskripsi" }}
+        </p>
+      </section>
+
       <!-- Detail Alamat -->
       <section class="bg-white rounded-xl shadow-lg p-6 sm:p-8 mb-6">
         <h3
@@ -107,6 +136,22 @@
             </p>
           </div>
         </div>
+
+        <!-- Google Maps -->
+        <div v-if="tutor.latitude && tutor.longitude" class="mt-6">
+          <label class="block text-sm text-gray-500 mb-2">Lokasi di Peta</label>
+          <div class="rounded-lg overflow-hidden shadow-md">
+            <iframe
+              :src="`https://maps.google.com/maps?q=${tutor.latitude},${tutor.longitude}&z=15&output=embed`"
+              width="100%"
+              height="300"
+              frameborder="0"
+              style="border: 0"
+              allowfullscreen=""
+              loading="lazy"
+            ></iframe>
+          </div>
+        </div>
       </section>
 
       <!-- Data Akademik & Pengalaman -->
@@ -120,25 +165,164 @@
           <div>
             <label class="block text-sm text-gray-500 mb-1">Keahlian</label>
             <p class="text-base font-medium text-gray-800">
-              {{ tutor.keahlian }}
+              {{ tutor.keahlian || "N/A" }}
             </p>
           </div>
           <div>
             <label class="block text-sm text-gray-500 mb-1">Market Siswa</label>
             <p class="text-base font-medium text-gray-800">
-              {{ tutor.marketSiswa }}
+              {{ tutor.marketSiswa || "N/A" }}
             </p>
           </div>
           <div>
-            <label class="block text-sm text-gray-500 mb-1">Pengalaman</label>
-            <p class="text-base font-medium text-gray-800">
-              {{ tutor.pengalaman }}
+            <label class="block text-sm text-gray-500 mb-1"
+              >Pengalaman Mengajar</label
+            >
+            <p class="text-base font-medium text-gray-800 whitespace-pre-wrap">
+              {{ tutor.pengalaman || "N/A" }}
             </p>
           </div>
           <div>
             <label class="block text-sm text-gray-500 mb-1">Skill Bahasa</label>
             <p class="text-base font-medium text-gray-800">
-              {{ tutor.skillBahasa }}
+              {{ tutor.skillBahasa || "N/A" }}
+            </p>
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-sm text-gray-500 mb-1">Organisasi</label>
+            <p class="text-base font-medium text-gray-800 whitespace-pre-wrap">
+              {{ tutor.organisasi || "N/A" }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Pendidikan -->
+        <div
+          v-if="
+            tutor.pendidikan &&
+            Array.isArray(tutor.pendidikan) &&
+            tutor.pendidikan.length > 0
+          "
+          class="mt-6 pt-6 border-t border-gray-200"
+        >
+          <h4 class="text-lg font-semibold text-gray-800 mb-4">
+            Riwayat Pendidikan
+          </h4>
+          <div class="space-y-4">
+            <div
+              v-for="(edu, index) in tutor.pendidikan"
+              :key="index"
+              class="bg-gray-50 rounded-lg p-4"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <span
+                    :class="[
+                      'inline-block px-2 py-0.5 text-xs font-medium rounded mb-2',
+                      edu.type === 'pendidikan'
+                        ? 'bg-blue-100 text-blue-800'
+                        : edu.type === 'pengalaman'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-purple-100 text-purple-800',
+                    ]"
+                  >
+                    {{
+                      edu.type === "pendidikan"
+                        ? "Pendidikan"
+                        : edu.type === "pengalaman"
+                        ? "Pengalaman"
+                        : "Organisasi"
+                    }}
+                  </span>
+                  <h5 class="font-semibold text-gray-800">
+                    {{ edu.title || edu.degree || "N/A" }}
+                  </h5>
+                  <p class="text-sm text-gray-600">
+                    {{ edu.org || edu.institution || "N/A" }}
+                  </p>
+                </div>
+                <span class="text-xs text-gray-500">{{
+                  edu.period || edu.year || "N/A"
+                }}</span>
+              </div>
+              <p
+                v-if="edu.detail || edu.description"
+                class="text-sm text-gray-700 mt-2"
+              >
+                {{ edu.detail || edu.description }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Jadwal Mengajar -->
+      <section class="bg-white rounded-xl shadow-lg p-6 sm:p-8 mb-6">
+        <h3
+          class="text-xl font-bold text-[#41a6c2] mb-6 pb-3 border-b-2 border-[#41a6c2]/20"
+        >
+          Jadwal Mengajar
+        </h3>
+        <div
+          v-if="tutor.jadwalMengajar && tutor.jadwalMengajar.length > 0"
+          class="divide-y divide-gray-200"
+        >
+          <div
+            v-for="(jadwal, index) in tutor.jadwalMengajar"
+            :key="index"
+            class="py-3 flex items-center justify-between"
+          >
+            <div>
+              <p class="font-semibold text-gray-800">{{ jadwal.day }}</p>
+              <p class="text-sm text-gray-600">{{ jadwal.subject }}</p>
+            </div>
+            <p class="text-sm text-gray-500">{{ jadwal.time }}</p>
+          </div>
+        </div>
+        <p v-else class="text-sm text-gray-500">Belum ada jadwal mengajar</p>
+      </section>
+
+      <!-- Harga & Data Bank -->
+      <section class="bg-white rounded-xl shadow-lg p-6 sm:p-8 mb-6">
+        <h3
+          class="text-xl font-bold text-[#41a6c2] mb-6 pb-3 border-b-2 border-[#41a6c2]/20"
+        >
+          Harga & Data Bank
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm text-gray-500 mb-1"
+              >Harga Per Pertemuan</label
+            >
+            <p class="text-base font-semibold text-gray-800">
+              Rp
+              {{
+                tutor.hargaPerPertemuan
+                  ? tutor.hargaPerPertemuan.toLocaleString("id-ID")
+                  : "0"
+              }}
+            </p>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-500 mb-1">Nama Bank</label>
+            <p class="text-base font-medium text-gray-800">
+              {{ tutor.bankName }}
+            </p>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-500 mb-1"
+              >Nomor Rekening</label
+            >
+            <p class="text-base font-medium text-gray-800">
+              {{ tutor.bankAccountNumber }}
+            </p>
+          </div>
+          <div>
+            <label class="block text-sm text-gray-500 mb-1"
+              >Nama Pemilik Rekening</label
+            >
+            <p class="text-base font-medium text-gray-800">
+              {{ tutor.bankAccountName }}
             </p>
           </div>
         </div>
@@ -216,14 +400,14 @@
           </div>
           <div class="flex gap-3">
             <button
-              v-if="tutor.status === 'Menunggu'"
+              v-if="tutor.statusEnum === 'verify'"
               @click="handleApprove"
               class="px-6 py-3 bg-[#41a6c2] hover:bg-[#358a9f] text-white rounded-lg font-semibold transition shadow-md hover:shadow-lg"
             >
               Setujui
             </button>
             <button
-              v-if="tutor.status === 'Menunggu'"
+              v-if="tutor.statusEnum === 'verify'"
               @click="handleReject"
               class="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition shadow-md hover:shadow-lg"
             >
@@ -290,34 +474,54 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import NavbarAdmin from "@/components/layout/navbar-admin.vue";
 import { ArrowLeft, FileText } from "lucide-vue-next";
+import {
+  getTutorDetail,
+  approveTutor as approveUserTutor,
+  rejectTutor as rejectUserTutor,
+} from "@/services/adminDashboardService";
 
 const route = useRoute();
 const router = useRouter();
 
-// Dummy data tutor (nanti dari API berdasarkan ID)
+// Loading state
+const loading = ref(true);
+
+// Tutor data from API
 const tutor = ref({
-  id: 1,
-  namaLengkap: "Budi Santoso",
-  email: "Lief@example.com",
-  jenisKelamin: "Laki-laki",
-  tanggalLahir: "12-5-2006",
-  noTelepon: "082255422134",
-  agama: "Islam",
-  provinsi: "Jawa Barat",
-  kota: "Bekasi",
-  kecamatan: "Tambun",
-  desa: "Muhammad Alief",
-  alamatLengkap: "Grand Wisata",
-  keahlian: "Matematika",
-  marketSiswa: "Sma",
-  pengalaman: "3 Tahun Mengajar Les privat SMA",
-  skillBahasa: "Bahasa Indonesia",
+  id: null,
+  namaLengkap: "",
+  email: "",
+  photo: null,
+  jenisKelamin: "",
+  tanggalLahir: "",
+  noTelepon: "",
+  agama: "",
+  provinsi: "",
+  kota: "",
+  kecamatan: "",
+  desa: "",
+  alamatLengkap: "",
+  latitude: null,
+  longitude: null,
+  keahlian: "",
+  marketSiswa: "",
+  pengalaman: "",
+  organisasi: "",
+  skillBahasa: "",
+  pendidikan: [],
+  tentangSaya: "",
+  jadwalMengajar: [],
+  hargaPerPertemuan: 0,
+  bankName: "",
+  bankAccountNumber: "",
+  bankAccountName: "",
   documents: {
-    cv: "#",
-    ktp: "#",
-    ijazah: "#",
+    cv: null,
+    ktp: null,
+    ijazah: null,
   },
-  status: "Menunggu",
+  status: "",
+  statusEnum: "",
 });
 
 const showModal = ref(false);
@@ -328,16 +532,15 @@ const modalMessage = ref("");
 const modalAction = ref("");
 
 const statusClass = computed(() => {
-  switch (tutor.value.status) {
-    case "Menunggu":
-      return "bg-yellow-100 text-yellow-800";
-    case "Disetujui":
-      return "bg-green-100 text-green-800";
-    case "Ditolak":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
+  const status = tutor.value.status.toLowerCase();
+  if (status.includes("menunggu") || status.includes("verify")) {
+    return "bg-yellow-100 text-yellow-800";
+  } else if (status.includes("aktif") || status.includes("disetujui")) {
+    return "bg-green-100 text-green-800";
+  } else if (status.includes("ditolak") || status.includes("rejected")) {
+    return "bg-red-100 text-red-800";
   }
+  return "bg-gray-100 text-gray-800";
 });
 
 const handleApprove = () => {
@@ -357,24 +560,32 @@ const handleReject = () => {
 const confirmAction = async () => {
   showModal.value = false;
 
-  if (modalAction.value === "approve") {
-    // TODO: Call API to approve tutor
-    tutor.value.status = "Disetujui";
-    toastMessage.value = "Tutor berhasil disetujui!";
-  } else {
-    // TODO: Call API to reject tutor
-    tutor.value.status = "Ditolak";
-    toastMessage.value = "Tutor berhasil ditolak!";
-  }
+  try {
+    if (modalAction.value === "approve") {
+      await approveUserTutor(tutor.value.id);
+      toastMessage.value = "Tutor berhasil disetujui!";
+    } else {
+      await rejectUserTutor(tutor.value.id);
+      toastMessage.value = "Tutor berhasil ditolak!";
+    }
 
-  showToast.value = true;
-  setTimeout(() => {
-    showToast.value = false;
-    // Redirect back to dashboard after 2 seconds
+    showToast.value = true;
     setTimeout(() => {
-      router.push("/admin/dashboard");
-    }, 500);
-  }, 2000);
+      showToast.value = false;
+      // Redirect back to dashboard after 2 seconds
+      setTimeout(() => {
+        router.push("/admin/dashboard");
+      }, 500);
+    }, 2000);
+  } catch (error) {
+    console.error("Error updating tutor status:", error);
+    alert(
+      error?.response?.data?.message ||
+        `Gagal ${
+          modalAction.value === "approve" ? "menyetujui" : "menolak"
+        } tutor`
+    );
+  }
 };
 
 const goBack = () => {
@@ -382,11 +593,26 @@ const goBack = () => {
 };
 
 // Load tutor data based on ID from route
-onMounted(() => {
+onMounted(async () => {
   const tutorId = route.query.id;
-  if (tutorId) {
-    // TODO: Fetch tutor data from API
+  if (!tutorId) {
+    alert("ID tutor tidak ditemukan");
+    router.push("/admin/dashboard");
+    return;
+  }
+
+  try {
+    loading.value = true;
     console.log("Loading tutor data for ID:", tutorId);
+    const data = await getTutorDetail(tutorId);
+    console.log("Tutor data received:", data);
+    tutor.value = data;
+  } catch (error) {
+    console.error("Error loading tutor data:", error);
+    alert("Gagal memuat data tutor");
+    router.push("/admin/dashboard");
+  } finally {
+    loading.value = false;
   }
 });
 </script>

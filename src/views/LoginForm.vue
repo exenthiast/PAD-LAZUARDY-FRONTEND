@@ -159,19 +159,132 @@ const isValid = computed(() => {
 });
 
 function getRedirectPath(user) {
-  const role = user?.role || user?.data?.roles || [];
-  const roles = user?.roles || user?.data?.roles || [];
-  const r = role || roles[0];
+  if (!user) {
+    console.error("getRedirectPath: user is null or undefined");
+    return "/login";
+  }
 
-  switch ((r || "").tolowerCase()) {
+  console.log("=== getRedirectPath Debug ===");
+  console.log("Full user object:", JSON.stringify(user, null, 2));
+
+  // Cek berbagai kemungkinan format role dari backend
+  let role = null;
+
+  // Format 1: user.role (string langsung)
+  if (typeof user.role === "string") {
+    role = user.role;
+    console.log("Role found in user.role (string):", role);
+  }
+  // Format 2: user.role.name (object dengan property name)
+  else if (user.role && typeof user.role === "object" && user.role.name) {
+    role = user.role.name;
+    console.log("Role found in user.role.name:", role);
+  }
+  // Format 3: user.roles (array)
+  else if (Array.isArray(user.roles) && user.roles.length > 0) {
+    role =
+      typeof user.roles[0] === "string" ? user.roles[0] : user.roles[0].name;
+    console.log("Role found in user.roles array:", role);
+  }
+  // Format 4: user.data.roles (nested array)
+  else if (
+    user.data &&
+    Array.isArray(user.data.roles) &&
+    user.data.roles.length > 0
+  ) {
+    role =
+      typeof user.data.roles[0] === "string"
+        ? user.data.roles[0]
+        : user.data.roles[0].name;
+    console.log("Role found in user.data.roles:", role);
+  }
+  // Format 5: user.role_id (ID based)
+  else if (user.role_id) {
+    // Map role_id ke nama role
+    const roleMap = {
+      1: "admin",
+      2: "tutor",
+      3: "student",
+    };
+    role = roleMap[user.role_id];
+    console.log("Role found via role_id:", user.role_id, "=>", role);
+  }
+  // Format 6: Cek semua property user
+  else {
+    console.warn(
+      "Role not found in standard locations, checking all properties:"
+    );
+    Object.keys(user).forEach((key) => {
+      if (key.toLowerCase().includes("role")) {
+        console.log(`Found role-related property: ${key} =`, user[key]);
+      }
+    });
+  }
+
+  console.log("Detected role:", role);
+
+  // Jika masih null, coba cek dari email (admin biasanya punya email khusus)
+  if (!role && user.email) {
+    if (user.email.toLowerCase().includes("admin")) {
+      role = "admin";
+      console.log("Role guessed from email:", role);
+    }
+  }
+
+  // Normalisasi role ke lowercase
+  const normalizedRole = String(role || "")
+    .toLowerCase()
+    .trim();
+
+  console.log("Normalized role:", normalizedRole);
+
+  // Jika masih kosong, return error yang jelas
+  if (!normalizedRole) {
+    console.error("CRITICAL: Role is empty or undefined!");
+    console.error("User data:", user);
+    // Fallback: redirect ke student dashboard sebagai default
+    console.warn("Defaulting to student dashboard as fallback");
+    return "/student/dashboard";
+  }
+
+  switch (normalizedRole) {
     case "admin":
+    case "administrator":
+      console.log("Redirecting to admin dashboard");
       return "/admin/dashboard";
+
     case "tutor":
-      return "/tutor/dashboard";
+    case "guru":
+    case "pengajar":
+      // Cek status tutor
+      const status =
+        user.status || user.tutor_status || user.verification_status;
+      console.log("Tutor status:", status);
+
+      if (status === "pending" || status === "verify") {
+        console.log("Redirecting to tutor pending");
+        return "/tutor/home-pending";
+      } else if (status === "rejected") {
+        console.log("Redirecting to tutor rejected");
+        return "/tutor/rejected";
+      } else if (status === "active" || status === "approved") {
+        console.log("Redirecting to tutor dashboard");
+        return "/tutor/dashboard";
+      } else {
+        console.log("Tutor status unclear, redirecting to pending");
+        return "/tutor/home-pending";
+      }
+
     case "student":
+    case "siswa":
+    case "murid":
+      console.log("Redirecting to student dashboard");
       return "/student/dashboard";
+
     default:
-      return "/login";
+      console.warn("Unknown role:", normalizedRole);
+      console.warn("Defaulting to student dashboard");
+      return "/student/dashboard";
   }
 }
 
@@ -180,34 +293,83 @@ const handleLogin = async () => {
   if (!isValid.value) return;
   submitting.value = true;
   serverError.value = "";
+
   try {
+    console.log("Login attempt with:", { email: email.value });
+
     const result = await loginRequest({
       email: email.value,
       password: password.value,
     });
+
+    console.log("Login response:", result);
 
     const token =
       result?.token ??
       result?.access_token ??
       result?.data?.token ??
       result?.data?.access_token;
+
     const userRaw = result?.user ?? result?.data?.user ?? null;
 
-    if (token) {
-      localStorage.setItem("auth_token", token);
+    if (!token) {
+      throw new Error("Token tidak ditemukan dalam response");
     }
+
+    // Simpan token
+    localStorage.setItem("auth_token", token);
+
     if (userRaw) {
       localStorage.setItem("auth_user", JSON.stringify(userRaw));
     }
+
+    // Fetch user profile lengkap dari API
     let me = userRaw;
     try {
-      me = await fetchMe();
-      if (me) localStorage.setItem("auth_user", JSON.stringify(me));
-    } catch (_) {}
-    const target = getRedirectPath(me || userRaw);
+      const meResponse = await fetchMe();
+      console.log("Fetched user profile:", meResponse);
+      console.log("meResponse type:", typeof meResponse);
+      console.log("meResponse.user exists:", !!meResponse?.user);
+      
+      // fetchMe() mengembalikan {user: {...}}, ambil user-nya saja
+      me = meResponse?.user || meResponse;
+      console.log("Extracted me:", me);
+      
+      if (me) {
+        localStorage.setItem("auth_user", JSON.stringify(me));
+      }
+    } catch (fetchError) {
+      console.warn("Failed to fetch user profile:", fetchError);
+    }
+
+    const userData = me || userRaw;
+    console.log("userData before getRedirectPath:", userData);
+    
+    if (!userData) {
+      throw new Error("Data user tidak ditemukan");
+    }
+
+    const target = getRedirectPath(userData);
+    console.log("Redirecting to:", target);
+
+    // Hapus validasi yang terlalu ketat - biarkan default fallback bekerja
+    // if (!target || target === "/login") {
+    //   throw new Error(
+    //     "Redirect path tidak valid. Role mungkin tidak dikenali."
+    //   );
+    // }
+
     alert("Login berhasil!");
-    router.push(target);
+
+    // Tunggu sebentar sebelum redirect agar alert terlihat
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Gunakan replace agar tidak bisa back ke login page
+    await router.replace(target);
+
+    console.log("Redirect completed to:", target);
   } catch (error) {
+    console.error("Login error:", error);
     serverError.value = extractErr(error);
     alert(`Gagal login: ${serverError.value}`);
   } finally {

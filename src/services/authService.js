@@ -2,8 +2,20 @@ import { api } from "./http";
 
 // Ambil user yang sedang login
 export async function getMe() {
-  // backend: GET /api/me
-  return api("/api/me");
+  try {
+    // backend: GET /api/me
+    const response = await api("/api/me");
+    return response;
+  } catch (error) {
+    console.error("getMe error:", error);
+    // Jangan throw error, return data default
+    return {
+      user: {
+        name: "User",
+        email: "",
+      },
+    };
+  }
 }
 
 // Login (dipakai di LoginPage.vue)

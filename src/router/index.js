@@ -11,6 +11,8 @@ import DashboardPage from "../views/student/DashboardPage.vue";
 // import MyPackagePage from "../views/student/MyPackagePage.vue";
 import CheckoutPage from "../views/payment/CheckoutPage.vue";
 import PaymentHistoryPage from "../views/student/PaymentHistoryPage.vue";
+import PaymentSimulation from "../views/payment/PaymentSimulation.vue";
+import PaymentSuccess from "../views/payment/PaymentSuccess.vue";
 import ProfilePage from "../views/student/ProfilePage.vue";
 import TutorOtp from "../views/tutor/TutorOtp.vue";
 import LanjutanTutor from "../views/tutor/LanjutanTutor.vue";
@@ -20,7 +22,7 @@ import ForgotPassword from "../views/ForgotPassword.vue";
 import EditProfile from "../views/student/EditProfile.vue";
 import PackageListPage from "../views/packages/PackageListPage.vue";
 import ConversationDetail from "../views/messages/ConversationDetail.vue";
-import AuthCallback from "../views/AuthCallback.vue";
+import AuthCallback from "../views/social/AuthCallback.vue";
 import SchedulePage from "../views/student/SchedulePage.vue";
 import DashboardTutor from "../views/tutor/DashboardTutor.vue";
 import HomePending from "../views/tutor/HomePending.vue";
@@ -31,6 +33,13 @@ import DetailDataSiswa from "../views/admin/DetailDataSiswa.vue";
 import AjuanBelajar from "../views/tutor/AjuanBelajar.vue";
 import AbsensiStudent from "../views/tutor/AbsensiStudent.vue";
 import ProfileTutor from "../views/tutor/ProfilePage.vue";
+import EditProfileTutor from "../views/tutor/EditProfileTutor.vue";
+import AttendancePage from "../views/student/AttendancePage.vue";
+import ReviewPage from "../views/student/ReviewPage.vue";
+import ChooseRole from "../views/social/ChooseRole.vue";
+import VerifyOtp from "../views/social/VerifyOtp.vue";
+import Rejected from "../views/tutor/Rejected.vue";
+import { setupGuards } from "./guards.js";
 
 const routes = [
   {
@@ -47,6 +56,16 @@ const routes = [
     path: "/login",
     name: "Login",
     component: LoginForm,
+  },
+  {
+    path: "/choose-role",
+    name: "ChooseRole",
+    component: ChooseRole,
+  },
+  {
+    path: "/verify-otp",
+    name: "VerifyOtp",
+    component: VerifyOtp,
   },
   {
     path: "/tutor/register",
@@ -114,9 +133,29 @@ const routes = [
     component: SchedulePage,
   },
   {
+    path: "/student/attendance/:scheduleId",
+    name: "AttendancePage",
+    component: AttendancePage,
+  },
+  {
+    path: "/student/review/:tutorId",
+    name: "ReviewPage",
+    component: ReviewPage,
+  },
+  {
     path: "/payment/checkout",
     name: "CheckoutPage",
     component: CheckoutPage,
+  },
+  {
+    path: "/payment/simulation/:id",
+    name: "PaymentSimulation",
+    component: PaymentSimulation,
+  },
+  {
+    path: "/payment/success",
+    name: "PaymentSuccess",
+    component: PaymentSuccess,
   },
   {
     path: "/student/payment-history",
@@ -154,6 +193,11 @@ const routes = [
     component: HomePending,
   },
   {
+    path: "/tutor/rejected",
+    name: "TutorRejected",
+    component: Rejected,
+  },
+  {
     path: "/tutor/dashboard",
     name: "DashboardTutor",
     component: DashboardTutor,
@@ -162,6 +206,11 @@ const routes = [
     path: "/tutor/profile-tutor",
     name: "ProfileTutor",
     component: ProfileTutor,
+  },
+  {
+    path: "/tutor/edit-profile",
+    name: "EditProfileTutor",
+    component: EditProfileTutor,
   },
   {
     path: "/tutor/ajuan-belajar",
@@ -204,5 +253,8 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 });
+
+// Setup route guards
+setupGuards(router);
 
 export default router;

@@ -9,45 +9,60 @@
 
       <!-- Statistics Cards -->
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon students">
-            <Users />
-          </div>
+        <div class="stat-card" v-if="loadingStats">
           <div class="stat-content">
-            <p class="stat-label">Total Siswa</p>
-            <p class="stat-value">{{ stats.totalStudents }}</p>
+            <p class="stat-label">Memuat data...</p>
           </div>
         </div>
+        <template v-else>
+          <div class="stat-card">
+            <div class="stat-icon students">
+              <Users />
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Total Siswa</p>
+              <p class="stat-value">{{ stats.totalStudents }}</p>
+            </div>
+          </div>
 
-        <div class="stat-card">
-          <div class="stat-icon tutors">
-            <Users />
+          <div class="stat-card">
+            <div class="stat-icon tutors">
+              <Users />
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Total Tutor</p>
+              <p class="stat-value">{{ stats.totalTutors }}</p>
+            </div>
           </div>
-          <div class="stat-content">
-            <p class="stat-label">Total Tutor</p>
-            <p class="stat-value">{{ stats.totalTutors }}</p>
-          </div>
-        </div>
 
-        <div class="stat-card">
-          <div class="stat-icon transactions">
-            <DollarSign />
+          <div class="stat-card">
+            <div class="stat-icon transactions">
+              <DollarSign />
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Transaksi Bulan Ini</p>
+              <p class="stat-value">{{ stats.monthlyTransactions }}</p>
+            </div>
           </div>
-          <div class="stat-content">
-            <p class="stat-label">Transaksi Bulan Ini</p>
-            <p class="stat-value">{{ stats.monthlyTransactions }}</p>
-          </div>
-        </div>
 
-        <div class="stat-card">
-          <div class="stat-icon rating">
-            <Star />
+          <div class="stat-card">
+            <div class="stat-icon rating">
+              <Star />
+            </div>
+            <div class="stat-content">
+              <p class="stat-label">Rating Rata-rata</p>
+              <p class="stat-value">
+                {{ stats.averageRating }}
+                <Star
+                  :size="28"
+                  fill="#FFD700"
+                  color="#FFD700"
+                  class="star-icon"
+                />
+              </p>
+            </div>
           </div>
-          <div class="stat-content">
-            <p class="stat-label">Rating Rata-rata</p>
-            <p class="stat-value">{{ stats.averageRating }} <Star /></p>
-          </div>
-        </div>
+        </template>
       </div>
 
       <!-- Verifikasi Tutor -->
@@ -64,12 +79,15 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-if="tutorVerifications.length === 0">
+              <tr v-if="loadingTutors">
+                <td colspan="4" class="empty-state">Memuat data...</td>
+              </tr>
+              <tr v-else-if="tutorVerifications.length === 0">
                 <td colspan="4" class="empty-state">
                   Tidak ada data verifikasi tutor
                 </td>
               </tr>
-              <tr v-for="tutor in tutorVerifications" :key="tutor.id">
+              <tr v-else v-for="tutor in tutorVerifications" :key="tutor.id">
                 <td>{{ tutor.name }}</td>
                 <td>{{ tutor.subject }}</td>
                 <td>
@@ -121,12 +139,19 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-if="paymentVerifications.length === 0">
+              <tr v-if="loadingPayments">
+                <td colspan="4" class="empty-state">Memuat data...</td>
+              </tr>
+              <tr v-else-if="paymentVerifications.length === 0">
                 <td colspan="4" class="empty-state">
                   Tidak ada data verifikasi pembayaran
                 </td>
               </tr>
-              <tr v-for="payment in paymentVerifications" :key="payment.id">
+              <tr
+                v-else
+                v-for="payment in paymentVerifications"
+                :key="payment.id"
+              >
                 <td>{{ payment.studentName }}</td>
                 <td>{{ payment.package }}</td>
                 <td>
@@ -174,57 +199,120 @@ import NavbarAdmin from "@/components/layout/navbar-admin.vue";
 import { Users } from "lucide-vue-next";
 import { DollarSign } from "lucide-vue-next";
 import { Star } from "lucide-vue-next";
+import {
+  getAdminStatistics,
+  getPendingTutors,
+  getPendingPayments,
+  approveTutor as approveUserTutor,
+  rejectTutor as rejectUserTutor,
+  verifyPayment as verifyUserPayment,
+  rejectPayment as rejectUserPayment,
+} from "@/services/adminDashboardService";
 
 const router = useRouter();
 
 // Statistics data
 const stats = ref({
-  totalStudents: 120,
-  totalTutors: 45,
-  monthlyTransactions: 32,
-  averageRating: 4.8,
+  totalStudents: 0,
+  totalTutors: 0,
+  monthlyTransactions: 0,
+  averageRating: 0,
 });
 
-// Tutor verification data (dummy data)
-const tutorVerifications = ref([
-  {
-    id: 1,
-    name: "Budi Santoso",
-    subject: "Matematika",
-    status: "Menunggu",
-  },
-  {
-    id: 2,
-    name: "Intan Puspita",
-    subject: "Bahasa Inggris",
-    status: "Menunggu",
-  },
-]);
+// Loading states
+const loadingStats = ref(false);
+const loadingTutors = ref(false);
+const loadingPayments = ref(false);
 
-// Payment verification data (dummy data)
-const paymentVerifications = ref([
-  {
-    id: 1,
-    studentName: "Rizky Ramadhan",
-    package: "Paket Matematika 4x",
-    status: "Menunggu",
-  },
-  {
-    id: 2,
-    studentName: "Aulia Rani",
-    package: "Paket Fisika 4x",
-    status: "Menunggu",
-  },
-]);
+// Tutor verification data
+const tutorVerifications = ref([]);
+
+// Payment verification data
+const paymentVerifications = ref([]);
 
 // Load dashboard data
 onMounted(() => {
+  console.log("Dashboard mounted, loading data...");
+  // Check if user is authenticated
+  const token = localStorage.getItem("auth_token");
+  const user = JSON.parse(localStorage.getItem("auth_user") || "{}");
+  console.log("Auth token:", token ? "Present" : "Missing");
+  console.log("User role:", user?.role);
+
+  if (!token) {
+    console.error("No auth token found, redirecting to login");
+    router.push("/login");
+    return;
+  }
+
+  if (user?.role !== "admin") {
+    console.error("User is not admin, role:", user?.role);
+    alert("Anda tidak memiliki akses ke halaman ini");
+    router.push("/");
+    return;
+  }
+
   loadDashboardData();
 });
 
 const loadDashboardData = async () => {
-  // TODO: Replace with actual API calls
-  console.log("Loading dashboard data...");
+  console.log("Starting to load dashboard data...");
+  await Promise.all([
+    loadStatistics(),
+    loadPendingTutors(),
+    loadPendingPayments(),
+  ]);
+  console.log("Dashboard data loading complete");
+};
+
+// Load statistics
+const loadStatistics = async () => {
+  loadingStats.value = true;
+  try {
+    const data = await getAdminStatistics();
+    console.log("Statistics data:", data); // Debug
+    stats.value = {
+      totalStudents: data.totalStudents || 0,
+      totalTutors: data.totalTutors || 0,
+      monthlyTransactions: data.monthlyTransactions || 0,
+      averageRating: data.averageRating || 0,
+    };
+  } catch (error) {
+    console.error("Error loading statistics:", error);
+    // Don't show alert on error, just log it
+  } finally {
+    loadingStats.value = false;
+  }
+};
+
+// Load pending tutors
+const loadPendingTutors = async () => {
+  loadingTutors.value = true;
+  try {
+    const data = await getPendingTutors();
+    console.log("Pending tutors data:", data);
+    tutorVerifications.value = data;
+  } catch (error) {
+    console.error("Error loading pending tutors:", error);
+    tutorVerifications.value = [];
+  } finally {
+    loadingTutors.value = false;
+  }
+};
+
+// Load pending payments
+const loadPendingPayments = async () => {
+  loadingPayments.value = true;
+  try {
+    const data = await getPendingPayments();
+    console.log("Pending payments data:", data);
+    paymentVerifications.value = data;
+  } catch (error) {
+    console.error("Error loading pending payments:", error);
+    paymentVerifications.value = [];
+  } finally {
+    loadingPayments.value = false;
+  }
 };
 
 // Tutor verification actions
@@ -235,15 +323,16 @@ const viewTutorDetail = (tutorId) => {
 const approveTutor = async (tutorId) => {
   if (confirm("Apakah Anda yakin ingin menyetujui tutor ini?")) {
     try {
-      // TODO: Call API to approve tutor
-      const index = tutorVerifications.value.findIndex((t) => t.id === tutorId);
-      if (index !== -1) {
-        tutorVerifications.value[index].status = "Disetujui";
-      }
+      await approveUserTutor(tutorId);
       alert("Tutor berhasil disetujui!");
+      // Reload data
+      await loadPendingTutors();
     } catch (error) {
       console.error("Error approving tutor:", error);
-      alert("Gagal menyetujui tutor. Silakan coba lagi.");
+      alert(
+        error?.response?.data?.message ||
+          "Gagal menyetujui tutor. Silakan coba lagi."
+      );
     }
   }
 };
@@ -251,15 +340,16 @@ const approveTutor = async (tutorId) => {
 const rejectTutor = async (tutorId) => {
   if (confirm("Apakah Anda yakin ingin menolak tutor ini?")) {
     try {
-      // TODO: Call API to reject tutor
-      const index = tutorVerifications.value.findIndex((t) => t.id === tutorId);
-      if (index !== -1) {
-        tutorVerifications.value[index].status = "Ditolak";
-      }
+      await rejectUserTutor(tutorId);
       alert("Tutor berhasil ditolak!");
+      // Reload data
+      await loadPendingTutors();
     } catch (error) {
       console.error("Error rejecting tutor:", error);
-      alert("Gagal menolak tutor. Silakan coba lagi.");
+      alert(
+        error?.response?.data?.message ||
+          "Gagal menolak tutor. Silakan coba lagi."
+      );
     }
   }
 };
@@ -272,17 +362,16 @@ const viewPaymentDetail = (paymentId) => {
 const verifyPayment = async (paymentId) => {
   if (confirm("Apakah Anda yakin ingin memverifikasi pembayaran ini?")) {
     try {
-      // TODO: Call API to verify payment
-      const index = paymentVerifications.value.findIndex(
-        (p) => p.id === paymentId
-      );
-      if (index !== -1) {
-        paymentVerifications.value[index].status = "Terverifikasi";
-      }
+      await verifyUserPayment(paymentId);
       alert("Pembayaran berhasil diverifikasi!");
+      // Reload data
+      await loadPendingPayments();
     } catch (error) {
       console.error("Error verifying payment:", error);
-      alert("Gagal memverifikasi pembayaran. Silakan coba lagi.");
+      alert(
+        error?.response?.data?.message ||
+          "Gagal memverifikasi pembayaran. Silakan coba lagi."
+      );
     }
   }
 };
@@ -290,17 +379,16 @@ const verifyPayment = async (paymentId) => {
 const rejectPayment = async (paymentId) => {
   if (confirm("Apakah Anda yakin ingin menolak pembayaran ini?")) {
     try {
-      // TODO: Call API to reject payment
-      const index = paymentVerifications.value.findIndex(
-        (p) => p.id === paymentId
-      );
-      if (index !== -1) {
-        paymentVerifications.value[index].status = "Ditolak";
-      }
+      await rejectUserPayment(paymentId);
       alert("Pembayaran berhasil ditolak!");
+      // Reload data
+      await loadPendingPayments();
     } catch (error) {
       console.error("Error rejecting payment:", error);
-      alert("Gagal menolak pembayaran. Silakan coba lagi.");
+      alert(
+        error?.response?.data?.message ||
+          "Gagal menolak pembayaran. Silakan coba lagi."
+      );
     }
   }
 };
@@ -416,6 +504,13 @@ const handleLogout = () => {
   font-size: 1.875rem;
   font-weight: 700;
   color: #2c3e50;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.star-icon {
+  flex-shrink: 0;
 }
 
 /* Table Section */

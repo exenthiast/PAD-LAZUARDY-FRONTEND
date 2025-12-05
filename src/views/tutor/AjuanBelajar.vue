@@ -16,8 +16,16 @@
         <h1 class="text-3xl font-bold text-[#41a6c2]">Ajuan Belajar</h1>
       </div>
 
+      <!-- Loading State -->
+      <div v-if="isLoading" class="max-w-6xl mx-auto text-center py-12">
+        <div
+          class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#41a6c2] border-t-transparent"
+        ></div>
+        <p class="mt-4 text-gray-600">Memuat ajuan belajar...</p>
+      </div>
+
       <!-- Student Request Cards -->
-      <div class="max-w-6xl mx-auto space-y-6">
+      <div v-else class="max-w-6xl mx-auto space-y-6">
         <div
           v-for="student in students"
           :key="student.id"
@@ -29,6 +37,12 @@
               <img
                 :src="student.photo"
                 :alt="student.name"
+                @error="
+                  (e) =>
+                    (e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      student.name
+                    )}&size=150&background=41a6c2&color=fff&bold=true`)
+                "
                 class="w-24 h-24 rounded-lg object-cover border-2 border-gray-200"
               />
             </div>
@@ -41,106 +55,23 @@
 
               <div class="space-y-2 text-sm text-gray-600">
                 <div class="flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5 text-[#41a6c2]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
+                  <BookOpen class="w-5 h-5 text-[#41a6c2]" />
                   <span class="font-medium">{{ student.subject }}</span>
                 </div>
 
                 <div class="flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5 text-[#41a6c2]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                  <span>{{ student.level }}</span>
-                </div>
-
-                <div class="flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5 text-[#41a6c2]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
+                  <Calendar class="w-5 h-5 text-[#41a6c2]" />
                   <span>{{ student.schedule }}</span>
                 </div>
 
                 <div class="flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5 text-[#41a6c2]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                    />
-                  </svg>
-                  <span>{{ student.phone }}</span>
+                  <Clock class="w-5 h-5 text-[#41a6c2]" />
+                  <span>{{ student.time }}</span>
                 </div>
 
-                <div class="flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5 text-[#41a6c2]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  <a
-                    :href="student.mapsLink"
-                    target="_blank"
-                    rel="noopener"
-                    class="text-[#41a6c2] hover:underline"
-                  >
-                    Link GMaps
-                  </a>
+                <div v-if="student.phone" class="flex items-center gap-2">
+                  <Phone class="w-5 h-5 text-[#41a6c2]" />
+                  <span>{{ student.phone }}</span>
                 </div>
               </div>
             </div>
@@ -149,15 +80,17 @@
             <div class="flex md:flex-col gap-3 justify-end items-end">
               <button
                 @click="handleReject(student.id)"
-                class="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100 transition w-full md:w-auto"
+                :disabled="processing === student.id"
+                class="px-6 py-2 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100 transition w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Tolak
+                {{ processing === student.id ? "Memproses..." : "Tolak" }}
               </button>
               <button
                 @click="handleAccept(student.id)"
-                class="px-6 py-2 bg-[#41a6c2] text-white rounded-lg font-semibold hover:bg-[#359299] transition w-full md:w-auto"
+                :disabled="processing === student.id"
+                class="px-6 py-2 bg-[#41a6c2] text-white rounded-lg font-semibold hover:bg-[#359299] transition w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Terima
+                {{ processing === student.id ? "Memproses..." : "Terima" }}
               </button>
             </div>
           </div>
@@ -168,20 +101,7 @@
           v-if="students.length === 0"
           class="bg-white rounded-2xl shadow-md p-12 text-center"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-16 h-16 mx-auto text-gray-300 mb-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-            />
-          </svg>
+          <Inbox class="w-16 h-16 mx-auto text-gray-300 mb-4" />
           <p class="text-gray-500 text-lg">Belum ada ajuan belajar</p>
         </div>
       </div>
@@ -190,72 +110,157 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { ArrowLeft } from "lucide-vue-next";
+import {
+  ArrowLeft,
+  BookOpen,
+  Calendar,
+  Clock,
+  Phone,
+  Inbox,
+} from "lucide-vue-next";
 import NavbarTutor from "@/components/layout/navbar-tutor.vue";
+import {
+  getTutorDashboard,
+  acceptLearningRequest,
+  rejectLearningRequest,
+} from "@/services/tutorDashboardService";
 
 const router = useRouter();
+const isLoading = ref(true);
+const processing = ref(null);
+const students = ref([]);
 
-// Dummy data siswa yang mengajukan belajar
-const students = ref([
-  {
-    id: 1,
-    name: "Alief",
-    photo: "https://i.pravatar.cc/150?img=1",
-    subject: "Matematika",
-    level: "SMA Kelas 11",
-    schedule: "Selasa, 30 September 2025",
-    phone: "(+62) 8955086880",
-    mapsLink: "https://maps.google.com/?q=-6.200000,106.816666",
-  },
-  {
-    id: 2,
-    name: "Siti Aisyah",
-    photo: "https://i.pravatar.cc/150?img=5",
-    subject: "Matematika",
-    level: "SMA Kelas 11",
-    schedule: "Selasa, 30 September 2025",
-    phone: "(+62) 8955086880",
-    mapsLink: "https://maps.google.com/?q=-6.200000,106.816666",
-  },
-  {
-    id: 3,
-    name: "Budi Santoso",
-    photo: "https://i.pravatar.cc/150?img=12",
-    subject: "Matematika",
-    level: "SMA Kelas 11",
-    schedule: "Selasa, 30 September 2025",
-    phone: "(+62) 8955086880",
-    mapsLink: "https://maps.google.com/?q=-6.200000,106.816666",
-  },
-]);
+// Helper function untuk format tanggal
+const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
+
+  const date = new Date(dateString);
+  const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  const months = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+
+  const dayName = days[date.getDay()];
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+
+  return `${dayName}, ${day} ${month} ${year}`;
+};
+
+// Load learning requests from API
+const loadLearningRequests = async () => {
+  try {
+    isLoading.value = true;
+    const dashboard = await getTutorDashboard();
+
+    console.log("Dashboard data:", dashboard);
+
+    // Filter only active (pending approval) schedules that haven't been accepted yet
+    const activeRequests =
+      dashboard.taken_schedules?.filter(
+        (schedule) =>
+          schedule.status === "active" &&
+          schedule.is_accepted === false && // Only show not yet accepted
+          new Date(schedule.date) >= new Date().setHours(0, 0, 0, 0)
+      ) || [];
+
+    console.log("Active requests:", activeRequests);
+
+    students.value = activeRequests.map((schedule) => ({
+      id: schedule.id,
+      name: schedule.student_name || "N/A",
+      photo:
+        schedule.student_photo && schedule.student_photo.trim() !== ""
+          ? schedule.student_photo
+          : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              schedule.student_name || "Student"
+            )}&size=150&background=41a6c2&color=fff&bold=true`,
+      subject: schedule.subject_name || "N/A",
+      schedule: formatDate(schedule.date),
+      time: schedule.schedule_time || "N/A",
+      phone: schedule.student_phone || null,
+    }));
+
+    console.log("Formatted students:", students.value);
+  } catch (error) {
+    console.error("Error loading learning requests:", error);
+    alert("Gagal memuat daftar ajuan belajar");
+  } finally {
+    isLoading.value = false;
+  }
+};
 
 const goBack = () => {
   router.push("/tutor/dashboard");
 };
 
-const handleAccept = (studentId) => {
-  if (confirm("Apakah Anda yakin ingin menerima ajuan belajar ini?")) {
-    // TODO: Implement API call to accept request
+const handleAccept = async (studentId) => {
+  if (!confirm("Apakah Anda yakin ingin menerima ajuan belajar ini?")) {
+    return;
+  }
+
+  try {
+    processing.value = studentId;
+    await acceptLearningRequest(studentId);
+
     const student = students.value.find((s) => s.id === studentId);
-    alert(`Ajuan dari ${student.name} telah diterima!`);
+    alert(
+      `Ajuan dari ${student.name} telah diterima! Siswa akan masuk ke daftar siswa Anda.`
+    );
 
     // Remove from list after accepting
     students.value = students.value.filter((s) => s.id !== studentId);
+
+    // Redirect to dashboard to see updated data
+    router.push("/tutor/dashboard");
+  } catch (error) {
+    console.error("Error accepting request:", error);
+    alert("Gagal menerima ajuan belajar");
+  } finally {
+    processing.value = null;
   }
 };
 
-const handleReject = (studentId) => {
-  if (confirm("Apakah Anda yakin ingin menolak ajuan belajar ini?")) {
-    // TODO: Implement API call to reject request
+const handleReject = async (studentId) => {
+  if (!confirm("Apakah Anda yakin ingin menolak ajuan belajar ini?")) {
+    return;
+  }
+
+  try {
+    processing.value = studentId;
+    await rejectLearningRequest(studentId);
+
     const student = students.value.find((s) => s.id === studentId);
     alert(`Ajuan dari ${student.name} telah ditolak.`);
 
     // Remove from list after rejecting
     students.value = students.value.filter((s) => s.id !== studentId);
+  } catch (error) {
+    console.error("Error rejecting request:", error);
+    alert("Gagal menolak ajuan belajar");
+  } finally {
+    processing.value = null;
   }
 };
+
+// Load data on mount
+onMounted(() => {
+  loadLearningRequests();
+});
 </script>
 
 <style scoped>

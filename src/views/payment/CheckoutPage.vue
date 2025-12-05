@@ -133,14 +133,17 @@
       <div class="flex justify-center gap-4 pt-4">
         <button
           @click="handleBatal"
-          class="border-2 border-primary text-primary hover:bg-primary/10 font-semibold py-3 px-8 rounded-lg transition"
+          :disabled="isSubmitting"
+          class="border-2 border-primary text-primary hover:bg-primary/10 font-semibold py-3 px-8 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Batal
         </button>
         <button
-          class="bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-8 rounded-lg transition"
+          @click="handleSubmit"
+          :disabled="isSubmitting || !selectedBank || !uploadedFile"
+          class="bg-primary hover:bg-primary-dark text-white font-semibold py-3 px-8 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Kirim Bukti Pembayaran
+          {{ isSubmitting ? "Mengirim..." : "Kirim Bukti Pembayaran" }}
         </button>
       </div>
     </div>
@@ -154,11 +157,15 @@ import LogoBCA from "@/assets/Bank_Central_Asia.svg";
 import LogoBRI from "@/assets/Bank_BRI_2000.svg";
 import LogoBNI from "@/assets/Bank_Negara_Indonesia_logo_(2004).svg";
 import LogoMandiri from "@/assets/Bank_Mandiri_logo_2016.svg";
+import { createOrder, uploadPaymentProof } from "@/services/paymentService";
 
 const route = useRoute();
 const router = useRouter();
 const selectedBank = ref("");
 const fileName = ref("");
+const uploadedFile = ref(null);
+const isSubmitting = ref(false);
+const orderId = ref(null);
 
 // Data paket dari PackageListPage
 const paketList = [
@@ -215,21 +222,25 @@ const formatPrice = (price) => {
 const banks = [
   {
     name: "Bank BCA",
+    code: "bca", // ✅ Now matches backend enum
     account: "1234567890 - a.n Bimbel Lazuardy",
     logo: LogoBCA,
   },
   {
     name: "Bank BRI",
+    code: "bri", // Matches backend enum
     account: "9876543210 - a.n Bimbel Lazuardy",
     logo: LogoBRI,
   },
   {
     name: "Bank BNI",
+    code: "bni", // Matches backend enum
     account: "1239876540 - a.n Bimbel Lazuardy",
     logo: LogoBNI,
   },
   {
     name: "Bank Mandiri",
+    code: "mandiri", // Matches backend enum
     account: "4321567890 - a.n Bimbel Lazuardy",
     logo: LogoMandiri,
   },
@@ -237,12 +248,132 @@ const banks = [
 
 const handleUpload = (event) => {
   const file = event.target.files[0];
-  if (file) fileName.value = file.name;
+  if (file) {
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      alert("Ukuran file terlalu besar. Maksimal 5MB");
+      return;
+    }
+
+    // Validate file type
+    const validTypes = ["image/jpeg", "image/png", "application/pdf"];
+    if (!validTypes.includes(file.type)) {
+      alert("Format file tidak didukung. Gunakan JPG, PNG, atau PDF");
+      return;
+    }
+
+    fileName.value = file.name;
+    uploadedFile.value = file;
+  }
 };
 
 const handleBatal = () => {
   router.push("/packages");
 };
+
+const handleSubmit = async () => {
+  // Check authentication first
+  const token = localStorage.getItem("auth_token");
+  if (!token) {
+    alert("Anda harus login terlebih dahulu untuk melakukan pembayaran.");
+    router.push("/login");
+    return;
+  }
+
+  // Validation
+  if (!selectedBank.value) {
+    alert("Silakan pilih bank terlebih dahulu");
+    return;
+  }
+
+  if (!uploadedFile.value) {
+    alert("Silakan upload bukti transfer terlebih dahulu");
+    return;
+  }
+
+  try {
+    isSubmitting.value = true;
+
+    // Step 1: Create order if not exists
+    if (!orderId.value) {
+      console.log("Creating order...");
+
+      // Get selected bank code from banks array
+      const selectedBankObj = banks.find((b) => b.name === selectedBank.value);
+      const paymentMethod = selectedBankObj ? selectedBankObj.code : "bri"; // Default to BRI if not found
+
+      console.log("[CHECKOUT] Selected bank:", selectedBank.value);
+      console.log("[CHECKOUT] Payment method:", paymentMethod);
+
+      const orderResponse = await createOrder(
+        selectedPaket.value.id,
+        selectedPaket.value.hargaDiskon,
+        paymentMethod // Send bank code (bri, bni, mandiri, etc)
+      );
+
+      if (orderResponse.status === "success" && orderResponse.order_id) {
+        orderId.value = orderResponse.order_id;
+        console.log("Order created successfully with ID:", orderId.value);
+      } else {
+        throw new Error("Gagal membuat order");
+      }
+    }
+
+    // Step 2: Upload payment proof
+    console.log("Uploading payment proof for order ID:", orderId.value);
+    const uploadResponse = await uploadPaymentProof(
+      orderId.value,
+      uploadedFile.value
+    );
+
+    if (uploadResponse.status === "success") {
+      alert(
+        "Bukti pembayaran berhasil dikirim! Silakan tunggu verifikasi dari admin."
+      );
+      router.push("/student/dashboard");
+    } else {
+      throw new Error(
+        uploadResponse.message || "Gagal mengirim bukti pembayaran"
+      );
+    }
+  } catch (error) {
+    console.error("Error submitting payment:", error);
+
+    // Handle authentication errors
+    if (error.status === 401) {
+      alert(
+        "Token tidak valid. Silakan logout dan login ulang untuk mendapatkan token baru."
+      );
+      // Clear invalid token
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_user");
+      // Redirect to login
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
+      return;
+    }
+
+    // Handle other errors
+    const errorMessage =
+      error.message || "Gagal mengirim bukti pembayaran. Silakan coba lagi.";
+    alert(errorMessage);
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
+// Check authentication on page load
+onMounted(() => {
+  const token = localStorage.getItem("auth_token");
+  if (!token) {
+    alert(
+      "Anda harus login terlebih dahulu untuk mengakses halaman pembayaran."
+    );
+    router.push("/login");
+  }
+});
 </script>
 
 <style scoped>

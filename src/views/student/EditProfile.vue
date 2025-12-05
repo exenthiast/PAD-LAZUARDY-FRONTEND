@@ -53,6 +53,65 @@
 
       <!-- Form -->
       <form v-else @submit.prevent="handleSubmit">
+        <!-- Foto Profil -->
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold text-[#41a6c2] mb-4 border-b pb-2">
+            Foto Profil
+          </h3>
+          <div class="flex flex-col sm:flex-row items-center gap-6">
+            <!-- Preview Foto -->
+            <div class="relative">
+              <img
+                :src="photoPreview || 'https://picsum.photos/200/300'"
+                alt="Profile Photo"
+                class="w-32 h-32 rounded-full object-cover border-4 border-gray-200 shadow-md"
+              />
+              <button
+                @click="triggerPhotoUpload"
+                type="button"
+                class="absolute bottom-0 right-0 bg-[#41a6c2] hover:bg-[#359299] text-white p-2 rounded-full shadow-lg transition"
+                title="Ubah Foto"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </button>
+              <input
+                ref="photoInput"
+                type="file"
+                accept="image/*"
+                @change="handlePhotoChange"
+                class="hidden"
+              />
+            </div>
+            <!-- Info -->
+            <div class="flex-1 text-center sm:text-left">
+              <p class="text-sm text-gray-600 mb-1">
+                Klik tombol kamera untuk mengubah foto profil
+              </p>
+              <p class="text-xs text-gray-500">
+                Format: JPG, PNG, GIF (Max. 2MB)
+              </p>
+            </div>
+          </div>
+        </div>
+
         <!-- Detail Pribadi -->
         <div class="mb-8">
           <h3 class="text-xl font-semibold text-[#41a6c2] mb-4 border-b pb-2">
@@ -200,6 +259,93 @@
               ></textarea>
             </div>
           </div>
+
+          <!-- Location Picker -->
+          <div class="mt-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Pilih Lokasi di Peta
+              <span class="text-xs text-gray-500 ml-2"
+                >(Klik pada peta untuk memilih lokasi)</span
+              >
+            </label>
+            <div
+              class="w-full h-96 bg-gray-200 rounded-lg overflow-hidden relative border-2 border-gray-300"
+            >
+              <!-- Google Maps Iframe dengan mode pencarian -->
+              <iframe
+                :src="mapEmbedUrl"
+                width="100%"
+                height="100%"
+                style="border: 0"
+                allowfullscreen=""
+                loading="lazy"
+                class="w-full h-full"
+              >
+              </iframe>
+
+              <!-- Overlay untuk koordinat yang dipilih -->
+              <div
+                v-if="form.latitude && form.longitude"
+                class="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex-1">
+                    <p class="text-xs font-medium text-gray-700 mb-1">
+                      Koordinat Terpilih:
+                    </p>
+                    <p class="text-xs text-gray-600">
+                      Lat: {{ Number(form.latitude).toFixed(6) }}, Lng:
+                      {{ Number(form.longitude).toFixed(6) }}
+                    </p>
+                  </div>
+                  <button
+                    @click="clearLocation"
+                    type="button"
+                    class="text-red-500 hover:text-red-700 text-xs font-medium"
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Manual coordinate input (optional) -->
+            <div class="grid grid-cols-2 gap-4 mt-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1"
+                  >Latitude</label
+                >
+                <input
+                  v-model.number="form.latitude"
+                  type="number"
+                  step="0.000001"
+                  placeholder="-6.200000"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#41a6c2] focus:border-transparent outline-none"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1"
+                  >Longitude</label
+                >
+                <input
+                  v-model.number="form.longitude"
+                  type="number"
+                  step="0.000001"
+                  placeholder="106.816666"
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#41a6c2] focus:border-transparent outline-none"
+                />
+              </div>
+            </div>
+
+            <!-- Search location helper -->
+            <div class="mt-3">
+              <p class="text-xs text-gray-500">
+                💡 Tips: Ketik alamat lengkap di Google Maps, kemudian salin
+                koordinat (klik kanan pada titik lokasi → pilih koordinat untuk
+                menyalin)
+              </p>
+            </div>
+          </div>
         </div>
 
         <!-- Detail Sekolah -->
@@ -299,11 +445,15 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { getMe, updateProfile } from "@/services/authService.js";
+import axios from "axios";
 
 const router = useRouter();
 const isSubmitting = ref(false);
 const isLoading = ref(false);
 const errorMessage = ref("");
+const photoInput = ref(null);
+const photoPreview = ref("");
+const photoFile = ref(null);
 
 // Form state - initialize with current data (in real app, fetch from API)
 const form = ref({
@@ -320,6 +470,8 @@ const form = ref({
     desa: "",
     detail: "",
   },
+  latitude: null,
+  longitude: null,
   sekolah: {
     asalSekolah: "",
     kelas: "",
@@ -330,25 +482,50 @@ const form = ref({
   },
 });
 
+// Computed URL untuk map embed
+const mapEmbedUrl = computed(() => {
+  try {
+    if (form.value.latitude && form.value.longitude) {
+      // Tampilkan map dengan marker di koordinat yang dipilih
+      return `https://www.google.com/maps?q=${form.value.latitude},${form.value.longitude}&hl=id&z=15&output=embed`;
+    } else if (form.value.alamat?.detail) {
+      // Tampilkan map berdasarkan alamat text
+      const address = encodeURIComponent(form.value.alamat.detail);
+      return `https://www.google.com/maps?q=${address}&hl=id&z=13&output=embed`;
+    } else {
+      // Default Indonesia center
+      return "https://www.google.com/maps?q=-6.2,106.816666&hl=id&z=5&output=embed";
+    }
+  } catch (error) {
+    console.error("Error in mapEmbedUrl:", error);
+    return "https://www.google.com/maps?q=-6.2,106.816666&hl=id&z=5&output=embed";
+  }
+});
+
 // Form validation
 const isFormValid = computed(() => {
-  return (
-    form.value.namaLengkap.trim() !== "" &&
-    form.value.email.trim() !== "" &&
-    form.value.jenisKelamin !== "" &&
-    form.value.tanggalLahir !== "" &&
-    form.value.phone.trim() !== "" &&
-    form.value.agama !== "" &&
-    form.value.alamat.provinsi.trim() !== "" &&
-    form.value.alamat.kota.trim() !== "" &&
-    form.value.alamat.kecamatan.trim() !== "" &&
-    form.value.alamat.desa.trim() !== "" &&
-    form.value.alamat.detail.trim() !== "" &&
-    form.value.sekolah.asalSekolah.trim() !== "" &&
-    form.value.sekolah.kelas !== "" &&
-    form.value.orangtua.nama.trim() !== "" &&
-    form.value.orangtua.telepon.trim() !== ""
-  );
+  try {
+    return (
+      form.value.namaLengkap?.trim() !== "" &&
+      form.value.email?.trim() !== "" &&
+      form.value.jenisKelamin !== "" &&
+      form.value.tanggalLahir !== "" &&
+      form.value.phone?.trim() !== "" &&
+      form.value.agama !== "" &&
+      form.value.alamat?.provinsi?.trim() !== "" &&
+      form.value.alamat?.kota?.trim() !== "" &&
+      form.value.alamat?.kecamatan?.trim() !== "" &&
+      form.value.alamat?.desa?.trim() !== "" &&
+      form.value.alamat?.detail?.trim() !== "" &&
+      form.value.sekolah?.asalSekolah?.trim() !== "" &&
+      form.value.sekolah?.kelas !== "" &&
+      form.value.orangtua?.nama?.trim() !== "" &&
+      form.value.orangtua?.telepon?.trim() !== ""
+    );
+  } catch (error) {
+    console.error("Error in isFormValid:", error);
+    return false;
+  }
 });
 
 // Load profile data from backend
@@ -357,33 +534,122 @@ const loadProfile = async () => {
     isLoading.value = true;
     errorMessage.value = "";
 
-    const res = await getMe();
-    const user = res.user || res.data || res;
+    // Gunakan endpoint student profile yang lengkap
+    const token = localStorage.getItem("auth_token");
+
+    console.log("=== Loading profile ===");
+    console.log("Token:", token ? "exists" : "missing");
+
+    const response = await fetch("http://localhost:8000/api/student/profile", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+
+    console.log("Response status:", response.status);
+    console.log("Response ok:", response.ok);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Response error:", errorText);
+      throw new Error("Gagal memuat profil");
+    }
+
+    const user = await response.json();
+
+    console.log("Edit - Profile data loaded:", user);
+
+    // Set photo preview
+    if (user.profile_photo_url) {
+      photoPreview.value = `http://localhost:8000/storage/${user.profile_photo_url}`;
+    } else {
+      photoPreview.value = user.photo || "https://picsum.photos/200/300";
+    }
+
+    // Map gender dari enum backend (pria/wanita) ke display
+    const genderDisplay = {
+      pria: "Laki-laki",
+      wanita: "Perempuan",
+    };
+
+    // Map religion dari enum backend ke display (capitalize first letter)
+    const religionDisplay = (religion) => {
+      if (!religion) return "";
+      return religion.charAt(0).toUpperCase() + religion.slice(1);
+    };
+
+    // Format date safely
+    const formatDate = (dateString) => {
+      if (!dateString) return "";
+      if (typeof dateString === "string" && dateString.includes("T")) {
+        return dateString.split("T")[0];
+      }
+      return dateString;
+    };
 
     // Map backend fields to form structure
     form.value = {
       namaLengkap: user.name || "",
       email: user.email || "",
-      jenisKelamin: user.gender || user.jenis_kelamin || "",
-      tanggalLahir: user.birth_date || user.tanggal_lahir || "",
-      phone: user.phone || user.telepon || "",
-      agama: user.religion || user.agama || "",
+      jenisKelamin:
+        genderDisplay[user.gender] || user.gender || user.jenis_kelamin || "",
+      tanggalLahir: formatDate(
+        user.date_of_birth || user.birth_date || user.tanggal_lahir
+      ),
+      phone: user.telephone_number || user.phone || user.telepon || "",
+      agama: religionDisplay(user.religion) || user.agama || "",
       alamat: {
-        provinsi: user.address_province || user.provinsi || "",
-        kota: user.address_city || user.kota || "",
-        kecamatan: user.address_district || user.kecamatan || "",
-        desa: user.address_village || user.desa || "",
-        detail: user.address_detail || user.alamat || "",
+        // PERBAIKAN: Backend mengirim home_address sebagai object nested ATAU field flat
+        provinsi:
+          user.home_address?.province ||
+          user.province ||
+          user.address_province ||
+          user.provinsi ||
+          "",
+        kota:
+          user.home_address?.regency ||
+          user.regency ||
+          user.city ||
+          user.address_city ||
+          user.kota ||
+          "",
+        kecamatan:
+          user.home_address?.district ||
+          user.district ||
+          user.address_district ||
+          user.kecamatan ||
+          "",
+        desa:
+          user.home_address?.subdistrict ||
+          user.subdistrict ||
+          user.address_village ||
+          user.desa ||
+          "",
+        detail:
+          user.home_address?.street ||
+          user.street ||
+          user.address_detail ||
+          user.alamat ||
+          "",
       },
+      latitude: user.latitude || null,
+      longitude: user.longitude || null,
       sekolah: {
-        asalSekolah: user.school_name || user.asal_sekolah || "",
-        kelas: user.grade || user.kelas || "",
+        asalSekolah: user.school || user.school_name || user.asal_sekolah || "",
+        kelas: user.class || user.grade || user.kelas || "", // Backend mengirim field 'class'
       },
       orangtua: {
-        nama: user.parent_name || user.nama_orangtua || "",
-        telepon: user.parent_phone || user.telepon_orangtua || "",
+        nama: user.parent || user.parent_name || user.nama_orangtua || "",
+        telepon:
+          user.parent_telephone_number ||
+          user.parent_phone ||
+          user.telepon_orangtua ||
+          "",
       },
     };
+
+    console.log("Edit - Mapped form data:", form.value);
   } catch (err) {
     console.error("Gagal load profile:", err);
     errorMessage.value = err.message || "Gagal memuat profil siswa";
@@ -400,6 +666,45 @@ const loadProfile = async () => {
   }
 };
 
+// Trigger photo upload input
+const triggerPhotoUpload = () => {
+  photoInput.value?.click();
+};
+
+// Handle photo file change
+const handlePhotoChange = (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  // Validasi ukuran file (max 2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    alert("Ukuran file terlalu besar. Maksimal 2MB.");
+    return;
+  }
+
+  // Validasi tipe file
+  if (!file.type.startsWith("image/")) {
+    alert("File harus berupa gambar.");
+    return;
+  }
+
+  // Set photo file untuk diupload nanti
+  photoFile.value = file;
+
+  // Preview foto
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    photoPreview.value = e.target?.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+// Clear location
+const clearLocation = () => {
+  form.value.latitude = null;
+  form.value.longitude = null;
+};
+
 const handleSubmit = async () => {
   if (!isFormValid.value) {
     alert("Mohon lengkapi semua field!");
@@ -408,32 +713,101 @@ const handleSubmit = async () => {
 
   isSubmitting.value = true;
   try {
-    // Prepare payload untuk backend (sesuaikan dengan format yang diharapkan backend)
-    const payload = {
-      name: form.value.namaLengkap,
-      email: form.value.email,
-      gender: form.value.jenisKelamin,
-      birth_date: form.value.tanggalLahir,
-      phone: form.value.phone,
-      religion: form.value.agama,
-      address_province: form.value.alamat.provinsi,
-      address_city: form.value.alamat.kota,
-      address_district: form.value.alamat.kecamatan,
-      address_village: form.value.alamat.desa,
-      address_detail: form.value.alamat.detail,
-      school_name: form.value.sekolah.asalSekolah,
-      grade: form.value.sekolah.kelas,
-      parent_name: form.value.orangtua.nama,
-      parent_phone: form.value.orangtua.telepon,
-    };
+    const token = localStorage.getItem("auth_token");
 
-    await updateProfile(payload);
+    // Prepare FormData untuk support upload foto
+    const formData = new FormData();
+
+    // PENTING: Tambahkan _method untuk method spoofing (Laravel requirement)
+    formData.append("_method", "PATCH");
+
+    // Tambahkan foto jika ada
+    if (photoFile.value) {
+      formData.append("photo", photoFile.value);
+      console.log("Photo added to FormData:", photoFile.value.name);
+    }
+
+    // Tambahkan data profil lainnya (sesuaikan dengan format backend)
+    formData.append("name", form.value.namaLengkap);
+    formData.append("telephone_number", form.value.phone);
+
+    // Gender: kirim sebagai enum value (pria/wanita)
+    const genderMap = {
+      "Laki-laki": "pria",
+      Perempuan: "wanita",
+    };
+    formData.append("gender", genderMap[form.value.jenisKelamin] || "pria");
+
+    formData.append("date_of_birth", form.value.tanggalLahir);
+
+    // Religion: kirim sebagai enum value (islam/kristen/katolik/hindu/buddha/konghucu)
+    formData.append("religion", form.value.agama.toLowerCase());
+
+    // Alamat (field datar yang akan di-map ke home_address di backend)
+    formData.append("province", form.value.alamat.provinsi);
+    formData.append("regency", form.value.alamat.kota);
+    formData.append("district", form.value.alamat.kecamatan);
+    formData.append("subdistrict", form.value.alamat.desa);
+    formData.append("street", form.value.alamat.detail);
+
+    // Koordinat
+    if (form.value.latitude) {
+      formData.append("latitude", form.value.latitude);
+    }
+    if (form.value.longitude) {
+      formData.append("longitude", form.value.longitude);
+    }
+
+    // Data sekolah
+    formData.append("school", form.value.sekolah.asalSekolah);
+    // PERBAIKAN: Kirim field 'class' berisi nama kelas (bukan 'kelas')
+    if (form.value.sekolah.kelas) {
+      formData.append("class", form.value.sekolah.kelas);
+    }
+
+    // Data orangtua
+    if (form.value.orangtua.nama) {
+      formData.append("parent", form.value.orangtua.nama);
+    }
+    if (form.value.orangtua.telepon) {
+      formData.append("parent_telephone_number", form.value.orangtua.telepon);
+    }
+
+    console.log("=== FormData yang akan dikirim ===");
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ": " + pair[1]);
+    }
+    console.log("=== Nilai form.sekolah.kelas ===", form.value.sekolah.kelas);
+    console.log("===================================");
+
+    const response = await axios.post(
+      "http://localhost:8000/api/student/profile",
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    console.log("Profile updated:", response.data);
+
+    // Update photo preview jika ada response photo_url
+    if (response.data.photo_url) {
+      photoPreview.value = response.data.photo_url;
+    }
 
     alert("Profil berhasil diperbarui!");
     router.push("/student/profile-student");
   } catch (error) {
     console.error("Error updating profile:", error);
-    alert(error.message || "Gagal memperbarui profil. Silakan coba lagi.");
+    console.error("Error details:", error.response?.data);
+    alert(
+      error.response?.data?.message ||
+        error.message ||
+        "Gagal memperbarui profil. Silakan coba lagi."
+    );
   } finally {
     isSubmitting.value = false;
   }
