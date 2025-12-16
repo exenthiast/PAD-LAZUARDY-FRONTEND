@@ -1,14 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "../views/HomePage.vue";
-import SearchView from "../views/SearchView.vue";
-import LoginForm from "../views/LoginForm.vue";
+import LoginForm from "../views/auth/LoginForm.vue";
 import RegisterForm from "../views/student/RegisterForm.vue";
 import RegisterTutor from "../views/tutor/RegisterTutor.vue";
 import RegisterLanjutan from "../views/student/RegisterLanjutan.vue";
 import RegisterOtp from "../views/student/RegisterOtp.vue";
 import DashboardPage from "../views/student/DashboardPage.vue";
-// import ProgressPage from "../views/student/ProgressPage.vue";
-// import MyPackagePage from "../views/student/MyPackagePage.vue";
 import CheckoutPage from "../views/payment/CheckoutPage.vue";
 import PaymentHistoryPage from "../views/student/PaymentHistoryPage.vue";
 import PaymentSimulation from "../views/payment/PaymentSimulation.vue";
@@ -18,9 +15,9 @@ import TutorOtp from "../views/tutor/TutorOtp.vue";
 import LanjutanTutor from "../views/tutor/LanjutanTutor.vue";
 import TutorListPage from "../views/tutors/TutorListPage.vue";
 import TutorDetailPage from "../views/tutors/TutorDetailPage.vue";
-import ForgotPassword from "../views/ForgotPassword.vue";
-import VerifyResetOTP from "../views/VerifyResetOTP.vue";
-import ResetPassword from "../views/ResetPassword.vue";
+import ForgotPassword from "../views/auth/ForgotPassword.vue";
+import VerifyResetOTP from "../views/auth/VerifyResetOTP.vue";
+import ResetPassword from "../views/auth/ResetPassword.vue";
 import EditProfile from "../views/student/EditProfile.vue";
 import PackageListPage from "../views/packages/PackageListPage.vue";
 import ConversationDetail from "../views/messages/ConversationDetail.vue";
@@ -50,11 +47,6 @@ const routes = [
     path: "/",
     name: "home",
     component: Home,
-  },
-  {
-    path: "/search",
-    name: "Search",
-    component: SearchView,
   },
   {
     path: "/login",
@@ -121,16 +113,6 @@ const routes = [
     name: "DashboardPage",
     component: DashboardPage,
   },
-  // {
-  //   path: "/student/progress",
-  //   name: "ProgressPage",
-  //   component: ProgressPage,
-  // },
-  // {
-  //   path: "/student/package",
-  //   name: "MyPackagePage",
-  //   component: MyPackagePage,
-  // },
   {
     path: "/packages",
     name: "PackageListPage",

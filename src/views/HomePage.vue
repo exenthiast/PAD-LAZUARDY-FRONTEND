@@ -28,15 +28,9 @@
         <div class="flex items-center gap-4">
           <button
             @click="handleNext"
-            class="w-full flex item-center gap-3 rounded-lg text-black px-3 py-2 md:px-8 md:py-2 rounded-lg font-bold transition-colors"
-          >
-            <span class="">Login</span>
-          </button>
-          <button
-            @click="handleNext"
             class="w-full flex item-center gap-3 rounded-full bg-[#41a6c2] hover:bg-teal-600 text-white px-3 py-2 md:px-8 md:py-2 rounded-full font-medium transition-colors"
           >
-            <span class="">Register</span>
+            <span class="">Masuk</span>
           </button>
         </div>
       </div>
