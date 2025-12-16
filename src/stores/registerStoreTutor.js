@@ -14,10 +14,11 @@ export const useRegisterTutorStore = defineStore("registerTutor", {
       agama: "",
       // alamat (shared)
       provinsi: "",
-      kota: "",
+      kabupaten: "",
       kecamatan: "",
-      desa: "",
+      kelurahan: "",
       alamat: "",
+      location: null,
       // khusus tutor (tambahan opsional)
       keahlian: "",
       marketSiswa: "sma", // default to SMA

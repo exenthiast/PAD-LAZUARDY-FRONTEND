@@ -102,10 +102,23 @@
           Unggah Bukti Transfer
         </h2>
         <div
-          class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary transition"
+          :class="[
+            'border-2 border-dashed rounded-xl p-6 text-center transition cursor-pointer',
+            isDragging
+              ? 'border-primary bg-primary/5'
+              : 'border-gray-300 hover:border-primary',
+          ]"
+          @dragover.prevent="isDragging = true"
+          @dragleave.prevent="isDragging = false"
+          @drop.prevent="handleFileDrop"
+          @click="$refs.fileInput.click()"
         >
           <p class="text-gray-600 text-sm mb-3">
-            Drag & drop atau klik untuk upload bukti pembayaran
+            {{
+              isDragging
+                ? "📁 Lepaskan file di sini"
+                : "Drag & drop atau klik untuk upload bukti pembayaran"
+            }}
           </p>
           <input
             type="file"
@@ -115,7 +128,7 @@
             accept=".jpg,.png,.pdf"
           />
           <button
-            @click="$refs.fileInput.click()"
+            @click.stop="$refs.fileInput.click()"
             class="bg-primary hover:bg-primary-dark text-white px-5 py-2 rounded-lg text-sm"
           >
             Pilih File
@@ -166,6 +179,7 @@ const fileName = ref("");
 const uploadedFile = ref(null);
 const isSubmitting = ref(false);
 const orderId = ref(null);
+const isDragging = ref(false);
 
 // Data paket dari PackageListPage
 const paketList = [
@@ -246,26 +260,41 @@ const banks = [
   },
 ];
 
+const processFile = (file) => {
+  if (!file) return;
+
+  // Validate file size (max 5MB)
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  if (file.size > maxSize) {
+    alert("Ukuran file terlalu besar. Maksimal 5MB");
+    return;
+  }
+
+  // Validate file type
+  const validTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "application/pdf",
+  ];
+  if (!validTypes.includes(file.type)) {
+    alert("Format file tidak didukung. Gunakan JPG, PNG, atau PDF");
+    return;
+  }
+
+  fileName.value = file.name;
+  uploadedFile.value = file;
+};
+
 const handleUpload = (event) => {
   const file = event.target.files[0];
-  if (file) {
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      alert("Ukuran file terlalu besar. Maksimal 5MB");
-      return;
-    }
+  processFile(file);
+};
 
-    // Validate file type
-    const validTypes = ["image/jpeg", "image/png", "application/pdf"];
-    if (!validTypes.includes(file.type)) {
-      alert("Format file tidak didukung. Gunakan JPG, PNG, atau PDF");
-      return;
-    }
-
-    fileName.value = file.name;
-    uploadedFile.value = file;
-  }
+const handleFileDrop = (event) => {
+  isDragging.value = false;
+  const file = event.dataTransfer.files[0];
+  processFile(file);
 };
 
 const handleBatal = () => {

@@ -90,7 +90,15 @@
             <div
               v-if="!previewUrl"
               @click="$refs.fileInput.click()"
-              class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#41a6c2] transition-colors cursor-pointer"
+              @dragover.prevent="isDragging = true"
+              @dragleave.prevent="isDragging = false"
+              @drop.prevent="handleFileDrop"
+              :class="[
+                'border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
+                isDragging
+                  ? 'border-[#41a6c2] bg-[#41a6c2]/5'
+                  : 'border-gray-300 hover:border-[#41a6c2]',
+              ]"
             >
               <input
                 ref="fileInput"
@@ -99,7 +107,12 @@
                 @change="handleFileSelect"
                 accept="image/*,.pdf"
               />
-              <Upload class="w-12 h-12 mx-auto mb-3 text-gray-400" />
+              <Upload
+                :class="[
+                  'w-12 h-12 mx-auto mb-3 transition-colors',
+                  isDragging ? 'text-[#41a6c2]' : 'text-gray-400',
+                ]"
+              />
               <p class="text-sm text-gray-600 mb-1">
                 Drag & Drop atau klik untuk upload
               </p>
@@ -187,6 +200,7 @@ const fileInput = ref(null);
 
 const isLoading = ref(true);
 const isSubmitting = ref(false);
+const isDragging = ref(false);
 
 const scheduleInfo = ref({
   id: null,
@@ -273,6 +287,28 @@ const formatDate = (dateString) => {
 const handleFileSelect = (event) => {
   const file = event.target.files[0];
   if (!file) return;
+  processFile(file);
+};
+
+const handleFileDrop = (event) => {
+  isDragging.value = false;
+  const file = event.dataTransfer.files[0];
+  if (!file) return;
+  processFile(file);
+};
+
+const processFile = (file) => {
+  // Validate file type
+  const validTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "application/pdf",
+  ];
+  if (!validTypes.includes(file.type)) {
+    alert("Format file tidak didukung. Gunakan JPG, PNG, atau PDF");
+    return;
+  }
 
   // Validate file size (5MB)
   if (file.size > 5 * 1024 * 1024) {
@@ -335,7 +371,22 @@ const submitAttendance = async () => {
     await submitAttendanceAPI(scheduleInfo.value.id, data);
 
     alert("Bukti kehadiran berhasil dikirim!");
-    router.push("/student/schedule");
+
+    // Redirect ke halaman review tutor
+    const tutorId = scheduleInfo.value.tutor_id;
+    if (tutorId) {
+      router.push({
+        name: "ReviewPage",
+        params: { tutorId },
+        query: {
+          scheduleId: scheduleInfo.value.id,
+          fromAttendance: "true",
+        },
+      });
+    } else {
+      // Fallback jika tutorId tidak tersedia
+      router.push("/student/schedule");
+    }
   } catch (error) {
     console.error("Error submitting attendance:", error);
     alert("Gagal mengirim bukti kehadiran. Silakan coba lagi.");

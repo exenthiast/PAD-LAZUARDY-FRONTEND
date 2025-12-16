@@ -27,17 +27,24 @@ export async function api(path, options = {}) {
   const isFormData =
     options.body instanceof FormData || options.body instanceof URLSearchParams;
 
-  // Build headers - options.headers takes priority over defaults
+  // Build headers - IMPORTANT: Accept and X-Requested-With should NEVER be overridden
   const headers = {
-    Accept: "application/json",
+    Accept: "application/json", // Critical for Laravel to return JSON on errors
+    "X-Requested-With": "XMLHttpRequest", // Laravel AJAX detection
     ...(!isFormData && !options.headers?.["Content-Type"]
       ? { "Content-Type": "application/json" }
       : {}),
     ...(token && !options.headers?.Authorization
       ? { Authorization: `Bearer ${token}` }
       : {}),
-    ...(options.headers || {}), // This will override defaults if provided
+    ...(options.headers || {}), // Other headers from caller
   };
+
+  // Force Accept header even if options.headers tries to override it
+  if (options.headers) {
+    headers.Accept = "application/json";
+    headers["X-Requested-With"] = "XMLHttpRequest";
+  }
 
   // Debug: log final headers (without showing full token)
   console.log(`[API] Final headers:`, {

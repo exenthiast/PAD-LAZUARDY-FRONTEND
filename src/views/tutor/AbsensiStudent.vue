@@ -236,7 +236,7 @@
             <!-- Dokumen tasi pertemuan -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2"
-                >Dokumen tasi pertemuan</label
+                >Dokumentasi pertemuan</label
               >
 
               <!-- Show existing document if available -->
@@ -257,8 +257,16 @@
               </div>
 
               <div
-                class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#41a6c2] transition-colors cursor-pointer"
+                :class="[
+                  'border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
+                  isDragging
+                    ? 'border-[#41a6c2] bg-[#41a6c2]/5'
+                    : 'border-gray-300 hover:border-[#41a6c2]',
+                ]"
                 @click="$refs.fileInput.click()"
+                @dragover.prevent="isDragging = true"
+                @dragleave.prevent="isDragging = false"
+                @drop.prevent="handleFileDrop"
               >
                 <input
                   ref="fileInput"
@@ -267,7 +275,12 @@
                   @change="handleFileUpload"
                   accept="image/*,.pdf"
                 />
-                <Upload class="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                <Upload
+                  :class="[
+                    'w-12 h-12 mx-auto mb-2 transition-colors',
+                    isDragging ? 'text-[#41a6c2]' : 'text-gray-400',
+                  ]"
+                />
                 <p class="text-sm text-gray-500">
                   Drag & Drop atau klik<br />Upload foto pertemuan
                 </p>
@@ -291,9 +304,15 @@
         <div class="flex justify-end">
           <button
             @click="saveAttendance"
-            class="px-8 py-3 bg-[#41a6c2] hover:bg-[#358a9f] text-white rounded-lg font-semibold transition-colors"
+            :disabled="isSaving"
+            class="px-8 py-3 bg-[#41a6c2] hover:bg-[#358a9f] text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            Simpan Absensi
+            <span v-if="isSaving">Menyimpan...</span>
+            <span v-else>Simpan Absensi</span>
+            <div
+              v-if="isSaving"
+              class="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"
+            ></div>
           </button>
         </div>
       </template>
@@ -326,6 +345,8 @@ const fileInput = ref(null);
 // Loading state
 const isLoading = ref(true);
 const isSendingLink = ref(false);
+const isDragging = ref(false);
+const isSaving = ref(false);
 
 // Student data
 const student = ref({
@@ -415,10 +436,43 @@ const nextWeek = () => {
 
 const handleFileUpload = (event) => {
   const file = event.target.files[0];
-  if (file && currentSessionData.value) {
-    uploadedFile.value = file;
-    currentSessionData.value.fileName = file.name;
+  if (!file) return;
+  processFile(file);
+};
+
+const handleFileDrop = (event) => {
+  isDragging.value = false;
+  const file = event.dataTransfer.files[0];
+  if (!file) return;
+  processFile(file);
+};
+
+const processFile = (file) => {
+  if (!currentSessionData.value) {
+    alert("Pilih pertemuan terlebih dahulu");
+    return;
   }
+
+  // Validate file type
+  const validTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "application/pdf",
+  ];
+  if (!validTypes.includes(file.type)) {
+    alert("Format file tidak didukung. Gunakan JPG, PNG, atau PDF");
+    return;
+  }
+
+  // Validate file size (5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    alert("Ukuran file maksimal 5MB");
+    return;
+  }
+
+  uploadedFile.value = file;
+  currentSessionData.value.fileName = file.name;
 };
 
 // Watch selectedSession to reset uploaded file when switching sessions
@@ -433,6 +487,8 @@ const saveAttendance = async () => {
   }
 
   try {
+    isSaving.value = true;
+
     const formData = new FormData();
     formData.append("student_package_id", studentPackageId.value);
     formData.append("session_number", selectedSession.value);
@@ -446,14 +502,26 @@ const saveAttendance = async () => {
     }
 
     await saveSessionReport(formData);
-    alert("Data absensi berhasil disimpan!");
 
-    // Reload data
+    // Reload data untuk update progress bar dan session data
     await loadAttendanceData();
+
+    // Reset uploaded file setelah reload
     uploadedFile.value = null;
+
+    // Show success message setelah data di-reload
+    alert(
+      "Data absensi berhasil disimpan! Progress: " +
+        student.value.progress +
+        "%"
+    );
   } catch (error) {
     console.error("Error saving attendance:", error);
-    alert("Gagal menyimpan data absensi");
+    const errorMessage =
+      error?.response?.data?.message || "Gagal menyimpan data absensi";
+    alert(errorMessage);
+  } finally {
+    isSaving.value = false;
   }
 };
 
@@ -469,7 +537,14 @@ const loadAttendanceData = async () => {
     isLoading.value = true;
     const response = await getStudentAttendance(studentId);
 
-    console.log("Attendance data:", response);
+    console.log("=== Attendance data response ===");
+    console.log("Full response:", response);
+    console.log("Sessions data:", response.sessions);
+    console.log("Total sessions:", response.sessions?.total);
+    console.log("Completed sessions:", response.sessions?.completed);
+    console.log("Remaining sessions:", response.sessions?.remaining);
+    console.log("Progress:", response.sessions?.progress);
+    console.log("Session reports:", response.session_reports);
 
     // Set student info
     student.value = {
@@ -481,6 +556,8 @@ const loadAttendanceData = async () => {
       progress: response.sessions.progress,
       photo: response.student.photo,
     };
+
+    console.log("Student state after update:", student.value);
 
     studentPackageId.value = response.student_package_id;
     scheduleDates.value = response.schedule_dates || [];

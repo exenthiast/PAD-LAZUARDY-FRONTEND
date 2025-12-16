@@ -24,10 +24,8 @@ export const submitAttendance = async (scheduleId, formData) => {
   try {
     const response = await api(`/api/student/attendance/${scheduleId}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      data: formData,
+      body: formData,
+      // Don't set Content-Type header - browser will set it with boundary for FormData
     });
     console.log("Submit attendance response:", response);
     return response;
@@ -46,10 +44,8 @@ export const submitReview = async (tutorId, formData) => {
   try {
     const response = await api(`/api/student/review/${tutorId}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      data: formData,
+      body: formData,
+      // Don't set Content-Type header - browser will set it with boundary for FormData
     });
     console.log("Submit review response:", response);
     return response;

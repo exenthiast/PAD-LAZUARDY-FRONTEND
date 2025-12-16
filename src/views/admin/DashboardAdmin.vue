@@ -65,9 +65,45 @@
         </template>
       </div>
 
+      <!-- Kelola Tutor Card -->
+      <div class="table-section">
+        <div class="section-header">
+          <h2 class="section-title">Kelola Tutor</h2>
+          <router-link to="/admin/kelola-tutor" class="link-selengkapnya">
+            Lihat Selengkapnya →
+          </router-link>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nama Tutor</th>
+                <th>Pertemuan</th>
+                <th>Pendapatan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="loadingTutorManagement">
+                <td colspan="3" class="empty-state">Memuat data...</td>
+              </tr>
+              <tr v-else-if="tutorManagementList.length === 0">
+                <td colspan="3" class="empty-state">Tidak ada data tutor</td>
+              </tr>
+              <tr v-else v-for="tutor in tutorManagementList" :key="tutor.id">
+                <td>{{ tutor.name }}</td>
+                <td>{{ tutor.meetings }}</td>
+                <td>{{ formatCurrency(tutor.earnings) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Verifikasi Tutor -->
       <div class="table-section">
-        <h2 class="section-title">Verifikasi Tutor</h2>
+        <div class="section-header">
+          <h2 class="section-title">Verifikasi Tutor</h2>
+        </div>
         <div class="table-wrapper">
           <table class="data-table">
             <thead>
@@ -104,14 +140,20 @@
                       Cek Data
                     </button>
                     <button
-                      v-if="tutor.status === 'Menunggu'"
+                      v-if="
+                        tutor.status &&
+                        tutor.status.toLowerCase().includes('menunggu')
+                      "
                       @click="approveTutor(tutor.id)"
                       class="btn-action btn-approve"
                     >
                       Setujui
                     </button>
                     <button
-                      v-if="tutor.status === 'Menunggu'"
+                      v-if="
+                        tutor.status &&
+                        tutor.status.toLowerCase().includes('menunggu')
+                      "
                       @click="rejectTutor(tutor.id)"
                       class="btn-action btn-reject"
                     >
@@ -127,7 +169,9 @@
 
       <!-- Verifikasi Pembayaran -->
       <div class="table-section">
-        <h2 class="section-title">Verifikasi Pembayaran</h2>
+        <div class="section-header">
+          <h2 class="section-title">Verifikasi Pembayaran</h2>
+        </div>
         <div class="table-wrapper">
           <table class="data-table">
             <thead>
@@ -168,14 +212,20 @@
                       Cek Data
                     </button>
                     <button
-                      v-if="payment.status === 'Menunggu'"
+                      v-if="
+                        payment.status &&
+                        payment.status.toLowerCase().includes('menunggu')
+                      "
                       @click="verifyPayment(payment.id)"
                       class="btn-action btn-approve"
                     >
                       Verifikasi
                     </button>
                     <button
-                      v-if="payment.status === 'Menunggu'"
+                      v-if="
+                        payment.status &&
+                        payment.status.toLowerCase().includes('menunggu')
+                      "
                       @click="rejectPayment(payment.id)"
                       class="btn-action btn-reject"
                     >
@@ -207,6 +257,7 @@ import {
   rejectTutor as rejectUserTutor,
   verifyPayment as verifyUserPayment,
   rejectPayment as rejectUserPayment,
+  getTutorManagementSummary,
 } from "@/services/adminDashboardService";
 
 const router = useRouter();
@@ -223,12 +274,16 @@ const stats = ref({
 const loadingStats = ref(false);
 const loadingTutors = ref(false);
 const loadingPayments = ref(false);
+const loadingTutorManagement = ref(false);
 
 // Tutor verification data
 const tutorVerifications = ref([]);
 
 // Payment verification data
 const paymentVerifications = ref([]);
+
+// Tutor management data
+const tutorManagementList = ref([]);
 
 // Load dashboard data
 onMounted(() => {
@@ -261,6 +316,7 @@ const loadDashboardData = async () => {
     loadStatistics(),
     loadPendingTutors(),
     loadPendingPayments(),
+    loadTutorManagement(),
   ]);
   console.log("Dashboard data loading complete");
 };
@@ -290,7 +346,6 @@ const loadPendingTutors = async () => {
   loadingTutors.value = true;
   try {
     const data = await getPendingTutors();
-    console.log("Pending tutors data:", data);
     tutorVerifications.value = data;
   } catch (error) {
     console.error("Error loading pending tutors:", error);
@@ -305,7 +360,6 @@ const loadPendingPayments = async () => {
   loadingPayments.value = true;
   try {
     const data = await getPendingPayments();
-    console.log("Pending payments data:", data);
     paymentVerifications.value = data;
   } catch (error) {
     console.error("Error loading pending payments:", error);
@@ -313,6 +367,29 @@ const loadPendingPayments = async () => {
   } finally {
     loadingPayments.value = false;
   }
+};
+
+// Load tutor management data
+const loadTutorManagement = async () => {
+  loadingTutorManagement.value = true;
+  try {
+    const data = await getTutorManagementSummary();
+    tutorManagementList.value = data;
+  } catch (error) {
+    console.error("Error loading tutor management:", error);
+    tutorManagementList.value = [];
+  } finally {
+    loadingTutorManagement.value = false;
+  }
+};
+
+// Format currency helper
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(amount);
 };
 
 // Tutor verification actions
@@ -522,13 +599,32 @@ const handleLogout = () => {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
 .section-title {
   font-size: 1.5rem;
   font-weight: 700;
   color: #41a6c2;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid #e2e8f0;
+  margin: 0;
+}
+
+.link-selengkapnya {
+  color: #41a6c2;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.link-selengkapnya:hover {
+  color: #358a9f;
 }
 
 .table-wrapper {

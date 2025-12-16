@@ -455,6 +455,7 @@ const showToast = ref(false);
 const selectedSlot = ref(null);
 const showFullSchedule = ref(false); // Toggle untuk melihat jadwal lengkap
 const isProcessingBooking = ref(false); // Loading state untuk proses booking
+const hasActivePackage = ref(null); // Paket aktif siswa (untuk validasi booking)
 
 // Calendar state
 const currentWeekStart = ref(new Date());
@@ -986,8 +987,36 @@ function selectTimeSlot(day, slot) {
   showConfirm.value = true;
 }
 
+// Fungsi check active package (untuk validasi booking)
+async function checkActivePackage() {
+  try {
+    const response = await api.get("/dashboard/student");
+    const data = response.data || response;
+
+    // Check if student has approved & non-expired package
+    const packages = data.packages || [];
+    hasActivePackage.value = packages.length > 0;
+
+    console.log("Active package check:", hasActivePackage.value);
+  } catch (error) {
+    console.error("Error checking active package:", error);
+    hasActivePackage.value = false;
+  }
+}
+
 async function processBooking() {
   if (!selectedSlot.value) return;
+
+  // VALIDASI: Cek apakah siswa punya paket aktif
+  if (hasActivePackage.value === false) {
+    alert(
+      "⚠️ Anda belum membeli paket belajar!\n\nSilakan beli paket terlebih dahulu untuk dapat booking jadwal tutor."
+    );
+
+    // Redirect ke halaman paket
+    router.push("/packages");
+    return;
+  }
 
   // Definisikan payload di luar try-catch agar bisa diakses di catch block
   const payload = {
@@ -1073,6 +1102,9 @@ onMounted(async () => {
 
   // Load tutor detail
   await loadTutorDetail();
+
+  // Check active package untuk validasi booking
+  await checkActivePackage();
 });
 </script>
 

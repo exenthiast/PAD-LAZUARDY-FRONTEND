@@ -6,7 +6,9 @@ export function setupGuards(router) {
   router.beforeEach((to, from, next) => {
     const token = localStorage.getItem("auth_token");
     const userStr = localStorage.getItem("auth_user");
-    const user = userStr ? JSON.parse(userStr) : null;
+    // Handle case where localStorage contains string "undefined"
+    const user =
+      userStr && userStr !== "undefined" ? JSON.parse(userStr) : null;
 
     console.log("Route guard:", {
       to: to.path,

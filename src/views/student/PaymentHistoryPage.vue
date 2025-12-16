@@ -1,51 +1,123 @@
 <template>
   <div class="min-h-screen bg-gray-50 py-10">
+    <Navbar />
+
     <!-- Header -->
-    <div class="text-center mb-10">
+    <div class="text-center mb-10 mt-20">
       <h1 class="text-3xl font-bold text-primary">Riwayat Pembayaran</h1>
       <p class="text-gray-600 text-sm mt-2">
         Lihat daftar transaksi dan status pembayaran kamu di bawah ini
       </p>
     </div>
 
-    <!-- List Transaksi -->
-    <div class="max-w-3xl mx-auto space-y-6 px-4">
+    <!-- Loading State -->
+    <div v-if="isLoading" class="text-center py-12">
       <div
-        v-for="(trx, index) in transaksi"
-        :key="index"
+        class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#41a6c2] border-t-transparent"
+      ></div>
+      <p class="mt-4 text-gray-600">Memuat riwayat pembayaran...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="paymentHistory.length === 0" class="max-w-3xl mx-auto px-4">
+      <div class="bg-white rounded-2xl shadow-sm p-12 text-center">
+        <div class="text-6xl mb-4">📦</div>
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">
+          Belum ada riwayat pembayaran
+        </h3>
+        <p class="text-gray-600 mb-6">
+          Anda belum melakukan pembelian paket belajar
+        </p>
+        <button
+          @click="router.push('/packages')"
+          class="bg-[#41a6c2] text-white px-6 py-3 rounded-lg hover:bg-[#3592ab] transition"
+        >
+          Lihat Paket Belajar
+        </button>
+      </div>
+    </div>
+
+    <!-- List Transaksi -->
+    <div v-else class="max-w-3xl mx-auto space-y-6 px-4">
+      <div
+        v-for="payment in paymentHistory"
+        :key="payment.id"
         class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition p-6"
       >
         <!-- Header transaksi -->
         <div class="flex justify-between items-center mb-3">
           <div>
-            <h2 class="text-lg font-semibold text-gray-800">{{ trx.namaPaket }}</h2>
-            <p class="text-sm text-gray-500">{{ trx.tanggal }}</p>
+            <h2 class="text-lg font-semibold text-gray-800">
+              {{ payment.package_name }}
+            </h2>
+            <p class="text-sm text-gray-500">
+              {{ formatDate(payment.created_at) }}
+            </p>
           </div>
           <span
             class="text-xs font-semibold px-3 py-1 rounded-full"
-            :class="{
-              'bg-green-100 text-green-700': trx.status === 'Berhasil',
-              'bg-yellow-100 text-yellow-700': trx.status === 'Menunggu',
-              'bg-red-100 text-red-700': trx.status === 'Gagal',
-            }"
+            :class="getStatusClass(payment.status)"
           >
-            {{ trx.status }}
+            {{ getStatusText(payment.status) }}
           </span>
         </div>
 
         <!-- Detail transaksi -->
         <div class="text-sm text-gray-700 space-y-1">
-          <p><span class="font-medium">Metode:</span> {{ trx.metode }}</p>
-          <p><span class="font-medium">Kode Transaksi:</span> {{ trx.kode }}</p>
+          <p>
+            <span class="font-medium">Metode:</span>
+            {{ payment.payment_method || "Transfer Bank" }}
+          </p>
+          <p>
+            <span class="font-medium">Order ID:</span> {{ payment.order_id }}
+          </p>
+          <p v-if="payment.payment_proof">
+            <span class="font-medium">Bukti Transfer:</span>
+            <a
+              :href="getProofUrl(payment.payment_proof)"
+              target="_blank"
+              class="text-primary hover:underline"
+              >Lihat</a
+            >
+          </p>
+        </div>
+
+        <!-- Status Paket -->
+        <div
+          v-if="payment.status === 'validated' && payment.package_status"
+          class="mt-3 p-3 bg-blue-50 rounded-lg"
+        >
+          <p class="text-sm text-blue-800">
+            <span class="font-semibold">Status Paket:</span>
+            <span
+              :class="{
+                'text-green-600': payment.package_status === 'approved',
+                'text-yellow-600': payment.package_status === 'pending',
+                'text-red-600': payment.package_status === 'rejected',
+              }"
+            >
+              {{ getPackageStatusText(payment.package_status) }}
+            </span>
+          </p>
+          <p
+            v-if="payment.package_status === 'approved' && payment.start_date"
+            class="text-sm text-blue-700 mt-1"
+          >
+            ✅ Paket aktif sejak {{ formatDate(payment.start_date) }}
+          </p>
+          <p
+            v-if="payment.package_status === 'approved' && payment.expired_at"
+            class="text-sm text-blue-700"
+          >
+            📅 Berlaku sampai {{ formatDate(payment.expired_at) }}
+          </p>
         </div>
 
         <div class="flex justify-between items-center mt-4 pt-3 border-t">
-          <p class="font-semibold text-gray-800">Total: <span class="text-primary">Rp {{ trx.total }}</span></p>
-          <button
-            class="text-sm bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded-lg transition"
-          >
-            Lihat Detail
-          </button>
+          <p class="font-semibold text-gray-800">
+            Total:
+            <span class="text-primary">{{ formatPrice(payment.amount) }}</span>
+          </p>
         </div>
       </div>
     </div>
@@ -53,32 +125,82 @@
 </template>
 
 <script setup>
-const transaksi = [
-  {
-    namaPaket: "Paket 4x Pertemuan",
-    tanggal: "28 Oktober 2025",
-    metode: "Transfer Bank BCA",
-    kode: "TRX20251028-001",
-    total: "200.000",
-    status: "Berhasil",
-  },
-  {
-    namaPaket: "Paket 8x Pertemuan",
-    tanggal: "15 Oktober 2025",
-    metode: "Transfer Bank Mandiri",
-    kode: "TRX20251015-002",
-    total: "385.000",
-    status: "Menunggu",
-  },
-  {
-    namaPaket: "Paket 1 Bulan Intensif",
-    tanggal: "30 September 2025",
-    metode: "Transfer Bank BNI",
-    kode: "TRX20250930-003",
-    total: "480.000",
-    status: "Gagal",
-  },
-];
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import Navbar from "@/components/layout/navbar.vue";
+import api from "@/services/api";
+
+const router = useRouter();
+const isLoading = ref(true);
+const paymentHistory = ref([]);
+
+const formatPrice = (price) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(price);
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+
+const getStatusClass = (status) => {
+  const statusMap = {
+    validated: "bg-green-100 text-green-700",
+    pending: "bg-yellow-100 text-yellow-700",
+    rejected: "bg-red-100 text-red-700",
+  };
+  return statusMap[status] || "bg-gray-100 text-gray-700";
+};
+
+const getStatusText = (status) => {
+  const statusMap = {
+    validated: "Berhasil",
+    pending: "Menunggu Verifikasi",
+    rejected: "Ditolak",
+  };
+  return statusMap[status] || status;
+};
+
+const getPackageStatusText = (status) => {
+  const statusMap = {
+    approved: "Disetujui & Aktif",
+    pending: "Menunggu Persetujuan Admin",
+    rejected: "Ditolak",
+    expired: "Kadaluarsa",
+  };
+  return statusMap[status] || status;
+};
+
+const getProofUrl = (proofPath) => {
+  if (!proofPath) return "";
+  return `http://localhost:8000/storage/${proofPath}`;
+};
+
+const loadPaymentHistory = async () => {
+  try {
+    isLoading.value = true;
+    const response = await api.get("/api/student/payment-history");
+    paymentHistory.value = response.data || [];
+  } catch (error) {
+    console.error("Error loading payment history:", error);
+    paymentHistory.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  loadPaymentHistory();
+});
 </script>
 
 <style scoped>

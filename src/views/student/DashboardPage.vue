@@ -32,84 +32,159 @@
             </div>
 
             <!-- Paket Aktif -->
-            <div v-else-if="paketAktif" class="border rounded-xl p-4 shadow-sm">
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="font-semibold text-gray-800">
-                  {{ paketAktif.nama }}
-                </h3>
+            <div
+              v-else-if="paketAktif"
+              class="border rounded-xl p-5 shadow-sm bg-gradient-to-br from-teal-50 to-blue-50"
+            >
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex-1">
+                  <h3 class="font-bold text-gray-800 text-lg">
+                    {{ paketAktif.nama }}
+                  </h3>
+                  <p
+                    class="text-sm text-gray-600 mt-1"
+                    v-if="paketAktif.berlakuSampai"
+                  >
+                    Berlaku s/d
+                    <span class="font-semibold text-gray-800">{{
+                      formatDate(paketAktif.berlakuSampai)
+                    }}</span>
+                  </p>
+                </div>
                 <span
-                  class="px-2 py-0.5 text-xs rounded-full bg-teal-100 text-teal-700"
+                  class="px-3 py-1 text-xs font-semibold rounded-full bg-teal-500 text-white"
                 >
                   Aktif
                 </span>
               </div>
-              <p
-                v-if="paketAktif.berlakuSampai"
-                class="text-sm text-gray-600 mb-2"
-              >
-                Berlaku s/d
-                <span class="font-medium">{{
-                  formatDate(paketAktif.berlakuSampai)
-                }}</span>
-              </p>
-              <div class="text-sm text-gray-700">
-                Sisa sesi: <span class="font-semibold">{{ sisaSesi }}</span> /
-                {{ totalSesi }}
+              <div class="bg-white rounded-lg p-3 mt-3">
+                <p class="text-sm text-gray-600 mb-1">Sisa Pertemuan</p>
+                <div class="flex items-baseline gap-2">
+                  <span class="text-2xl font-bold text-[#41a6c2]">{{
+                    sisaSesi
+                  }}</span>
+                  <span class="text-gray-500">/ {{ totalSesi }} sesi</span>
+                </div>
               </div>
             </div>
 
-            <!-- Belum Ada Paket -->
-            <div v-else class="text-center py-8 text-gray-500">
-              <p>Belum ada paket aktif</p>
+            <!-- Belum Ada Paket Approved -->
+            <div v-else class="text-center py-8">
+              <div
+                class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-4"
+              >
+                <p class="text-yellow-800 font-medium mb-2">
+                  ⚠️ Anda belum membeli paket belajar
+                </p>
+                <p class="text-sm text-yellow-700">
+                  Silakan beli paket terlebih dahulu untuk dapat booking jadwal
+                  tutor
+                </p>
+              </div>
               <button
                 @click="router.push('/packages')"
-                class="mt-4 bg-[#41a6c2] text-white px-6 py-2 rounded-md hover:bg-[#3592ab]"
+                class="bg-[#41a6c2] text-white px-8 py-3 rounded-lg hover:bg-[#3592ab] font-semibold transition-all transform hover:scale-105"
               >
-                Pilih Paket
+                Pilih Paket Belajar
               </button>
             </div>
           </section>
 
           <!-- Progress Belajar -->
           <section class="bg-white rounded-2xl shadow p-6">
-            <h2 class="text-xl font-semibold text-[#41a6c2] mb-3">
+            <h2 class="text-xl font-semibold text-[#41a6c2] mb-4">
               Progress Belajar
             </h2>
 
+            <!-- Loading State -->
             <div v-if="isLoadingDashboard" class="text-center py-8">
               <div
                 class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#41a6c2] border-t-transparent"
               ></div>
             </div>
 
-            <div v-else-if="progress.totalSesi > 0">
-              <div class="space-y-2 text-sm mb-4">
-                <p class="text-gray-700">
-                  <span class="font-medium">{{ progress.mapel }}</span>
-                  <span v-if="progress.program"> · {{ progress.program }}</span>
-                </p>
-                <p v-if="progress.tutor" class="text-gray-600">
-                  Tutor: {{ progress.tutor }}
-                </p>
-                <p class="text-gray-500 text-xs">
-                  Jadwal berikutnya: {{ progress.jadwalBerikut }}
+            <!-- Progress Card (New Design) -->
+            <div
+              v-else-if="progress.totalSesi > 0"
+              class="border rounded-xl p-5 bg-gradient-to-br from-blue-50 to-teal-50 shadow-sm"
+            >
+              <!-- Header: Paket - Mapel (Tutor) -->
+              <div class="mb-4 pb-3 border-b border-gray-200">
+                <h3 class="font-bold text-gray-800 text-lg">
+                  {{ progress.program }} - {{ progress.mapel }}
+                </h3>
+                <p class="text-sm text-gray-600 mt-1" v-if="progress.tutor">
+                  Tutor: <span class="font-semibold">{{ progress.tutor }}</span>
                 </p>
               </div>
-              <p class="text-sm text-gray-600 mb-2">Sisa Pertemuan</p>
-              <div class="w-full bg-gray-200 rounded-full h-3">
-                <div
-                  class="bg-[#41a6c2] h-3 rounded-full transition-all duration-500"
-                  :style="{ width: progressPercent + '%' }"
-                ></div>
+
+              <!-- Tutor Info & Schedule -->
+              <div class="bg-white rounded-lg p-4 mb-4 space-y-2">
+                <div class="flex items-start gap-3">
+                  <div class="flex-1">
+                    <!-- Total Booking (1 booking = 4 pertemuan) -->
+                    <p class="text-sm text-gray-600">
+                      Total Booking:
+                      <span class="font-semibold text-gray-800">
+                        {{ Math.ceil(progress.totalSesi / 4) }} kali
+                      </span>
+                      <span class="text-xs text-gray-500">
+                        ({{ progress.totalSesi }} pertemuan)</span
+                      >
+                    </p>
+
+                    <!-- Jadwal Berikutnya -->
+                    <p class="text-sm text-gray-600 mt-2">
+                      📅 Jadwal berikutnya:
+                      <span class="font-medium text-gray-800">{{
+                        progress.jadwalBerikut
+                      }}</span>
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div class="mt-2 text-xs text-gray-600">
-                {{ progress.sesiSelesai }} dari {{ progress.totalSesi }} sesi
-                selesai ({{ Math.round(progressPercent) }}%)
+
+              <!-- Progress Bar -->
+              <div class="bg-white rounded-lg p-4">
+                <p class="text-sm font-medium text-gray-700 mb-2">
+                  Sisa Pertemuan
+                </p>
+                <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+                  <div
+                    class="bg-gradient-to-r from-teal-500 to-blue-500 h-4 rounded-full transition-all duration-500 flex items-center justify-end pr-2"
+                    :style="{ width: progressPercent + '%' }"
+                  >
+                    <span
+                      v-if="progressPercent > 10"
+                      class="text-xs text-white font-bold"
+                    >
+                      {{ Math.round(progressPercent) }}%
+                    </span>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                  <span class="text-gray-600">
+                    <span class="font-bold text-[#41a6c2]">{{
+                      progress.sesiSelesai
+                    }}</span>
+                    / {{ progress.totalSesi }} pertemuan selesai
+                  </span>
+                  <span class="text-xs text-gray-500">
+                    Sisa
+                    {{ progress.totalSesi - progress.sesiSelesai }} pertemuan
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div v-else class="text-center py-8 text-gray-500">
-              <p>Belum ada progress belajar</p>
+            <!-- Empty State -->
+            <div v-else class="text-center py-8">
+              <div class="bg-gray-50 rounded-lg p-6">
+                <p class="text-gray-500">📊 Belum ada progress belajar</p>
+                <p class="text-xs text-gray-400 mt-1">
+                  Progress akan muncul setelah tutor menyimpan laporan sesi
+                </p>
+              </div>
             </div>
           </section>
 
@@ -412,19 +487,27 @@ async function loadDashboard() {
     if (packages.length > 0) {
       const pkg = packages[0];
 
+      // Hitung total pertemuan dari package (24 atau 48 sesi)
+      const totalPertemuan = pkg.package_session ?? 0;
+
+      // Hitung sesi selesai dari remaining_session
+      const sisaPertemuan = pkg.remaining_session ?? totalPertemuan;
+      const pertemuanSelesai = totalPertemuan - sisaPertemuan;
+
       paketAktif.value = {
         nama: pkg.package_name || "Paket Belajar",
-        totalSesi: pkg.package_session ?? 0,
-        sesiTerpakai: pkg.used_session ?? 0,
-        berlakuSampai: pkg.end_date || null,
+        totalSesi: totalPertemuan,
+        sesiTerpakai: pertemuanSelesai,
+        berlakuSampai: pkg.end_date || null, // Deadline paket
       };
 
       progress.value.program = pkg.package_name || "Paket Belajar";
       progress.value.mapel = pkg.subject_name || "Mapel";
       progress.value.tutor = pkg.tutor_name || "-";
-      progress.value.totalSesi = pkg.package_session ?? 0;
-      progress.value.sesiSelesai = pkg.used_session ?? 0;
+      progress.value.totalSesi = totalPertemuan;
+      progress.value.sesiSelesai = pertemuanSelesai;
     } else {
+      // Belum ada paket yang approved
       paketAktif.value = null;
       progress.value.totalSesi = 0;
       progress.value.sesiSelesai = 0;

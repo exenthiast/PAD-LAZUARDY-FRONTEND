@@ -331,6 +331,33 @@
             Edit
           </button>
         </div>
+
+        <!-- Course Mode Badge -->
+        <div v-if="tutor.courseMode" class="mb-4">
+          <label class="text-xs text-gray-500 block mb-2"
+            >Metode Pembelajaran</label
+          >
+          <span
+            v-if="tutor.courseMode === 'flexible'"
+            class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-purple-100 text-purple-800 rounded-full"
+          >
+            <span>🌐 Online</span>
+            <span class="text-purple-400">•</span>
+            <span>📍 Offline</span>
+          </span>
+          <span
+            v-else-if="tutor.courseMode === 'online'"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-blue-100 text-blue-800 rounded-full"
+          >
+            🌐 Online
+          </span>
+          <span
+            v-else-if="tutor.courseMode === 'offline'"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-green-100 text-green-800 rounded-full"
+          >
+            📍 Offline
+          </span>
+        </div>
         <div class="divide-y divide-gray-100 border rounded-lg overflow-hidden">
           <div
             v-for="(item, i) in tutor.schedule"
@@ -339,17 +366,19 @@
           >
             <div>
               <div class="text-sm font-medium text-gray-800">
-                {{ item.day }}
+                {{ getDayName(item.day) }}
               </div>
-              <div class="text-xs text-gray-500">{{ item.subject }}</div>
+              <div class="text-xs text-gray-500">Jadwal Mengajar</div>
             </div>
-            <div class="text-sm text-gray-600">{{ item.time }}</div>
+            <div class="text-sm text-gray-600">
+              {{ item.start_time }} - {{ item.end_time }}
+            </div>
           </div>
           <p
             v-if="!tutor.schedule.length"
             class="text-sm text-gray-500 px-4 py-3"
           >
-            Belum ada jadwal mengajar.
+            Belum ada jadwal mengajar. Klik Edit untuk menambahkan jadwal.
           </p>
         </div>
       </section>
@@ -675,45 +704,120 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 Jadwal Mengajar
               </label>
+
+              <!-- Course Mode Selection -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Metode Pembelajaran
+                </label>
+                <select
+                  v-model="editForm.courseMode"
+                  class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary"
+                >
+                  <option value="">Pilih metode pembelajaran</option>
+                  <option value="online">
+                    Online (via Zoom/Google Meet)
+                  </option>
+                  <option value="offline">
+                    Offline (Datang ke lokasi siswa)
+                  </option>
+                  <option value="flexible">
+                    Flexible (Online dan Offline)
+                  </option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">
+                  Pilihan ini akan membantu siswa menemukan tutor sesuai
+                  kebutuhan mereka
+                </p>
+              </div>
+
+              <p class="text-xs text-gray-500 mb-3">
+                Pilih hari dan jam mengajar Anda. Format jam: HH:00 (contoh:
+                07:00, 14:00)
+              </p>
               <div class="space-y-3 mb-3">
                 <div
                   v-for="(schedule, idx) in editForm.schedule"
                   :key="idx"
-                  class="border rounded-lg p-3"
+                  class="border rounded-lg p-4 bg-gray-50"
                 >
-                  <div class="grid grid-cols-3 gap-2 mb-2">
-                    <input
-                      v-model="schedule.day"
-                      type="text"
-                      class="border border-gray-300 rounded px-3 py-2"
-                      placeholder="Hari"
-                    />
-                    <input
-                      v-model="schedule.subject"
-                      type="text"
-                      class="border border-gray-300 rounded px-3 py-2"
-                      placeholder="Mata Pelajaran"
-                    />
-                    <input
-                      v-model="schedule.time"
-                      type="text"
-                      class="border border-gray-300 rounded px-3 py-2"
-                      placeholder="Waktu"
-                    />
+                  <div class="space-y-3">
+                    <!-- Day Selection -->
+                    <div>
+                      <label
+                        class="block text-xs font-medium text-gray-600 mb-1"
+                        >Hari</label
+                      >
+                      <select
+                        v-model="schedule.day"
+                        class="w-full border border-gray-300 rounded px-3 py-2"
+                      >
+                        <option value="" disabled>Pilih Hari</option>
+                        <option value="1">Senin</option>
+                        <option value="2">Selasa</option>
+                        <option value="3">Rabu</option>
+                        <option value="4">Kamis</option>
+                        <option value="5">Jumat</option>
+                        <option value="6">Sabtu</option>
+                        <option value="7">Minggu</option>
+                      </select>
+                    </div>
+
+                    <!-- Time Range -->
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>
+                        <label
+                          class="block text-xs font-medium text-gray-600 mb-1"
+                          >Jam Mulai</label
+                        >
+                        <select
+                          v-model="schedule.start_time"
+                          class="w-full border border-gray-300 rounded px-3 py-2"
+                        >
+                          <option value="" disabled>Pilih Jam</option>
+                          <option
+                            v-for="hour in 24"
+                            :key="hour - 1"
+                            :value="String(hour - 1).padStart(2, '0') + ':00'"
+                          >
+                            {{ String(hour - 1).padStart(2, "0") }}:00
+                          </option>
+                        </select>
+                      </div>
+                      <div>
+                        <label
+                          class="block text-xs font-medium text-gray-600 mb-1"
+                          >Jam Selesai</label
+                        >
+                        <select
+                          v-model="schedule.end_time"
+                          class="w-full border border-gray-300 rounded px-3 py-2"
+                        >
+                          <option value="" disabled>Pilih Jam</option>
+                          <option
+                            v-for="hour in 24"
+                            :key="hour - 1"
+                            :value="String(hour - 1).padStart(2, '0') + ':00'"
+                          >
+                            {{ String(hour - 1).padStart(2, "0") }}:00
+                          </option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                   <button
                     @click="removeSchedule(idx)"
-                    class="text-sm text-red-600 hover:underline"
+                    class="text-sm text-red-600 hover:underline mt-3"
                   >
-                    Hapus Jadwal
+                    🗑️ Hapus Jadwal
                   </button>
                 </div>
               </div>
               <button
                 @click="addSchedule"
-                class="text-sm text-primary hover:underline"
+                class="text-sm text-primary hover:underline font-medium"
               >
-                + Tambah Jadwal
+                + Tambah Hari Mengajar
               </button>
             </div>
 
@@ -889,13 +993,16 @@
                     Harga Per Pertemuan (Rp)
                   </label>
                   <input
-                    v-model.number="editForm.price"
-                    type="number"
-                    min="0"
-                    step="1000"
+                    v-model="editForm.price"
+                    type="text"
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary"
-                    placeholder="Contoh: 75000"
+                    placeholder="Contoh: 75000 atau 75.000"
+                    @input="formatPrice"
                   />
+                  <p class="text-xs text-gray-500 mt-1">
+                    Masukkan angka tanpa "Rp" atau bisa gunakan titik sebagai
+                    pemisah ribuan
+                  </p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -1006,6 +1113,8 @@ const tutor = ref({
   bankName: "",
   bankAccountNumber: "",
   bankAccountName: "",
+  // Course Mode
+  courseMode: "",
 });
 
 const showSplash = ref(false);
@@ -1032,6 +1141,8 @@ const editForm = ref({
   bankName: "",
   bankAccountNumber: "",
   bankAccountName: "",
+  // Course Mode
+  courseMode: "",
 });
 
 const canEditName = computed(() => {
@@ -1159,34 +1270,68 @@ async function fetchTutorProfile() {
       tutor.value.status = status;
 
       // Keahlian sebagai tag utama
-      if (tutorData.keahlian) {
-        tutor.value.tags = [tutorData.keahlian];
-        tutor.value.skills = [tutorData.keahlian];
+      if (tutorData.keahlian || tutorData.expertise) {
+        const keahlian = tutorData.keahlian || tutorData.expertise;
+        tutor.value.tags = [keahlian];
+        tutor.value.skills = [keahlian];
       }
 
       // Market siswa
-      if (tutorData.market_siswa) {
-        tutor.value.tags.push(tutorData.market_siswa.toUpperCase());
+      if (tutorData.market_siswa || tutorData.student_market) {
+        const marketSiswa = tutorData.market_siswa || tutorData.student_market;
+        tutor.value.tags.push(marketSiswa.toUpperCase());
 
         // Tambahkan market siswa ke skills juga
-        if (!tutor.value.skills.includes(tutorData.market_siswa)) {
-          tutor.value.skills.push(tutorData.market_siswa);
+        if (!tutor.value.skills.includes(marketSiswa)) {
+          tutor.value.skills.push(marketSiswa);
         }
       }
 
       // Skill bahasa
-      if (tutorData.skil_bahasa) {
-        if (!tutor.value.skills.includes(tutorData.skil_bahasa)) {
-          tutor.value.skills.push(tutorData.skil_bahasa);
+      if (tutorData.skil_bahasa || tutorData.language_skills) {
+        const skilBahasa = tutorData.skil_bahasa || tutorData.language_skills;
+        if (!tutor.value.skills.includes(skilBahasa)) {
+          tutor.value.skills.push(skilBahasa);
         }
       }
 
       // Description
-      tutor.value.about = tutorData.description || tutorData.pengalaman || "";
+      tutor.value.about =
+        tutorData.description ||
+        tutorData.experience ||
+        tutorData.pengalaman ||
+        "";
 
-      // Schedule dari learning_method (JSON string)
-      tutor.value.schedule = [];
-      if (tutorData.learning_method) {
+      // Schedule dari backend (available_schedules or learning_method)
+      tutor.value.schedule = []; // Clear existing schedules first
+
+      // Try to get from available_schedules first (new format)
+      if (tutorData.available_schedules?.schedules) {
+        console.log(
+          "Loading schedules from available_schedules:",
+          tutorData.available_schedules.schedules
+        );
+
+        // Convert backend format to edit form format
+        tutorData.available_schedules.schedules.forEach((daySchedule) => {
+          if (daySchedule.time_slots && daySchedule.time_slots.length > 0) {
+            // Get first and last time slot to determine range
+            const times = daySchedule.time_slots
+              .map((slot) => slot.time)
+              .sort();
+            const start_time = times[0];
+            const end_time = times[times.length - 1];
+
+            tutor.value.schedule.push({
+              day: String(daySchedule.day),
+              start_time: start_time,
+              end_time: end_time,
+            });
+          }
+        });
+      }
+      // Fallback to learning_method (old format)
+      else if (tutorData.learning_method) {
         try {
           const scheduleData =
             typeof tutorData.learning_method === "string"
@@ -1201,32 +1346,10 @@ async function fetchTutorProfile() {
         }
       }
 
-      // CV List dari experience, education, dll
+      console.log("Loaded schedule:", tutor.value.schedule);
+
+      // CV List dari education array
       tutor.value.cvList = [];
-
-      // Pengalaman dari register lanjutan
-      if (tutorData.pengalaman) {
-        tutor.value.cvList.push({
-          type: "pengalaman",
-          title: "Pengalaman Mengajar",
-          org: tutorData.keahlian || "Mengajar",
-          period: "-",
-          detail: tutorData.pengalaman,
-        });
-      }
-
-      // Organisasi dari register lanjutan
-      if (tutorData.organisasi) {
-        tutor.value.cvList.push({
-          type: "organisasi",
-          title: "Organisasi",
-          org: tutorData.organisasi,
-          period: "-",
-          detail: tutorData.skil_bahasa
-            ? `Bahasa: ${tutorData.skil_bahasa}`
-            : "",
-        });
-      }
 
       // Education jika ada (dari update profil)
       if (tutorData.education && Array.isArray(tutorData.education)) {
@@ -1239,44 +1362,162 @@ async function fetchTutorProfile() {
             detail: edu.detail || edu.description || "",
           });
         });
+      } else {
+        // Fallback: Jika belum ada education array, buat dari field register lanjutan
+        // (hanya untuk backward compatibility dengan data lama)
+        if (tutorData.pengalaman || tutorData.experience) {
+          tutor.value.cvList.push({
+            type: "pengalaman",
+            title: "Pengalaman Mengajar",
+            org: tutorData.keahlian || tutorData.expertise || "Mengajar",
+            period: "-",
+            detail: tutorData.pengalaman || tutorData.experience,
+          });
+        }
+
+        if (tutorData.organisasi || tutorData.organization) {
+          const skilBahasa = tutorData.skil_bahasa || tutorData.language_skills;
+          tutor.value.cvList.push({
+            type: "organisasi",
+            title: "Organisasi",
+            org: tutorData.organisasi || tutorData.organization,
+            period: "-",
+            detail: skilBahasa ? `Bahasa: ${skilBahasa}` : "",
+          });
+        }
       }
 
-      // File paths dari register lanjutan
+      // File paths dari register lanjutan (multiple field variations)
+      console.log("Tutor file data from API:", {
+        cv_path: tutorData.cv_path,
+        cv: tutorData.cv,
+        ktp_path: tutorData.ktp_path,
+        ktp: tutorData.ktp,
+        ijazah_path: tutorData.ijazah_path,
+        ijazah: tutorData.ijazah,
+      });
+
       tutor.value.files = {
-        cv: tutorData.cv_path || null,
-        ktp: tutorData.ktp_path || null,
-        ijazah: tutorData.ijazah_path || null,
+        cv: tutorData.cv_path || tutorData.cv || null,
+        ktp: tutorData.ktp_path || tutorData.ktp || null,
+        ijazah: tutorData.ijazah_path || tutorData.ijazah || null,
       };
 
-      // Personal data
+      // Personal data (Bank & Price)
+      console.log("Tutor bank data from API:", {
+        bank: tutorData.bank,
+        rekening: tutorData.rekening,
+        bank_name: tutorData.bank_name,
+        bank_account_number: tutorData.bank_account_number,
+        bank_account_name: tutorData.bank_account_name,
+      });
+
       tutor.value.price = tutorData.price || 0;
-      tutor.value.bankName = tutorData.bank_name || "";
-      tutor.value.bankAccountNumber = tutorData.bank_account_number || "";
+      tutor.value.bankName = tutorData.bank_name || tutorData.bank || "";
+      tutor.value.bankAccountNumber =
+        tutorData.bank_account_number || tutorData.rekening || "";
       tutor.value.bankAccountName = tutorData.bank_account_name || "";
+
+      // Course Mode
+      tutor.value.courseMode = tutorData.course_mode || "";
     }
 
-    // Personal data dari user
-    tutor.value.gender = userData.gender || "";
-    tutor.value.dateOfBirth = userData.date_of_birth || "";
+    // Personal data dari user dengan format yang tepat
+    // Gender: pria → Laki-laki, wanita → Perempuan
+    const genderMap = {
+      pria: "Laki-laki",
+      wanita: "Perempuan",
+    };
+    tutor.value.gender =
+      genderMap[userData.gender?.toLowerCase()] || userData.gender || "";
+
+    // Date of Birth: format dari ISO ke readable format
+    if (userData.date_of_birth) {
+      try {
+        const date = new Date(userData.date_of_birth);
+        tutor.value.dateOfBirth = date.toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+      } catch (e) {
+        console.error("Failed to parse date:", e);
+        tutor.value.dateOfBirth = userData.date_of_birth;
+      }
+    } else {
+      tutor.value.dateOfBirth = "";
+    }
+
     tutor.value.telephone = userData.telephone_number || "";
-    tutor.value.religion = userData.religion || "";
+
+    // Religion: capitalize first letter (islam → Islam)
+    if (userData.religion) {
+      tutor.value.religion =
+        userData.religion.charAt(0).toUpperCase() +
+        userData.religion.slice(1).toLowerCase();
+    } else {
+      tutor.value.religion = "";
+    }
+
     tutor.value.latitude = userData.latitude || "";
     tutor.value.longitude = userData.longitude || "";
 
-    // Address dari home_address JSON
+    // Address: Parse home_address JSON first, then build address string
+    let addressData = null;
     if (userData.home_address) {
       try {
-        const addressData =
+        addressData =
           typeof userData.home_address === "string"
             ? JSON.parse(userData.home_address)
             : userData.home_address;
-
-        tutor.value.address = addressData.address || "";
       } catch (e) {
-        console.error("Failed to parse home_address:", e);
+        // If parsing fails, treat as plain string
+        console.log("home_address is plain string:", userData.home_address);
+        tutor.value.address = userData.home_address;
+        addressData = null;
+      }
+    }
+
+    // Build address from parsed JSON home_address
+    if (addressData && typeof addressData === "object") {
+      const addressParts = [
+        addressData?.street || addressData?.address,
+        addressData?.subdistrict || addressData?.village,
+        addressData?.district,
+        addressData?.regency || addressData?.city,
+        addressData?.province,
+      ].filter(Boolean);
+
+      if (addressParts.length > 0) {
+        tutor.value.address = addressParts.join(", ");
+      } else if (addressData?.address) {
+        // Fallback: if there's an 'address' field in JSON
+        tutor.value.address = addressData.address;
+      } else {
+        tutor.value.address = "";
+      }
+    } else if (!tutor.value.address) {
+      // Last fallback: if no address parsed yet, try direct fields
+      const addressParts = [
+        userData.street,
+        userData.subdistrict,
+        userData.district,
+        userData.regency,
+        userData.province,
+      ].filter(Boolean);
+
+      if (addressParts.length > 0) {
+        tutor.value.address = addressParts.join(", ");
+      } else {
         tutor.value.address = "";
       }
     }
+
+    console.log("Address parsed:", {
+      home_address: userData.home_address,
+      addressData: addressData,
+      final: tutor.value.address,
+    });
 
     loading.value = false;
   } catch (error) {
@@ -1398,7 +1639,8 @@ function editSection(section) {
     editForm.value.schedule =
       tutor.value.schedule.length > 0
         ? JSON.parse(JSON.stringify(tutor.value.schedule))
-        : [{ day: "", subject: "", time: "" }];
+        : [{ day: "", start_time: "", end_time: "" }];
+    editForm.value.courseMode = tutor.value.courseMode || "";
   } else if (section === "cv") {
     editForm.value.cvList =
       tutor.value.cvList.length > 0
@@ -1414,7 +1656,8 @@ function editSection(section) {
     editForm.value.latitude = tutor.value.latitude || "";
     editForm.value.longitude = tutor.value.longitude || "";
   } else if (section === "bank") {
-    editForm.value.price = tutor.value.price || 0;
+    // Format price dengan toLocaleString untuk tampilan (tanpa "Rp")
+    editForm.value.price = tutor.value.price ? String(tutor.value.price) : "0";
     editForm.value.bankName = tutor.value.bankName || "";
     editForm.value.bankAccountNumber = tutor.value.bankAccountNumber || "";
     editForm.value.bankAccountName = tutor.value.bankAccountName || "";
@@ -1439,7 +1682,7 @@ function removeSkill(index) {
 
 // Schedule functions
 function addSchedule() {
-  editForm.value.schedule.push({ day: "", subject: "", time: "" });
+  editForm.value.schedule.push({ day: "", start_time: "", end_time: "" });
 }
 
 function removeSchedule(index) {
@@ -1459,6 +1702,27 @@ function addCv() {
 
 function removeCv(index) {
   editForm.value.cvList.splice(index, 1);
+}
+
+// Helper function to convert day number to day name
+function getDayName(dayNum) {
+  const dayNames = {
+    1: "Senin",
+    2: "Selasa",
+    3: "Rabu",
+    4: "Kamis",
+    5: "Jumat",
+    6: "Sabtu",
+    7: "Minggu",
+  };
+  return dayNames[String(dayNum)] || dayNum;
+}
+
+// Helper function to format price input
+function formatPrice(event) {
+  // Allow only numbers and dot
+  let value = event.target.value.replace(/[^\d.]/g, "");
+  editForm.value.price = value;
 }
 
 async function handleLogout() {
@@ -1523,11 +1787,44 @@ async function saveEdit() {
         updateData.keahlian = validSkills[0];
       }
     } else if (editingSection.value === "schedule") {
-      // Filter empty schedules
+      // Filter empty schedules and convert to backend format
       const validSchedules = editForm.value.schedule.filter(
-        (s) => s.day && s.subject && s.time
+        (s) => s.day && s.start_time && s.end_time
       );
-      updateData.schedule = validSchedules;
+
+      // Convert to backend API format: array of {day, time_slots: [{time, is_available}]}
+      const schedulesByDay = {};
+
+      validSchedules.forEach((schedule) => {
+        const startHour = parseInt(schedule.start_time.split(":")[0]);
+        const endHour = parseInt(schedule.end_time.split(":")[0]);
+
+        // Generate time slots for each hour in the range
+        const timeSlots = [];
+        for (let hour = startHour; hour <= endHour; hour++) {
+          timeSlots.push({
+            time: String(hour).padStart(2, "0") + ":00",
+            is_available: true,
+          });
+        }
+
+        // Group by day
+        if (!schedulesByDay[schedule.day]) {
+          schedulesByDay[schedule.day] = [];
+        }
+        schedulesByDay[schedule.day].push(...timeSlots);
+      });
+
+      // Convert to array format for backend
+      updateData.schedules = Object.keys(schedulesByDay).map((day) => ({
+        day: parseInt(day),
+        time_slots: schedulesByDay[day],
+      }));
+
+      console.log("Sending schedules to backend:", updateData.schedules);
+
+      // Include course mode
+      updateData.course_mode = editForm.value.courseMode || null;
     } else if (editingSection.value === "cv") {
       // Filter empty cv entries
       const validCvList = editForm.value.cvList.filter(
@@ -1544,7 +1841,11 @@ async function saveEdit() {
       updateData.latitude = editForm.value.latitude;
       updateData.longitude = editForm.value.longitude;
     } else if (editingSection.value === "bank") {
-      updateData.price = editForm.value.price;
+      // Parse price: remove dots (thousands separator) and convert to number
+      const priceString = String(editForm.value.price).replace(/\./g, "");
+      const priceNumber = parseInt(priceString) || 0;
+
+      updateData.price = priceNumber;
       updateData.bank_name = editForm.value.bankName;
       updateData.bank_account_number = editForm.value.bankAccountNumber;
       updateData.bank_account_name = editForm.value.bankAccountName;
@@ -1566,14 +1867,14 @@ async function saveEdit() {
 
     console.log("Update response:", response.data);
 
-    // Tutup modal dulu
+    // Refetch data dari backend untuk memastikan UI sinkron dengan database
+    await fetchTutorProfile();
+
+    // Tutup modal setelah data di-reload
     closeEditModal();
 
     // Alert berhasil
     alert("Profil berhasil diperbarui!");
-
-    // Refetch data dari backend untuk memastikan UI sinkron dengan database
-    await fetchTutorProfile();
   } catch (error) {
     console.error("Failed to update profile:", error);
     console.error("Error details:", error.response?.data);

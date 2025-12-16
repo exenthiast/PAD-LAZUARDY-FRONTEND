@@ -176,6 +176,7 @@ const fileInput = ref(null);
 
 const isLoading = ref(false);
 const isSubmitting = ref(false);
+const hasExistingReview = ref(false); // Flag untuk cek existing review
 
 const tutorInfo = ref({
   id: null,
@@ -266,6 +267,14 @@ const submitReview = async () => {
     return;
   }
 
+  // Warning jika user sudah pernah review
+  if (hasExistingReview.value && !route.query.fromAttendance) {
+    const confirmUpdate = confirm(
+      "Anda sudah pernah memberikan review untuk tutor ini.\n\nApakah Anda ingin memperbarui review Anda?"
+    );
+    if (!confirmUpdate) return;
+  }
+
   try {
     isSubmitting.value = true;
 
@@ -279,7 +288,11 @@ const submitReview = async () => {
 
     await submitReviewAPI(tutorInfo.value.id, data);
 
-    alert("Review berhasil dikirim! Terima kasih atas feedback Anda.");
+    const message = hasExistingReview.value
+      ? "Review berhasil diperbarui! Terima kasih atas feedback Anda."
+      : "Review berhasil dikirim! Terima kasih atas feedback Anda.";
+
+    alert(message);
     router.push("/student/schedule");
   } catch (error) {
     console.error("Error submitting review:", error);

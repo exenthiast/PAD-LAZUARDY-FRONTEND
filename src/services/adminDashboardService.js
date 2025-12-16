@@ -94,7 +94,7 @@ export const verifyPayment = async (paymentId) => {
 };
 
 /**
- * Reject payment
+ * Reject payment (Delete payment data)
  * @param {number} paymentId - Payment ID
  */
 export const rejectPayment = async (paymentId) => {
@@ -103,6 +103,7 @@ export const rejectPayment = async (paymentId) => {
       method: "PATCH",
       body: JSON.stringify({ payment_id: paymentId }),
     });
+    console.log("API Response for reject payment:", response);
     return response;
   } catch (error) {
     console.error("Error rejecting payment:", error);
@@ -136,6 +137,128 @@ export const getPaymentDetail = async (paymentId) => {
     return response;
   } catch (error) {
     console.error("Error fetching payment detail:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get all tutors for management (Kelola Tutor)
+ * @param {Object} params - Query parameters
+ * @param {string} params.search - Search by name
+ * @param {string} params.subject - Filter by subject ID
+ */
+export const getAllTutors = async (params = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+    if (params.search) queryParams.append("search", params.search);
+    if (params.subject) queryParams.append("subject", params.subject);
+
+    const url = `/api/admin/tutors${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`;
+    const response = await api(url);
+    console.log("API Response for all tutors:", response);
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching all tutors:", error);
+    return [];
+  }
+};
+
+/**
+ * Get tutor detail for admin
+ * @param {number} tutorId - Tutor ID
+ */
+export const getAdminTutorDetail = async (tutorId) => {
+  try {
+    const response = await api(`/api/admin/tutors/${tutorId}`);
+    console.log("API Response for tutor detail:", response);
+    return response.data || {};
+  } catch (error) {
+    console.error("Error fetching tutor detail:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get subjects list
+ */
+export const getSubjects = async () => {
+  try {
+    const response = await api("/api/subjects");
+    console.log("API Response for subjects:", response);
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching subjects:", error);
+    return [];
+  }
+};
+
+/**
+ * Get tutor management summary for dashboard
+ * Note: This endpoint may not exist yet in backend
+ * Returns empty array if endpoint is not available
+ */
+export const getTutorManagementSummary = async () => {
+  try {
+    const response = await api("/api/admin/dashboard/tutor-management");
+    console.log("API Response for tutor management summary:", response);
+    return response.data || [];
+  } catch (error) {
+    // If endpoint doesn't exist (404), return empty array silently
+    if (error?.response?.status === 404) {
+      console.warn("Tutor management summary endpoint not yet implemented");
+      return [];
+    }
+    console.error("Error fetching tutor management summary:", error);
+    return [];
+  }
+};
+
+/**
+ * Get tutor salary history
+ * @param {number} tutorId - Tutor user ID
+ */
+export const getTutorSalaryHistory = async (tutorId) => {
+  try {
+    const response = await api(`/api/admin/tutor/${tutorId}/salary-history`);
+    console.log("API Response for salary history:", response);
+    return response.data || [];
+  } catch (error) {
+    console.error("Error fetching salary history:", error);
+    return [];
+  }
+};
+
+/**
+ * Submit salary invoice
+ * @param {Object} data - Invoice data
+ * @param {number} data.tutor_id - Tutor user ID
+ * @param {number} data.amount - Salary amount
+ * @param {string} data.paid_at - Payment date (YYYY-MM-DD)
+ * @param {File} data.file - Invoice file (PDF/image)
+ * @param {string} data.notes - Optional notes
+ */
+export const submitSalaryInvoice = async (data) => {
+  try {
+    const formData = new FormData();
+    formData.append("tutor_id", data.tutor_id);
+    formData.append("amount", data.amount);
+    formData.append("paid_at", data.paid_at);
+    formData.append("file", data.file);
+    if (data.notes) {
+      formData.append("notes", data.notes);
+    }
+
+    const response = await api("/api/admin/salary-invoice", {
+      method: "POST",
+      body: formData,
+      // Don't set Content-Type header - browser will set it with boundary for FormData
+    });
+    console.log("API Response for submit invoice:", response);
+    return response;
+  } catch (error) {
+    console.error("Error submitting salary invoice:", error);
     throw error;
   }
 };

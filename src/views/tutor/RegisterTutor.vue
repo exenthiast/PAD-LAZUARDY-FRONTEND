@@ -87,8 +87,8 @@
               class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-teal-500"
             >
               <option value="">Pilih Jenis Kelamin</option>
-              <option value="laki-laki">Laki-laki</option>
-              <option value="perempuan">Perempuan</option>
+              <option value="pria">Laki-laki</option>
+              <option value="wanita">Perempuan</option>
             </select>
           </div>
 
@@ -160,7 +160,7 @@
         </h2>
 
         <div class="space-y-4">
-          <wilayah-dropdown />
+          <wilayah-dropdown storeType="tutor" />
           <div>
             <label class="text-sm mb-2">Alamat</label>
             <textarea
@@ -200,6 +200,7 @@ import WilayahDropdown from "@/components/WilayahDropdown.vue";
 import LocationPermission from "@/components/LocationPermission.vue";
 import { useRegisterTutorStore } from "@/stores/registerStoreTutor";
 import { storeToRefs } from "pinia";
+import { initiateRegister } from "@/services/authRegister";
 
 const router = useRouter();
 const showPassword = ref(false);
@@ -258,8 +259,9 @@ watch(
 
 function handleGranted(loc) {
   userLocation.value = loc;
-  // simpan ke store, atau panggil API tutor-terdekat
-  // contoh: fetch(`/api/tutors/nearby?lat=${loc.lat}&lng=${loc.lng}`)
+  // Simpan ke store
+  form.value.location = loc;
+  console.log("Location saved to tutor store:", loc);
 }
 
 function handleDenied() {
@@ -271,7 +273,7 @@ const handleBack = () => {
   router.push("/login");
 };
 
-const handleNext = () => {
+const handleNext = async () => {
   // Basic validation: password match and length
   if ((form.value.password || "").length < 8) {
     alert("Password minimal 8 karakter");
@@ -283,12 +285,41 @@ const handleNext = () => {
     return;
   }
 
-  // Validasi lain bisa ditambahkan di sini
-  console.log("Form data:", form.value);
+  // Rakit payload untuk backend (sama seperti student)
+  const payload = {
+    full_name: form.value.namaLengkap,
+    email: form.value.email,
+    password: form.value.password,
+    password_confirmation: form.value.passwordConfirm,
+    gender: form.value.jenisKelamin,
+    birth_day: form.value.tanggalLahir.hari,
+    birth_month: form.value.tanggalLahir.bulan,
+    birth_year: form.value.tanggalLahir.tahun,
+    phone: form.value.nomorTelepon,
+    religion: form.value.agama,
+    address: form.value.alamat,
+    role: "tutor",
+  };
 
-  // Navigate ke halaman berikutnya (Data Lanjutan)
-  tutorStore.saveToStorage();
-  router.push("/tutor/otp-tutor");
+  try {
+    const res = await initiateRegister(payload);
+    console.log("Register tutor response:", res);
+
+    // Simpan email dan token
+    const userEmail = res.email || res.data?.email || payload.email;
+    const tempToken = res.temp_token || res.data?.temp_token || res.token;
+
+    console.log("Saving tutor to localStorage:", { userEmail, tempToken });
+
+    localStorage.setItem("register:email", userEmail);
+    localStorage.setItem("register:temp_token", tempToken);
+    tutorStore.saveToStorage();
+
+    router.push("/tutor/otp-tutor");
+  } catch (e) {
+    console.error("Register tutor error:", e);
+    alert(e.message || "Gagal melakukan registrasi.");
+  }
 };
 </script>
 

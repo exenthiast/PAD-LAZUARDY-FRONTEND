@@ -19,6 +19,8 @@ import LanjutanTutor from "../views/tutor/LanjutanTutor.vue";
 import TutorListPage from "../views/tutors/TutorListPage.vue";
 import TutorDetailPage from "../views/tutors/TutorDetailPage.vue";
 import ForgotPassword from "../views/ForgotPassword.vue";
+import VerifyResetOTP from "../views/VerifyResetOTP.vue";
+import ResetPassword from "../views/ResetPassword.vue";
 import EditProfile from "../views/student/EditProfile.vue";
 import PackageListPage from "../views/packages/PackageListPage.vue";
 import ConversationDetail from "../views/messages/ConversationDetail.vue";
@@ -30,6 +32,8 @@ import MyStudentPage from "../views/tutor/MyStudentPage.vue";
 import DashboardAdmin from "../views/admin/DashboardAdmin.vue";
 import DetailDataTutor from "../views/admin/DetailDataTutor.vue";
 import DetailDataSiswa from "../views/admin/DetailDataSiswa.vue";
+import KelolaTutor from "../views/admin/KelolaTutor.vue";
+import DetailKelolaTutor from "../views/admin/DetailKelolaTutor.vue";
 import AjuanBelajar from "../views/tutor/AjuanBelajar.vue";
 import AbsensiStudent from "../views/tutor/AbsensiStudent.vue";
 import ProfileTutor from "../views/tutor/ProfilePage.vue";
@@ -96,6 +100,16 @@ const routes = [
     path: "/forgot-password",
     name: "ForgotPassword",
     component: ForgotPassword,
+  },
+  {
+    path: "/verify-reset-otp",
+    name: "VerifyResetOTP",
+    component: VerifyResetOTP,
+  },
+  {
+    path: "/reset-password",
+    name: "ResetPassword",
+    component: ResetPassword,
   },
   {
     path: "/auth/callback",
@@ -236,6 +250,16 @@ const routes = [
     path: "/admin/dashboard",
     name: "AdminDashboard",
     component: DashboardAdmin,
+  },
+  {
+    path: "/admin/kelola-tutor",
+    name: "KelolaTutor",
+    component: KelolaTutor,
+  },
+  {
+    path: "/admin/kelola-tutor/:id",
+    name: "DetailKelolaTutor",
+    component: DetailKelolaTutor,
   },
   {
     path: "/admin/data-tutor",

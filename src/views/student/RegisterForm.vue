@@ -87,8 +87,8 @@
               class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
             >
               <option value="">Pilih Jenis Kelamin</option>
-              <option value="laki-laki">Laki-laki</option>
-              <option value="perempuan">Perempuan</option>
+              <option value="pria">Laki-laki</option>
+              <option value="wanita">Perempuan</option>
             </select>
           </div>
 
@@ -335,10 +335,19 @@ const handleNext = async () => {
   submitting.value = true;
   try {
     const res = await initiateRegister(payload);
+    console.log("Register response:", res);
+
     // Simpan email untuk halaman OTP
-    localStorage.setItem("register:email", res.email);
-    localStorage.setItem("register:temp_token", res.temp_token);
+    // Backend bisa return res.email atau res.data.email
+    const userEmail = res.email || res.data?.email || payload.email;
+    const tempToken = res.temp_token || res.data?.temp_token || res.token;
+
+    console.log("Saving to localStorage:", { userEmail, tempToken });
+
+    localStorage.setItem("register:email", userEmail);
+    localStorage.setItem("register:temp_token", tempToken);
     register.saveToStorage();
+
     // Backend flow: setelah initiate, kirim OTP -> arahkan ke halaman OTP
     router.push("/student/register-otp");
   } catch (e) {

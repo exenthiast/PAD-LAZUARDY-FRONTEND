@@ -8,8 +8,10 @@
         </h1>
         <p class="text-gray-600">
           Kode dikirim ke
-          <span class="font-medium text-gray-800">{{ targetEmail || 'email Anda' }}</span>.
-          Masukkan {{ OTP_LENGTH }} digit untuk melanjutkan.
+          <span class="font-medium text-gray-800">{{
+            targetEmail || "email Anda"
+          }}</span
+          >. Masukkan {{ OTP_LENGTH }} digit untuk melanjutkan.
         </p>
       </div>
 
@@ -25,7 +27,7 @@
             autocomplete="one-time-code"
             maxlength="1"
             class="h-14 w-14 md:h-16 md:w-16 rounded-lg border border-gray-300 text-center text-2xl outline-none focus:border-[#41a6c2]"
-            :aria-label="`Digit ${i+1}`"
+            :aria-label="`Digit ${i + 1}`"
             v-model="digits[i]"
             @input="onInput(i)"
             @keydown.backspace.prevent="onBackspace(i)"
@@ -42,7 +44,7 @@
             :disabled="busy || !canVerify"
             @click="verifyOtp"
           >
-            {{ busy ? 'Memverifikasi...' : 'Verifikasi' }}
+            {{ busy ? "Memverifikasi..." : "Verifikasi" }}
           </button>
 
           <button
@@ -80,141 +82,137 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
-import { useRouter } from 'vue-router';
-import { resendOtp, verifyEmail } from '@/services/authRegister';
+import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { useRouter } from "vue-router";
+import { resendOtp, verifyEmail } from "@/services/authRegister";
 
 const props = defineProps({
-  email: { type: String, default: '' },
-  nextPath: { type: String, default: '/student/register-lanjutan' },
-})
+  email: { type: String, default: "" },
+  nextPath: { type: String, default: "/student/register-lanjutan" },
+});
 
-const OTP_LENGTH = 4
+const OTP_LENGTH = 4;
 
-const router = useRouter()
-const boxes = ref([])
-const digits = ref(Array.from({ length: OTP_LENGTH }, () => ''))
-const busy = ref(false)
-const msg = ref('')
-const err = ref('')
-const verified = ref(false)
-const cooldown = ref(0)
-let timer = null
+const router = useRouter();
+const boxes = ref([]);
+const digits = ref(Array.from({ length: OTP_LENGTH }, () => ""));
+const busy = ref(false);
+const msg = ref("");
+const err = ref("");
+const verified = ref(false);
+const cooldown = ref(0);
+let timer = null;
 
-const targetEmail = computed(() => props.email || localStorage.getItem('register:email') || '');
-const tempToken = computed(() => localStorage.getItem('register:temp_token') || '');
-const code = computed(() => digits.value.join('').replace(/\D/g, ''));
+const targetEmail = computed(() => {
+  const email = props.email || localStorage.getItem("register:email") || "";
+  console.log("Target email in OTP:", email);
+  return email;
+});
+
+const code = computed(() => digits.value.join("").replace(/\D/g, ""));
 const canVerify = computed(() => code.value.length === OTP_LENGTH);
 
 function focusBox(i) {
   nextTick(() => {
-    const el = boxes.value[i]
-    if (el && typeof el.focus === 'function') el.focus()
-  })
+    const el = boxes.value[i];
+    if (el && typeof el.focus === "function") el.focus();
+  });
 }
 
 function onInput(i) {
-  err.value = ''
-  msg.value = ''
-  verified.value = false
-  digits.value[i] = (digits.value[i] || '').replace(/\D/g, '').slice(0, 1)
-  if (digits.value[i] && i < OTP_LENGTH - 1) focusBox(i + 1)
+  err.value = "";
+  msg.value = "";
+  verified.value = false;
+  digits.value[i] = (digits.value[i] || "").replace(/\D/g, "").slice(0, 1);
+  if (digits.value[i] && i < OTP_LENGTH - 1) focusBox(i + 1);
 }
 
 function onBackspace(i) {
   if (digits.value[i]) {
-    digits.value[i] = ''
-    return
+    digits.value[i] = "";
+    return;
   }
   if (i > 0) {
-    digits.value[i - 1] = ''
-    focusBox(i - 1)
+    digits.value[i - 1] = "";
+    focusBox(i - 1);
   }
 }
 
 function onPaste(e) {
-  const text = (e.clipboardData?.getData('text') ?? '').replace(/\D/g, '')
-  if (!text) return
-  for (let i = 0; i < OTP_LENGTH; i++) digits.value[i] = text[i] ?? ''
-  const last = Math.min(text.length, OTP_LENGTH) - 1
-  focusBox(last >= 0 ? last : 0)
+  const text = (e.clipboardData?.getData("text") ?? "").replace(/\D/g, "");
+  if (!text) return;
+  for (let i = 0; i < OTP_LENGTH; i++) digits.value[i] = text[i] ?? "";
+  const last = Math.min(text.length, OTP_LENGTH) - 1;
+  focusBox(last >= 0 ? last : 0);
 }
 
 function startCooldown(sec = 30) {
-  cooldown.value = sec
-  clearInterval(timer)
+  cooldown.value = sec;
+  clearInterval(timer);
   timer = setInterval(() => {
-    cooldown.value--
+    cooldown.value--;
     if (cooldown.value <= 0) {
-      clearInterval(timer)
-      timer = null
+      clearInterval(timer);
+      timer = null;
     }
-  }, 1000)
+  }, 1000);
 }
 
 async function sendOtp() {
   try {
     busy.value = true;
-    err.value = '';
-    msg.value = '';
+    err.value = "";
+    msg.value = "";
     const email = targetEmail.value;
-    if (!email) throw new Error('Email tidak ditemukan');
+    if (!email) throw new Error("Email tidak ditemukan");
 
-    const res = await resendOtp({ email })
-    msg.value = res?.message || 'OTP terkirim'
-    startCooldown(30)
+    const res = await resendOtp({ email });
+    msg.value = res?.message || "OTP terkirim";
+    startCooldown(30);
   } catch (e) {
-    err.value = e?.response?.data?.message || e.message || 'Gagal kirim OTP'
+    err.value = e?.response?.data?.message || e.message || "Gagal kirim OTP";
   } finally {
-    busy.value = false
+    busy.value = false;
   }
 }
 
 async function verifyOtp() {
   try {
     busy.value = true;
-    err.value = '';
-    msg.value = '';
+    err.value = "";
+    msg.value = "";
 
     const email = targetEmail.value;
-    if (!email) throw new Error('Email tidak ditemukan');
+    if (!email) throw new Error("Email tidak ditemukan");
     if (!canVerify.value) throw new Error(`Masukkan ${OTP_LENGTH} digit OTP`);
-
-    const temp_token = tempToken.value;
-    if (!temp_token) {
-      throw new Error(
-        "Token registrasi tidak ditemukan. Silakan ulangi pendaftaran."
-      );
-    }
 
     const res = await verifyEmail({
       email,
-      otp_code: code.value,
-      temp_token,
+      otp: code.value,
     });
 
-    msg.value = res?.message || 'OTP valid';
+    msg.value = res?.message || "OTP valid";
     verified.value = true;
   } catch (e) {
-    verified.value = false
-    err.value = e?.response?.data?.message || e.message || 'OTP salah'
+    verified.value = false;
+    err.value = e?.response?.data?.message || e.message || "OTP salah";
   } finally {
-    busy.value = false
+    busy.value = false;
   }
 }
 
 function handleBack() {
-  router.push('/student/register')
+  router.push("/student/register");
 }
 
 function handleSubmit() {
   if (!verified.value) {
-    err.value = 'Harap verifikasi OTP terlebih dahulu'
-    return
+    err.value = "Harap verifikasi OTP terlebih dahulu";
+    return;
   }
-  router.push(props.nextPath || '/student/register-lanjutan')
+  router.push(props.nextPath || "/student/register-lanjutan");
 }
 
-onMounted(() => focusBox(0))
-onUnmounted(() => clearInterval(timer))
+onMounted(() => focusBox(0));
+onUnmounted(() => clearInterval(timer));
 </script>

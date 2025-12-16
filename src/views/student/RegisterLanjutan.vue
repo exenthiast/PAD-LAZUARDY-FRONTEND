@@ -26,12 +26,18 @@
               class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-[#41a6c2]"
             >
               <option value="">Pilih Kelas</option>
-              <option value="7">Kelas 7</option>
-              <option value="8">Kelas 8</option>
-              <option value="9">Kelas 9</option>
-              <option value="10">Kelas 10</option>
-              <option value="11">Kelas 11</option>
-              <option value="12">Kelas 12</option>
+              <option value="1">Kelas 1 SD</option>
+              <option value="2">Kelas 2 SD</option>
+              <option value="3">Kelas 3 SD</option>
+              <option value="4">Kelas 4 SD</option>
+              <option value="5">Kelas 5 SD</option>
+              <option value="6">Kelas 6 SD</option>
+              <option value="7">Kelas 7 SMP</option>
+              <option value="8">Kelas 8 SMP</option>
+              <option value="9">Kelas 9 SMP</option>
+              <option value="10">Kelas 10 SMA</option>
+              <option value="11">Kelas 11 SMA</option>
+              <option value="12">Kelas 12 SMA</option>
             </select>
           </div>
         </div>
@@ -135,27 +141,74 @@ const handleSubmit = async () => {
     return;
   }
 
-  const token = localStorage.getItem("auth_token");
-  if (!token) {
-    err.value = "Sesi Berakhir, Silahkan login lalu lanjutkan.";
-    router.push("/login");
-    return;
-  }
   loading.value = true;
   err.value = "";
   try {
+    // Transform data dari format frontend ke format backend
+    const dateOfBirth = `${baseForm.value.tanggalLahir.tahun}-${String(
+      baseForm.value.tanggalLahir.bulan
+    ).padStart(2, "0")}-${String(baseForm.value.tanggalLahir.hari).padStart(
+      2,
+      "0"
+    )}`;
+
     const payload = {
-      ...baseForm.value,
-      asal_sekolah: form.value.asalSekolah,
-      kelas: form.value.kelas,
-      nama_orangtua: form.value.namaOrangtua,
-      nomor_telepon_orangtua: form.value.nomorTeleponOrangtua,
+      // Data dari form pertama (baseForm)
+      email: baseForm.value.email,
+      password: baseForm.value.password,
+      name: baseForm.value.namaLengkap,
+      gender: baseForm.value.jenisKelamin,
+      date_of_birth: dateOfBirth,
+      telephone_number: baseForm.value.nomorTelepon,
+      religion: baseForm.value.agama,
+
+      // Alamat dari form pertama
+      province: baseForm.value.provinsi || "",
+      regency: baseForm.value.kabupaten || "",
+      district: baseForm.value.kecamatan || "",
+      subdistrict: baseForm.value.kelurahan || "",
+      street: baseForm.value.alamat || "",
+
+      // Location dari form pertama (jika ada)
+      latitude: baseForm.value.location?.lat || -7.3297,
+      longitude: baseForm.value.location?.lng || 112.7814,
+
+      // Data dari form lanjutan
+      school: form.value.asalSekolah,
+      class_id: parseInt(form.value.kelas) || null,
+      curriculum_id: null, // Belum ada di form, set null dulu
+      parent: form.value.namaOrangtua,
+      parent_telephone_number: form.value.nomorTeleponOrangtua,
     };
-    await updateStudentRole(payload);
+
+    console.log("Sending student registration payload:", payload);
+
+    const result = await updateStudentRole(payload);
+    console.log("Registration result:", result);
+
+    // Simpan token dari response
+    if (result.token) {
+      localStorage.setItem("auth_token", result.token);
+      localStorage.setItem(
+        "auth_user",
+        JSON.stringify(result.user || { email: baseForm.value.email })
+      );
+    }
+
+    // Clear register data dari store
     if (regStore.reset) regStore.reset();
+    localStorage.removeItem("register:email");
+    localStorage.removeItem("register:temp_token");
+    localStorage.removeItem("register:form");
+
+    alert("Registrasi berhasil! Selamat datang.");
     router.push(props.nextPath);
   } catch (e) {
-    err.value = e?.response?.data?.message || "Gagal menyimpan data lanjutan.";
+    console.error("Registration error:", e);
+    err.value =
+      e?.response?.data?.message ||
+      e.message ||
+      "Gagal menyimpan data lanjutan.";
   } finally {
     loading.value = false;
   }

@@ -95,10 +95,8 @@ export const saveSessionReport = async (formData) => {
   try {
     const response = await api("/api/tutor/session-report", {
       method: "POST",
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      data: formData,
+      body: formData,
+      // Don't set Content-Type header - browser will set it with boundary for FormData
     });
     console.log("Save session report response:", response);
     return response;

@@ -30,7 +30,7 @@
         <!-- Right: Logout Button -->
         <button
           @click="handleLogout"
-          class="px-4 py-2 bg-[#41a6c2] hover:bg-[#358a9f] text-white rounded-lg font-medium transition text-sm shadow-md hover:shadow-lg"
+          class="px-4 py-2 bg-[#dc2626] hover:bg-[] text-white rounded-lg font-medium transition text-sm shadow-md hover:shadow-lg"
         >
           Keluar
         </button>

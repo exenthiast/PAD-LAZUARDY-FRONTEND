@@ -7,8 +7,11 @@
           Verifikasi Kode OTP
         </h1>
         <p class="text-gray-600">
-          Masukkan kode OTP yang telah kami kirim ke email Anda untuk
-          melanjutkan
+          Kode dikirim ke
+          <span class="font-medium text-gray-800">{{
+            targetEmail || "email Anda"
+          }}</span
+          >. Masukkan 4 digit untuk melanjutkan.
         </p>
       </div>
 
@@ -59,10 +62,10 @@
         <!-- Next Button -->
         <div class="mt-8 flex justify-between">
           <button
-          @click="handleBack"
-          class="border border-teal-500 text-teal-500 hover:bg-teal-50 px-8 py-3 rounded-lg font-medium transition-colors"
+            @click="handleBack"
+            class="border border-teal-500 text-teal-500 hover:bg-teal-50 px-8 py-3 rounded-lg font-medium transition-colors"
           >
-          Kembali
+            Kembali
           </button>
           <button
             @click="handleSubmit"
@@ -81,19 +84,7 @@
 import { ref, computed, onMounted, nextTick } from "vue";
 import { useRouter } from "vue-router";
 
-/**
- * Dummy service: ganti nanti ke API-mu sendiri
- * Kode valid: 123456
- */
-async function sendOtpDummy(email) {
-  await new Promise((r) => setTimeout(r, 800));
-  return { ok: true, message: "OTP terkirim. Kode: 1234" };
-}
-async function verifyOtpDummy(email, code) {
-  await new Promise((r) => setTimeout(r, 600));
-  if (code === "1234") return { ok: true, message: "OTP valid." };
-  return { ok: false, message: "Kode OTP salah." };
-}
+import { resendOtp, verifyEmail } from "@/services/authRegister";
 
 /**
  * Props opsional:
@@ -102,7 +93,7 @@ async function verifyOtpDummy(email, code) {
  */
 const props = defineProps({
   email: { type: String, default: "" },
-  nextPath: { type: String, default: "/lanjutan-tutor" },
+  nextPath: { type: String, default: "/tutor/register-lanjutan" },
 });
 
 const router = useRouter();
@@ -115,6 +106,12 @@ const verified = ref(false);
 
 const cooldown = ref(0);
 let timer = null;
+
+const targetEmail = computed(() => {
+  const email = props.email || localStorage.getItem("register:email") || "";
+  console.log("Target email in tutor OTP:", email);
+  return email;
+});
 
 const code = computed(() => digits.value.join("").replace(/\D/g, ""));
 
@@ -170,12 +167,15 @@ async function sendOtp() {
     busy.value = true;
     err.value = "";
     msg.value = "";
-    const res = await sendOtpDummy(props.email || "user@example.com");
-    if (!res.ok) throw new Error(res.message || "Gagal kirim OTP");
-    msg.value = res.message;
+
+    const email = targetEmail.value;
+    if (!email) throw new Error("Email tidak ditemukan");
+
+    const res = await resendOtp({ email });
+    msg.value = res?.message || "OTP terkirim";
     startCooldown(30);
   } catch (e) {
-    err.value = e.message || "Gagal kirim OTP";
+    err.value = e?.response?.data?.message || e.message || "Gagal kirim OTP";
   } finally {
     busy.value = false;
   }
@@ -186,23 +186,28 @@ async function verifyOtp() {
     busy.value = true;
     err.value = "";
     msg.value = "";
-    const res = await verifyOtpDummy(
-      props.email || "user@example.com",
-      code.value
-    );
-    if (!res.ok) throw new Error(res.message || "OTP salah");
-    msg.value = res.message;
+
+    const email = targetEmail.value;
+    if (!email) throw new Error("Email tidak ditemukan");
+    if (code.value.length !== 4) throw new Error("Masukkan 4 digit OTP");
+
+    const res = await verifyEmail({
+      email,
+      otp: code.value,
+    });
+
+    msg.value = res?.message || "OTP valid";
     verified.value = true;
   } catch (e) {
     verified.value = false;
-    err.value = e.message || "OTP salah";
+    err.value = e?.response?.data?.message || e.message || "OTP salah";
   } finally {
     busy.value = false;
   }
 }
 
 const handleBack = () => {
-  router.push("/register-tutor");
+  router.push("/tutor/register");
 };
 
 const handleSubmit = () => {
@@ -210,11 +215,8 @@ const handleSubmit = () => {
     err.value = "Harap verifikasi OTP terlebih dahulu";
     return;
   }
-
-    alert("Berhasil verifikasi OTP!");
-
   // Redirect ke halaman berikutnya
-  router.push(props.nextPath || "/lanjutan-tutor");
+  router.push(props.nextPath || "/tutor/register-lanjutan");
 };
 
 onMounted(() => {

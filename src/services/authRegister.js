@@ -37,6 +37,21 @@ export async function updateStudentRole(payload) {
 
 // 5) Complete tutor role data (requires auth) -> PATCH /api/register/tutor
 export async function updateTutorRole(payload) {
+  // Check if payload contains files (FormData) or just data (object)
+  const isFormData = payload instanceof FormData;
+
+  // For FormData with files, use POST with _method spoofing (Laravel requirement)
+  if (isFormData) {
+    payload.append("_method", "PATCH");
+    return api("/api/register/tutor", {
+      method: "POST", // Use POST for file uploads
+      body: payload,
+      // Don't set headers for FormData - let browser set multipart/form-data with boundary
+      // Accept and X-Requested-With will be added by http.js
+    });
+  }
+
+  // For JSON payload (no files)
   return api("/api/register/tutor", {
     method: "PATCH",
     body: JSON.stringify(payload),

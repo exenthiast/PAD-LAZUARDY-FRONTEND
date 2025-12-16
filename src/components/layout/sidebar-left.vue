@@ -132,14 +132,14 @@
               </RouterLink>
             </li>
 
-            <!-- Hubungi Kami -->
+            <!-- Riwayat Pembayaran -->
             <li>
               <RouterLink
-                to="/contact"
+                to="/student/payment-history"
                 @click="close"
                 :class="[
                   'flex items-center gap-3 p-3 rounded-lg transition-colors group',
-                  props.active === 'hubungi'
+                  props.active === 'riwayat'
                     ? 'bg-[#41a6c2] text-white'
                     : 'hover:bg-[#41a6c2]/10',
                 ]"
@@ -147,14 +147,14 @@
                 <div
                   :class="[
                     'w-10 h-10 flex items-center justify-center rounded-lg transition-colors',
-                    props.active === 'hubungi'
+                    props.active === 'riwayat'
                       ? 'bg-white/0 border-transparent'
                       : 'bg-white border-2 border-gray-300 group-hover:border-[#41a6c2]',
                   ]"
                 >
-                  <MessageSquare
+                  <History
                     :class="
-                      props.active === 'hubungi'
+                      props.active === 'riwayat'
                         ? 'w-5 h-5 text-white'
                         : 'w-5 h-5 text-gray-600 group-hover:text-[#41a6c2]'
                     "
@@ -162,11 +162,11 @@
                 </div>
                 <span
                   :class="
-                    props.active === 'hubungi'
+                    props.active === 'riwayat'
                       ? 'font-medium'
                       : 'font-medium text-gray-700'
                   "
-                  >Hubungi Kami</span
+                  >Riwayat Pembayaran</span
                 >
               </RouterLink>
             </li>
@@ -197,11 +197,7 @@
 <script setup>
 import { defineProps, defineEmits } from "vue";
 import { RouterLink } from "vue-router";
-import { LayoutDashboard } from "lucide-vue-next";
-import { BookText } from "lucide-vue-next";
-import { MessageSquare } from "lucide-vue-next";
-import { CalendarDays } from "lucide-vue-next";
-import { LogOut } from "lucide-vue-next";
+import { LayoutDashboard, BookText, History, CalendarDays, LogOut } from "lucide-vue-next";
 import { logout as apiLogout } from "@/services/authService";
 
 // Props
@@ -210,7 +206,7 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  // active menu: 'dashboard' |'paket' | 'jadwal' | 'tentang'
+  // active menu: 'dashboard' | 'paket' | 'jadwal' | 'riwayat'
   active: {
     type: String,
     default: "",

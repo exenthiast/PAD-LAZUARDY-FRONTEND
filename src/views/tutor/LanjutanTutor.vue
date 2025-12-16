@@ -123,6 +123,32 @@
               />
             </div>
 
+            <!-- Bank -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Nama Bank <span class="text-red-500">*</span></label
+              >
+              <input
+                type="text"
+                v-model="form.bank"
+                placeholder="Contoh: BCA, Mandiri, BNI"
+                class="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-teal-500 sm:text-sm"
+              />
+            </div>
+
+            <!-- Nomor Rekening -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Nomor Rekening <span class="text-red-500">*</span></label
+              >
+              <input
+                type="text"
+                v-model="form.rekening"
+                placeholder="Masukkan nomor rekening"
+                class="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-teal-500 sm:text-sm"
+              />
+            </div>
+
             <!-- CV -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -217,8 +243,13 @@
 <script setup>
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
+import { useRegisterTutorStore } from "@/stores/registerStoreTutor";
+import { storeToRefs } from "pinia";
+import { updateTutorRole } from "@/services/authRegister";
 
 const router = useRouter();
+const tutorStore = useRegisterTutorStore();
+const { form: baseForm } = storeToRefs(tutorStore);
 
 const skills = [
   "Matematika",
@@ -245,6 +276,8 @@ const form = reactive({
   pengalaman: "",
   skilBahasa: "",
   organisasi: "",
+  bank: "",
+  rekening: "",
   cv: null,
   ktp: null,
   ijazah: null,
@@ -281,59 +314,129 @@ async function handleSubmit() {
     return;
   }
 
+  if (!form.bank) {
+    alert("Nama bank harus diisi");
+    return;
+  }
+
+  if (!form.rekening) {
+    alert("Nomor rekening harus diisi");
+    return;
+  }
+
   try {
-    const token = localStorage.getItem("auth_token");
-    if (!token) {
-      alert("Sesi login tidak ditemukan. Silakan login ulang.");
-      router.push("/login");
-      return;
+    // Transform tanggal lahir dari {hari, bulan, tahun} ke YYYY-MM-DD
+    const dateOfBirth = `${baseForm.value.tanggalLahir.tahun}-${String(
+      baseForm.value.tanggalLahir.bulan
+    ).padStart(2, "0")}-${String(baseForm.value.tanggalLahir.hari).padStart(
+      2,
+      "0"
+    )}`;
+
+    // Siapkan FormData untuk backend (support file upload)
+    const formData = new FormData();
+
+    // Data dari RegisterTutor.vue (baseForm)
+    formData.append("email", baseForm.value.email);
+    formData.append("password", baseForm.value.password);
+    formData.append("password_confirmation", baseForm.value.passwordConfirm);
+    formData.append("name", baseForm.value.namaLengkap);
+    formData.append("gender", baseForm.value.jenisKelamin);
+    formData.append("date_of_birth", dateOfBirth);
+    formData.append("telephone_number", baseForm.value.nomorTelepon);
+    if (baseForm.value.agama) {
+      formData.append("religion", baseForm.value.agama);
     }
 
-    // Siapkan FormData untuk upload file
-    const formData = new FormData();
-    formData.append("keahlian", form.keahlian);
-    formData.append("marketSiswa", form.marketSiswa);
-    formData.append("pengalaman", form.pengalaman || "");
-    formData.append("skilBahasa", form.skilBahasa || "");
-    formData.append("organisasi", form.organisasi || "");
+    // Data alamat
+    formData.append("province", baseForm.value.provinsi || "");
+    formData.append("regency", baseForm.value.kabupaten || "");
+    formData.append("district", baseForm.value.kecamatan || "");
+    formData.append("subdistrict", baseForm.value.kelurahan || "");
+    formData.append("street", baseForm.value.alamat || "");
+    formData.append("latitude", baseForm.value.location?.lat || -7.3297);
+    formData.append("longitude", baseForm.value.location?.lng || 112.7814);
 
-    if (form.cv) formData.append("cv", form.cv);
-    if (form.ktp) formData.append("ktp", form.ktp);
-    if (form.ijazah) formData.append("ijazah", form.ijazah);
+    // Data tutor dari form ini
+    formData.append("expertise", form.keahlian);
+    formData.append("student_market", form.marketSiswa);
+    formData.append("experience", form.pengalaman || "");
+    formData.append("language_skills", form.skilBahasa || "");
+    formData.append("organization", form.organisasi || "");
+    formData.append("bank", form.bank);
+    formData.append("rekening", form.rekening);
 
-    // Kirim ke backend
-    const response = await fetch(
-      "http://localhost:8000/api/tutor/complete-profile",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-        body: formData,
-      }
+    // File uploads
+    if (form.cv) {
+      formData.append("cv", form.cv);
+      console.log("CV file:", form.cv.name);
+    }
+    if (form.ktp) {
+      formData.append("ktp", form.ktp);
+      console.log("KTP file:", form.ktp.name);
+    }
+    if (form.ijazah) {
+      formData.append("ijazah", form.ijazah);
+      console.log("Ijazah file:", form.ijazah.name);
+    }
+
+    console.log("Bank data before sending:", {
+      bank: form.bank,
+      rekening: form.rekening,
+    });
+    console.log("Files to upload:", {
+      cv: form.cv?.name || "none",
+      ktp: form.ktp?.name || "none",
+      ijazah: form.ijazah?.name || "none",
+    });
+    console.log("Submitting tutor registration with FormData");
+    console.log(
+      "FormData will be sent via POST with _method=PATCH for Laravel compatibility"
     );
 
-    const result = await response.json();
+    // Kirim ke backend (endpoint ini akan CREATE user dan return token)
+    const result = await updateTutorRole(formData);
 
-    if (!response.ok) {
-      throw new Error(result.message || "Gagal menyimpan data");
+    console.log("Tutor registration response:", result);
+
+    // Simpan token dari response
+    if (result.token) {
+      localStorage.setItem("auth_token", result.token);
+
+      // Save complete user object if it exists
+      if (result.user && typeof result.user === "object") {
+        console.log("Saving complete user data to localStorage:", result.user);
+        localStorage.setItem("auth_user", JSON.stringify(result.user));
+      } else {
+        console.warn("User object not found in response, storing minimal data");
+        localStorage.setItem(
+          "auth_user",
+          JSON.stringify({
+            email: baseForm.value.email,
+            name: baseForm.value.namaLengkap,
+            role: "tutor",
+          })
+        );
+      }
+
+      // Clear register data dari localStorage
+      tutorStore.reset();
+      localStorage.removeItem("register:email");
+
+      console.log("Registration complete, redirecting to home-pending");
+
+      alert("Registrasi berhasil! Menunggu verifikasi admin.");
+
+      // Redirect ke halaman pending
+      router.replace("/tutor/home-pending");
+    } else {
+      throw new Error("Token tidak ditemukan dalam response");
     }
-
-    console.log("Profile completion response:", result);
-
-    // Update localStorage dengan data user terbaru
-    if (result.user) {
-      localStorage.setItem("auth_user", JSON.stringify(result.user));
-    }
-
-    alert("Data berhasil disimpan! Menunggu verifikasi admin.");
-
-    // Redirect ke halaman pending
-    router.replace("/tutor/home-pending");
   } catch (error) {
     console.error("Submit error:", error);
-    alert(`Gagal menyimpan data: ${error.message}`);
+    alert(
+      `Gagal menyimpan data: ${error?.response?.data?.message || error.message}`
+    );
   }
 }
 </script>
