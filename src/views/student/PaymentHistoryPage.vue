@@ -64,6 +64,22 @@
 
         <!-- Detail transaksi -->
         <div class="text-sm text-gray-700 space-y-1">
+          <p v-if="payment.subject_name">
+            <span class="font-medium">Mata Pelajaran:</span>
+            {{ payment.subject_name }}
+          </p>
+          <p v-if="payment.tutor_name">
+            <span class="font-medium">Tutor:</span>
+            {{ payment.tutor_name }}
+          </p>
+          <p>
+            <span class="font-medium">Total Sesi:</span>
+            {{ payment.package_session }} pertemuan
+          </p>
+          <p>
+            <span class="font-medium">Sisa Sesi:</span>
+            {{ payment.remaining_session }} pertemuan
+          </p>
           <p>
             <span class="font-medium">Metode:</span>
             {{ payment.payment_method || "Transfer Bank" }}
@@ -128,6 +144,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import Navbar from "@/components/layout/navbar.vue";
+import { getStudentDashboard } from "@/services/studentDashboardService";
 import api from "@/services/api";
 
 const router = useRouter();
@@ -188,10 +205,71 @@ const getProofUrl = (proofPath) => {
 const loadPaymentHistory = async () => {
   try {
     isLoading.value = true;
-    const response = await api.get("/api/student/payment-history");
-    paymentHistory.value = response.data || [];
+    console.log("🔍 Loading payment history from dashboard...");
+
+    // Gunakan endpoint dashboard yang sudah bekerja
+    const dashRes = await getStudentDashboard();
+    const data = dashRes.data || dashRes;
+
+    console.log("📦 Dashboard data:", data);
+
+    // Transform packages menjadi payment history format
+    const packages = data.packages || [];
+    console.log("📦 Packages:", packages);
+
+    paymentHistory.value = packages.map((pkg) => {
+      console.log("💰 Processing package:", pkg);
+      console.log("💰 Available fields:", Object.keys(pkg));
+
+      // Cari field harga dari berbagai kemungkinan
+      let amount = 0;
+
+      // Coba berbagai field yang mungkin berisi harga
+      if (pkg.amount) amount = pkg.amount;
+      else if (pkg.price) amount = pkg.price;
+      else if (pkg.package_price) amount = pkg.package_price;
+      else if (pkg.total_price) amount = pkg.total_price;
+      else if (pkg.total) amount = pkg.total;
+
+      // Fallback: Mapping berdasarkan nama paket
+      if (amount === 0) {
+        const packageName = (pkg.package_name || "").toLowerCase();
+        if (packageName.includes("6 bulan") || packageName.includes("6bulan")) {
+          amount = 325000; // Prime 6 Bulan
+        } else if (
+          packageName.includes("1 tahun") ||
+          packageName.includes("12 bulan")
+        ) {
+          amount = 504000; // Prime 1 Tahun
+        }
+      }
+
+      console.log("💰 Final amount:", amount);
+
+      return {
+        id: pkg.id || Math.random(),
+        package_name: pkg.package_name || "Paket Belajar",
+        created_at:
+          pkg.start_date || pkg.created_at || new Date().toISOString(),
+        status: "validated", // Paket yang muncul di dashboard sudah validated
+        package_status: pkg.status || "approved", // Status paket (approved/pending/rejected)
+        order_id: `PKG-${pkg.id || "XXXX"}`,
+        payment_method: pkg.payment_method || "Transfer Bank",
+        payment_proof: pkg.payment_proof || null,
+        amount: amount,
+        start_date: pkg.start_date,
+        expired_at: pkg.end_date,
+        package_session: pkg.package_session,
+        remaining_session: pkg.remaining_session,
+        subject_name: pkg.subject_name,
+        tutor_name: pkg.tutor_name,
+      };
+    });
+
+    console.log("✅ Payment history transformed:", paymentHistory.value);
   } catch (error) {
-    console.error("Error loading payment history:", error);
+    console.error("❌ Error loading payment history:", error);
+    console.error("Error response:", error.response?.data);
     paymentHistory.value = [];
   } finally {
     isLoading.value = false;

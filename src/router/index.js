@@ -8,7 +8,6 @@ import RegisterOtp from "../views/student/RegisterOtp.vue";
 import DashboardPage from "../views/student/DashboardPage.vue";
 import CheckoutPage from "../views/payment/CheckoutPage.vue";
 import PaymentHistoryPage from "../views/student/PaymentHistoryPage.vue";
-import PaymentSimulation from "../views/payment/PaymentSimulation.vue";
 import PaymentSuccess from "../views/payment/PaymentSuccess.vue";
 import ProfilePage from "../views/student/ProfilePage.vue";
 import TutorOtp from "../views/tutor/TutorOtp.vue";
@@ -142,11 +141,6 @@ const routes = [
     path: "/payment/checkout",
     name: "CheckoutPage",
     component: CheckoutPage,
-  },
-  {
-    path: "/payment/simulation/:id",
-    name: "PaymentSimulation",
-    component: PaymentSimulation,
   },
   {
     path: "/payment/success",

@@ -251,7 +251,13 @@
                       v-for="slot in day.availableSlots"
                       :key="slot.time"
                       @click="selectTimeSlot(day, slot)"
-                      class="w-full py-2 px-2 text-sm border border-gray-300 rounded-lg transition hover:border-primary hover:bg-primary/5 text-gray-700 hover:shadow-sm"
+                      class="w-full py-2 px-2 text-sm rounded-lg transition hover:shadow-sm font-medium"
+                      :class="[
+                        selectedSlot?.date === day.date &&
+                        selectedSlot?.time === slot.time
+                          ? 'bg-teal-100 border-2 border-teal-500 text-teal-700'
+                          : 'border border-gray-300 hover:border-primary hover:bg-primary/5 text-gray-700',
+                      ]"
                     >
                       {{ slot.time }}
                     </button>
@@ -308,19 +314,65 @@
       <div
         class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4"
       >
-        <div class="max-w-4xl mx-auto flex justify-between gap-4">
-          <button
-            @click="goBack"
-            class="border-2 border-primary text-primary px-6 py-3 rounded-lg font-semibold hover:text-white transition w-full md:w-auto"
+        <div class="max-w-4xl mx-auto">
+          <!-- Info jadwal terpilih -->
+          <div
+            v-if="selectedSlot"
+            class="mb-3 p-3 bg-teal-50 border border-teal-200 rounded-lg"
           >
-            Kembali
-          </button>
-          <button
-            @click="showConfirm = true"
-            class="bg-primary hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-semibold transition w-full md:w-auto"
-          >
-            Booking Sesi
-          </button>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <svg
+                  class="w-5 h-5 text-teal-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                <div>
+                  <p class="text-sm font-medium text-teal-900">
+                    Jadwal Terpilih:
+                  </p>
+                  <p class="text-xs text-teal-700">
+                    {{ selectedSlot.fullDate }} • {{ selectedSlot.time }}
+                  </p>
+                </div>
+              </div>
+              <button
+                @click="selectedSlot = null"
+                class="text-teal-600 hover:text-teal-800 text-sm font-medium"
+              >
+                Ubah
+              </button>
+            </div>
+          </div>
+
+          <div class="flex justify-between gap-4">
+            <button
+              @click="goBack"
+              class="border-2 border-primary text-primary px-6 py-3 rounded-lg font-semibold hover:bg-primary hover:text-white transition w-full md:w-auto"
+            >
+              Kembali
+            </button>
+            <button
+              @click="showConfirm = true"
+              :disabled="!selectedSlot"
+              class="px-6 py-3 rounded-lg font-semibold transition w-full md:w-auto"
+              :class="
+                selectedSlot
+                  ? 'bg-primary hover:bg-teal-700 text-white cursor-pointer'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              "
+            >
+              {{
+                selectedSlot ? "Booking Sesi" : "Pilih Jadwal Terlebih Dahulu"
+              }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -379,13 +431,12 @@
           </div>
 
           <p class="text-sm text-gray-600 mb-6 text-center">
-            Anda akan diarahkan ke halaman pembayaran untuk menyelesaikan
-            booking.
+            Jadwal akan dikirim ke tutor untuk dikonfirmasi.
           </p>
 
           <div class="flex gap-3">
             <button
-              @click="showConfirm = false"
+              @click="cancelBooking"
               :disabled="isProcessingBooking"
               class="flex-1 px-4 py-3 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -401,7 +452,7 @@
                 class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"
               ></span>
               <span>{{
-                isProcessingBooking ? "Memproses..." : "Lanjut ke Pembayaran"
+                isProcessingBooking ? "Memproses..." : "Konfirmasi Booking"
               }}</span>
             </button>
           </div>
@@ -414,7 +465,7 @@
           v-if="showToast"
           class="fixed bottom-6 right-6 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg z-50 text-sm font-medium"
         >
-          ✅ Pengajuan tutor berhasil dikirim!
+          ✅ Booking jadwal berhasil! Menunggu konfirmasi tutor.
         </div>
       </transition>
     </div>
@@ -442,6 +493,7 @@ import {
   getTutorDetail,
   getAvailableSlots,
 } from "@/services/tutorDetailService";
+import { getStudentDashboard } from "@/services/studentDashboardService";
 import api from "@/services/api";
 
 const route = useRoute();
@@ -455,7 +507,7 @@ const showToast = ref(false);
 const selectedSlot = ref(null);
 const showFullSchedule = ref(false); // Toggle untuk melihat jadwal lengkap
 const isProcessingBooking = ref(false); // Loading state untuk proses booking
-const hasActivePackage = ref(null); // Paket aktif siswa (untuk validasi booking)
+const hasActivePackage = ref(null); // Status apakah siswa punya paket aktif
 
 // Calendar state
 const currentWeekStart = ref(new Date());
@@ -984,31 +1036,82 @@ function selectTimeSlot(day, slot) {
     price: tutor.value.price,
   };
 
-  showConfirm.value = true;
+  console.log("Slot selected:", selectedSlot.value);
+
+  // Scroll ke bagian bawah untuk lihat tombol booking
+  window.scrollTo({
+    top: document.body.scrollHeight,
+    behavior: "smooth",
+  });
+}
+
+function cancelBooking() {
+  showConfirm.value = false;
+  // Tidak reset selectedSlot, biarkan user tetap bisa lihat pilihannya
 }
 
 // Fungsi check active package (untuk validasi booking)
 async function checkActivePackage() {
   try {
-    const response = await api.get("/dashboard/student");
-    const data = response.data || response;
+    console.log("🔍 Checking active package...");
+
+    // Gunakan service yang sama seperti di DashboardPage
+    const dashRes = await getStudentDashboard();
+    const data = dashRes.data || dashRes;
+
+    console.log("📦 Full dashboard response:", dashRes);
+    console.log("📦 Dashboard data:", data);
 
     // Check if student has approved & non-expired package
     const packages = data.packages || [];
+    console.log("📦 Packages array:", packages);
+    console.log("📦 Packages count:", packages.length);
+
+    // Log detail setiap package
+    packages.forEach((pkg, index) => {
+      console.log(`📦 Package ${index + 1}:`, {
+        name: pkg.package_name,
+        status: pkg.status,
+        remaining_session: pkg.remaining_session,
+        total_session: pkg.package_session,
+        end_date: pkg.end_date,
+      });
+    });
+
     hasActivePackage.value = packages.length > 0;
 
-    console.log("Active package check:", hasActivePackage.value);
+    console.log("✅ Active package check result:", hasActivePackage.value);
+
+    if (packages.length > 0) {
+      console.log("📦 First package details:", packages[0]);
+    } else {
+      console.warn("⚠️ No packages found in response");
+    }
+
+    return hasActivePackage.value;
   } catch (error) {
-    console.error("Error checking active package:", error);
+    console.error("❌ Error checking active package:", error);
+    console.error("Error details:", error.response?.data);
     hasActivePackage.value = false;
+    return false;
   }
 }
 
 async function processBooking() {
-  if (!selectedSlot.value) return;
+  if (!selectedSlot.value) {
+    alert("⚠️ Silakan pilih jadwal terlebih dahulu!");
+    return;
+  }
 
-  // VALIDASI: Cek apakah siswa punya paket aktif
-  if (hasActivePackage.value === false) {
+  // VALIDASI: Re-check paket aktif sebelum booking (untuk memastikan data terbaru)
+  console.log("🔄 Re-checking active package before booking...");
+  const hasPackage = await checkActivePackage();
+
+  console.log("📋 Package validation result:", hasPackage);
+  console.log("📋 hasActivePackage.value:", hasActivePackage.value);
+
+  if (!hasPackage || !hasActivePackage.value) {
+    console.warn("⚠️ No active package found, redirecting to packages page");
     alert(
       "⚠️ Anda belum membeli paket belajar!\n\nSilakan beli paket terlebih dahulu untuk dapat booking jadwal tutor."
     );
@@ -1017,6 +1120,8 @@ async function processBooking() {
     router.push("/packages");
     return;
   }
+
+  console.log("✅ Package validation passed, proceeding with booking...");
 
   // Definisikan payload di luar try-catch agar bisa diakses di catch block
   const payload = {
@@ -1035,19 +1140,35 @@ async function processBooking() {
     // Kirim request ke backend API
     const response = await api.post("/bookings", payload);
 
-    console.log("Booking response:", response.data);
+    console.log("✅ Booking response:", response.data);
+    console.log("=== BOOKING DETAILS ===");
+    console.log("Full response:", JSON.stringify(response.data, null, 2));
+    console.log("Booking ID:", response.data.booking?.id);
+    console.log("Status:", response.data.booking?.status);
+    console.log("Is Accepted:", response.data.booking?.is_accepted);
+    console.log("Schedule Time:", response.data.booking?.schedule_time);
+    console.log("Date:", response.data.booking?.date);
+    console.log("Tutor ID:", response.data.booking?.tutor_id);
+    console.log("Student Name:", response.data.booking?.student_name);
+    console.log("Subject Name:", response.data.booking?.subject_name);
+    console.log("======================");
 
-    // Jika success, redirect ke payment gateway
-    if (response.data && response.data.payment_url) {
-      console.log("Redirecting to payment URL:", response.data.payment_url);
+    // Booking berhasil - siswa sudah bayar paket, tidak perlu payment lagi
+    showConfirm.value = false;
+    isProcessingBooking.value = false;
 
-      // Redirect otomatis ke halaman pembayaran
-      window.location.href = response.data.payment_url;
-    } else {
-      throw new Error("Payment URL not found in response");
-    }
+    // Show success toast
+    showToast.value = true;
+
+    // Hide toast after 3 seconds
+    setTimeout(() => {
+      showToast.value = false;
+
+      // Redirect ke dashboard setelah toast hilang
+      router.push("/student/dashboard");
+    }, 3000);
   } catch (error) {
-    console.error("Error processing booking:", error);
+    console.error("❌ Error processing booking:", error);
     console.error("Failed payload:", payload);
 
     // Handle error dan tampilkan pesan ke user
@@ -1081,8 +1202,6 @@ async function processBooking() {
     isProcessingBooking.value = false;
     showConfirm.value = false;
   }
-  // Note: Tidak perlu set isProcessingBooking = false di akhir
-  // Karena user akan di-redirect ke payment gateway
 }
 
 function goBack() {
@@ -1103,7 +1222,7 @@ onMounted(async () => {
   // Load tutor detail
   await loadTutorDetail();
 
-  // Check active package untuk validasi booking
+  // Check if student has active package
   await checkActivePackage();
 });
 </script>

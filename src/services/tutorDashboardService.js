@@ -20,7 +20,29 @@ export const getTutorSummary = async () => {
 export const getTutorDashboard = async () => {
   try {
     const response = await api("/api/dashboard/tutor");
-    console.log("API Response for tutor dashboard:", response);
+    console.log("🔍 API Response for tutor dashboard:", response);
+    console.log("🔍 Response data:", response.data);
+    console.log("🔍 Taken schedules:", response.data?.taken_schedules);
+    console.log(
+      "🔍 Taken schedules count:",
+      response.data?.taken_schedules?.length
+    );
+
+    // Log each schedule in detail
+    if (response.data?.taken_schedules) {
+      response.data.taken_schedules.forEach((schedule, index) => {
+        console.log(`🔍 Schedule ${index + 1}:`, {
+          id: schedule.id,
+          student_name: schedule.student_name,
+          subject_name: schedule.subject_name,
+          date: schedule.date,
+          schedule_time: schedule.schedule_time,
+          status: schedule.status,
+          is_accepted: schedule.is_accepted,
+        });
+      });
+    }
+
     return response.data || {};
   } catch (error) {
     console.error("Error fetching tutor dashboard:", error);

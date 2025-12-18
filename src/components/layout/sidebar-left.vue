@@ -23,7 +23,7 @@
                 @click="close"
                 :class="[
                   'flex items-center gap-3 p-3 rounded-lg transition-colors group',
-                  props.active === 'dashboard'
+                  isActive('dashboard')
                     ? 'bg-[#41a6c2] text-white'
                     : 'hover:bg-[#41a6c2]/10',
                 ]"
@@ -31,14 +31,14 @@
                 <div
                   :class="[
                     'w-10 h-10 flex items-center justify-center rounded-lg transition-colors',
-                    props.active === 'dashboard'
+                    isActive('dashboard')
                       ? 'bg-white/0'
                       : 'bg-white border-2 border-gray-300 group-hover:border-[#41a6c2]',
                   ]"
                 >
                   <LayoutDashboard
                     :class="
-                      props.active === 'dashboard'
+                      isActive('dashboard')
                         ? 'w-5 h-5 text-white'
                         : 'w-5 h-5 text-gray-600 group-hover:text-[#41a6c2]'
                     "
@@ -46,7 +46,7 @@
                 </div>
                 <span
                   :class="
-                    props.active === 'dashboard'
+                    isActive('dashboard')
                       ? 'font-medium'
                       : 'font-medium text-gray-700'
                   "
@@ -61,7 +61,7 @@
                 @click="close"
                 :class="[
                   'flex items-center gap-3 p-3 rounded-lg transition-colors group',
-                  props.active === 'paket'
+                  isActive('paket')
                     ? 'bg-[#41a6c2] text-white'
                     : 'hover:bg-[#41a6c2]/10',
                 ]"
@@ -69,14 +69,14 @@
                 <div
                   :class="[
                     'w-10 h-10 flex items-center justify-center rounded-lg transition-colors',
-                    props.active === 'paket'
+                    isActive('paket')
                       ? 'bg-white/0 border-transparent'
                       : 'bg-white border-2 border-gray-300 group-hover:border-[#41a6c2]',
                   ]"
                 >
                   <BookText
                     :class="
-                      props.active === 'paket'
+                      isActive('paket')
                         ? 'w-5 h-5 text-white'
                         : 'w-5 h-5 text-gray-600 group-hover:text-[#41a6c2]'
                     "
@@ -84,7 +84,7 @@
                 </div>
                 <span
                   :class="
-                    props.active === 'paket'
+                    isActive('paket')
                       ? 'font-medium'
                       : 'font-medium text-gray-700'
                   "
@@ -100,7 +100,7 @@
                 @click="close"
                 :class="[
                   'flex items-center gap-3 p-3 rounded-lg transition-colors group',
-                  props.active === 'jadwal'
+                  isActive('jadwal')
                     ? 'bg-[#41a6c2] text-white'
                     : 'hover:bg-[#41a6c2]/10',
                 ]"
@@ -108,14 +108,14 @@
                 <div
                   :class="[
                     'w-10 h-10 flex items-center justify-center rounded-lg transition-colors',
-                    props.active === 'jadwal'
+                    isActive('jadwal')
                       ? 'bg-white/0 border-transparent'
                       : 'bg-white border-2 border-gray-300 group-hover:border-[#41a6c2]',
                   ]"
                 >
                   <CalendarDays
                     :class="
-                      props.active === 'jadwal'
+                      isActive('jadwal')
                         ? 'w-5 h-5 text-white'
                         : 'w-5 h-5 text-gray-600 group-hover:text-[#41a6c2]'
                     "
@@ -123,7 +123,7 @@
                 </div>
                 <span
                   :class="
-                    props.active === 'jadwal'
+                    isActive('jadwal')
                       ? 'font-medium'
                       : 'font-medium text-gray-700'
                   "
@@ -139,7 +139,7 @@
                 @click="close"
                 :class="[
                   'flex items-center gap-3 p-3 rounded-lg transition-colors group',
-                  props.active === 'riwayat'
+                  isActive('riwayat')
                     ? 'bg-[#41a6c2] text-white'
                     : 'hover:bg-[#41a6c2]/10',
                 ]"
@@ -147,14 +147,14 @@
                 <div
                   :class="[
                     'w-10 h-10 flex items-center justify-center rounded-lg transition-colors',
-                    props.active === 'riwayat'
+                    isActive('riwayat')
                       ? 'bg-white/0 border-transparent'
                       : 'bg-white border-2 border-gray-300 group-hover:border-[#41a6c2]',
                   ]"
                 >
                   <History
                     :class="
-                      props.active === 'riwayat'
+                      isActive('riwayat')
                         ? 'w-5 h-5 text-white'
                         : 'w-5 h-5 text-gray-600 group-hover:text-[#41a6c2]'
                     "
@@ -162,7 +162,7 @@
                 </div>
                 <span
                   :class="
-                    props.active === 'riwayat'
+                    isActive('riwayat')
                       ? 'font-medium'
                       : 'font-medium text-gray-700'
                   "
@@ -196,8 +196,14 @@
 
 <script setup>
 import { defineProps, defineEmits } from "vue";
-import { RouterLink } from "vue-router";
-import { LayoutDashboard, BookText, History, CalendarDays, LogOut } from "lucide-vue-next";
+import { RouterLink, useRoute, useRouter } from "vue-router";
+import {
+  LayoutDashboard,
+  BookText,
+  History,
+  CalendarDays,
+  LogOut,
+} from "lucide-vue-next";
 import { logout as apiLogout } from "@/services/authService";
 
 // Props
@@ -221,6 +227,8 @@ const close = () => {
   emit("close");
 };
 
+const router = useRouter();
+
 const handleLogout = async () => {
   try {
     await apiLogout(); // panggil API logout backend
@@ -229,6 +237,24 @@ const handleLogout = async () => {
   } finally {
     localStorage.removeItem("auth_token");
     router.push("/login");
+  }
+};
+
+const route = useRoute();
+
+// Update props.active dynamically based on the current route
+const isActive = (menu) => {
+  switch (menu) {
+    case "dashboard":
+      return route.path === "/student/dashboard";
+    case "paket":
+      return route.path === "/packages";
+    case "jadwal":
+      return route.path === "/student/schedule";
+    case "riwayat":
+      return route.path === "/student/payment-history";
+    default:
+      return false;
   }
 };
 </script>

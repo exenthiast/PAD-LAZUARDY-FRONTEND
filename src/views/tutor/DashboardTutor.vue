@@ -47,12 +47,25 @@
               <h2 class="text-[#41a6c2] text-lg font-semibold">
                 Daftar Ajuan Belajar
               </h2>
-              <router-link
-                to="/tutor/ajuan-belajar"
-                class="text-[#41a6c2] hover:text-[#358a9f] text-sm font-medium hover:underline space-x-2"
-              >
-                Lihat Selengkapnya
-              </router-link>
+              <div class="flex gap-2">
+                <button
+                  @click="loadDashboard"
+                  class="text-[#41a6c2] hover:text-[#358a9f] text-sm font-medium hover:underline flex items-center gap-1"
+                  :disabled="isLoading"
+                >
+                  <i
+                    class="fas fa-sync"
+                    :class="{ 'animate-spin': isLoading }"
+                  ></i>
+                  Refresh
+                </button>
+                <router-link
+                  to="/tutor/ajuan-belajar"
+                  class="text-[#41a6c2] hover:text-[#358a9f] text-sm font-medium hover:underline space-x-2"
+                >
+                  Lihat Selengkapnya
+                </router-link>
+              </div>
             </div>
             <div class="overflow-x-auto">
               <table class="min-w-full text-sm">
@@ -291,25 +304,52 @@ const laporanTerkirim = ref(0); // Dummy - sesuai permintaan user
 
 // Computed untuk daftar ajuan belajar (active schedules dari siswa)
 const learningRequests = computed(() => {
-  if (!dashboardData.value?.taken_schedules) return [];
+  if (!dashboardData.value?.taken_schedules) {
+    console.log("⚠️ No taken_schedules in dashboardData");
+    return [];
+  }
 
-  console.log("All taken_schedules:", dashboardData.value.taken_schedules);
+  console.log("📋 All taken_schedules:", dashboardData.value.taken_schedules);
+  console.log(
+    "📋 Total schedules count:",
+    dashboardData.value.taken_schedules.length
+  );
 
   // Filter schedule yang active (sudah dibayar, menunggu konfirmasi tutor) dan belum diterima
   const filtered = dashboardData.value.taken_schedules.filter((schedule) => {
     const isActive = schedule.status === "active";
-    const isFutureDate =
-      new Date(schedule.date) >= new Date().setHours(0, 0, 0, 0);
-    const isNotAccepted = schedule.is_accepted === false; // Only show not yet accepted
+
+    // Parse date dengan benar - handle both ISO format and YYYY-MM-DD
+    let scheduleDate = new Date(schedule.date);
+    if (schedule.date && !schedule.date.includes("T")) {
+      // If date is in YYYY-MM-DD format, parse it correctly
+      const [year, month, day] = schedule.date.split("-").map(Number);
+      scheduleDate = new Date(year, month - 1, day);
+    }
+    scheduleDate.setHours(0, 0, 0, 0);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const isFutureDate = scheduleDate >= today;
+
+    // Lebih fleksibel: terima is_accepted === false, null, atau undefined
+    const isNotAccepted = schedule.is_accepted !== true;
 
     console.log(
-      `Schedule ${schedule.id}: status=${schedule.status}, date=${schedule.date}, isActive=${isActive}, isFuture=${isFutureDate}, isAccepted=${schedule.is_accepted}`
+      `📅 Schedule ${schedule.id}:`,
+      `\n  - student: ${schedule.student_name}`,
+      `\n  - status: ${schedule.status} (isActive: ${isActive})`,
+      `\n  - date: ${schedule.date} (isFuture: ${isFutureDate})`,
+      `\n  - schedule_time: ${schedule.schedule_time}`,
+      `\n  - is_accepted: ${schedule.is_accepted} (isNotAccepted: ${isNotAccepted})`,
+      `\n  - PASS FILTER: ${isActive && isFutureDate && isNotAccepted}`
     );
 
     return isActive && isFutureDate && isNotAccepted;
   });
 
-  console.log("Filtered learning requests:", filtered);
+  console.log("✅ Filtered learning requests:", filtered);
+  console.log("✅ Filtered count:", filtered.length);
 
   return filtered.map((schedule, index) => ({
     id: schedule.id,
